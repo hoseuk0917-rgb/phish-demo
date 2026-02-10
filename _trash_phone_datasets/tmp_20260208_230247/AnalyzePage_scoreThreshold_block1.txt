@@ -1,0 +1,71 @@
+﻿ 1410:                 if (/^02\d{8}$/.test(digits)) return `02-${digits.slice(2, 6)}-${digits.slice(6)}`;
+ 1411:                 if (/^0\d{2}\d{7}$/.test(digits)) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+ 1412:                 if (/^0\d{2}\d{8}$/.test(digits)) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+ 1413:                 if (/^1[5-8]\d{6}$/.test(digits)) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+ 1414:                 return digits;
+ 1415:             };
+ 1416: 
+ 1417:             const out: string[] = [];
+ 1418:             for (const h of hits) {
+ 1419:                 const digits = String(h || "").replace(/\D/g, "");
+ 1420:                 if (!digits) continue;
+ 1421: 
+ 1422:                 const ok =
+ 1423:                     /^0\d{9,10}$/.test(digits) ||
+ 1424:                     /^1[5-8]\d{6}$/.test(digits) ||
+ 1425:                     (digits.startsWith("82") && digits.length >= 10 && digits.length <= 12);
+ 1426: 
+ 1427:                 if (!ok) continue;
+ 1428: 
+ 1429:                 const disp = fmt(digits);
+ 1430:                 if (!disp) continue;
+ 1431:                 if (out.includes(disp)) continue;
+ 1432: 
+ 1433:                 out.push(disp);
+ 1434:                 if (out.length >= cap) break;
+ 1435:             }
+ 1436:             return out;
+ 1437:         };
+ 1438: 
+ 1439:         const detectedPhones = extractPhones(rawThread, 3);
+ 1440: 
+ 1441:         // full analysis score (0..100)
+ 1442:         const scoreTotal = Math.round(Math.max(0, Math.min(100, Number((preview as any)?.scoreTotal || 0))));
+ 1443: 
+ 1444:         if (scoreTotal >= 65) {
+ 1445:             return {
+ 1446:                 level: "danger" as const,
+ 1447:                 title: "고위험 의심! 신고·상담 필요!",
+ 1448:                 detail: "",
+ 1449:                 chips: uniq([...detectedPhones, "112", "118", "1332"]),
+ 1450:                 toast: false,
+ 1451:             };
+ 1452:         }
+ 1453: 
+ 1454:         if (scoreTotal >= 35) {
+ 1455:             return {
+ 1456:                 level: "warn" as const,
+ 1457:                 title: "위험도 상승! 피싱/스캠 의심!",
+ 1458:                 detail: "",
+ 1459:                 chips: uniq([...detectedPhones]),
+ 1460:                 toast: false,
+ 1461:             };
+ 1462:         }
+ 1463: 
+ 1464:         // 프리필터가 임계값을 넘어서 "풀필터로 넘어가는" 구간에서만 노출
+ 1465:         if (
+ 1466:             !!triggerGateEnabled &&
+ 1467:             !!autoAnalyzeOnTrigger &&
+ 1468:             gatePass &&
+ 1469:             !preview &&
+ 1470:             Number(triggerThreshold || 0) > 0 &&
+ 1471:             Number(prefilterScore || 0) >= Number(triggerThreshold || 0)
+ 1472:         ) {
+ 1473:             return {
+ 1474:                 level: "warn" as const,
+ 1475:                 title: "위험 신호 발견! 분석 중…",
+ 1476:                 detail: "",
+ 1477:                 chips: uniq([...detectedPhones]),
+ 1478:                 toast: false,
+ 1479:             };
+ 1480:         }

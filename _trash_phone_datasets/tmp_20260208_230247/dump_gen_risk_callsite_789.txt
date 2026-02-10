@@ -1,0 +1,201 @@
+﻿  709:             return "imp_gov";
+  710:         case "bank_otp":
+  711:         case "bank_install":
+  712:         case "account_takeover_cred":
+  713:             return "imp_bank";
+  714:         case "go_bank_atm":
+  715:             return "imp_court";
+  716:         default:
+  717:             return undefined;
+  718:     }
+  719: }
+  720: 
+  721: function pressuresFor(rng: () => number, caseType: CaseType): string[] {
+  722:     switch (caseType) {
+  723:         case "blackmail_sexvisit":
+  724:             return ["press_threat", "press_secrecy", "press_urgent"];
+  725: 
+  726:         case "family_urgent_transfer":
+  727:             return ["press_urgent", "press_secrecy"];
+  728: 
+  729:         case "bank_install":
+  730:         case "bank_otp":
+  731:         case "loan_fee":
+  732:             return ["press_urgent"];
+  733: 
+  734:         // ✅ ATM/현금전달은 보통 “지금 당장 + 외부에 말하지마”가 같이 붙음
+  735:         case "go_bank_atm":
+  736:         case "cash_pickup":
+  737:             return ["press_urgent", "press_secrecy"];
+  738: 
+  739:         // 링크형도 너무 “평문 안내”면 낮게 나올 수 있어 가끔 급한 톤을 줌
+  740:         case "delivery_link":
+  741:         case "fine_refund_link":
+  742:             return chance(rng, 0.5) ? ["press_urgent"] : [];
+  743: 
+  744:         default:
+  745:             return [];
+  746:     }
+  747: }
+  748: 
+  749: function stageFromAnchors(
+  750:     caseType: CaseType,
+  751:     anchors: Anchor[],
+  752:     vector: Vector,
+  753:     urlKind: UrlKind | undefined,
+  754:     urlMatch: boolean | undefined,
+  755:     pressures: string[],
+  756:     senderText: string
+  757: ): Stage {
+  758:     // ✅ 엔진(scoreThread)처럼 "rawThread 텍스트" 기준으로 stage를 산정
+  759:     // anchors는 생성 힌트일 뿐, 엔진은 anchors를 보지 않으므로 기대값도 텍스트에 맞춰야 stage mismatch가 줄어듦
+  760:     const t = String(senderText || "");
+  761: 
+  762:     const hasRemote =
+  763:         /(원격|원격\s*제어|팀뷰|teamviewer|anydesk|supremo|퀵서포트|quick\s*support)/i.test(t);
+  764: 
+  765:     const hasApk =
+  766:         /(apk|설치\s*파일|앱\s*설치|다운로드|파일\s*설치|프로그램\s*설치|업데이트\s*설치)/i.test(t);
+  767: 
+  768:     const hasInstallMention =
+  769:         /(설치|다운로드|앱\s*설치|원격\s*앱|원격\s*지원|지원\s*앱|뷰어\s*설치)/i.test(t);
+  770: 
+  771:     const hasPayRequest =
+  772:         /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire|현금|인출|withdraw|cash|atm|창구|퀵|대면\s*전달|봉투|납부|지불|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌)/i.test(
+  773:             t
+  774:         );
+  775: 
+  776:     const hasOtp = /(otp|인증번호|인증\s*코드|보안\s*코드)/i.test(t);
+  777: 
+  778:     const hasPersonal =
+  779:         /(비밀번호|비번|패스워드|계정|아이디|신분증|주민등록|여권|카드번호|cvv|cvc|보안카드|인증서|개인정보)/i.test(t);
+  780: 
+  781:     if (hasRemote || hasApk || hasInstallMention) return "install";
+  782:     if (hasPayRequest) return "payment";
+  783:     if (hasOtp || hasPersonal) return "verify";
+  784: 
+  785:     // 링크/QR은 엔진이 info로 두는 경우가 많아서 기본 info
+  786:     return "info";
+  787: }
+  788: 
+  789: function riskFromSignals(
+  790:     anchors: Anchor[],
+  791:     pressures: string[],
+  792:     impersonation?: string,
+  793:     vector?: Vector,
+  794:     urlKind?: UrlKind,
+  795:     urlMatch?: boolean,
+  796:     senderText?: string
+  797: ): Risk {
+  798:     const rawThread = String(senderText || "");
+  799:     const ps = new Set((pressures || []).map((x) => String(x || "")));
+  800: 
+  801:     // ✅ 링크/QR 존재 여부는 "텍스트"로만 판단(anchors 힌트로 false positive 금지)
+  802:     const hasUrl = /https?:\/\/\S+|www\./i.test(rawThread);
+  803:     const hasQrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(rawThread);
+  804:     const hasLink = hasUrl || hasQrCue;
+  805: 
+  806:     // 엔진(scoreThread)에서 hasLinkAny에 해당하는 느낌: URL/QR + 링크 언급 포함
+  807:     const hasLinkAny = hasLink || /(링크|url|주소|클릭|접속)/i.test(rawThread);
+  808: 
+  809:     const hasShortener =
+  810:         /(bit\.ly|t\.co|me2\.kr|tinyurl\.com|url\.kr|han\.gl|gg\.gg|vo\.la)/i.test(rawThread);
+  811: 
+  812:     const hasUrgent =
+  813:         ps.has("press_urgent") ||
+  814:         /(긴급|즉시|지금\s*바로|서둘러|재촉|기한|마감|지연\s*시|오늘\s*까지|금일\s*까지)/i.test(rawThread);
+  815: 
+  816:     const hasThreat =
+  817:         ps.has("press_threat") ||
+  818:         /(체포|구속|영장|압류|고소|기소|법적\s*조치|수사|출석\s*요구|계좌\s*정지|처벌)/i.test(rawThread);
+  819: 
+  820:     const isAuthorityImp =
+  821:         !!impersonation && /^imp_(gov|police|prosecutor|court|bank|card)/.test(impersonation);
+  822: 
+  823:     const hasAuthority =
+  824:         isAuthorityImp ||
+  825:         /(경찰|검찰|법원|금감원|금융감독원|국세청|관세청|수사관|검사|담당자|은행|카드사|고객센터)/i.test(rawThread);
+  826: 
+  827:     const hasDemand =
+  828:         /(보내\s*주|전달\s*해|입력\s*해|알려\s*주|회신|답장|제출|업로드|등록|확인\s*해\s*주)/i.test(rawThread);
+  829: 
+  830:     const hasPayRequest =
+  831:         /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire|현금|인출|withdraw|cash|atm|창구|퀵|대면\s*전달|봉투)/i.test(
+  832:             rawThread
+  833:         );
+  834: 
+  835:     const hasExplicitPayWord =
+  836:         /(납부|지불|결제|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌)/i.test(rawThread);
+  837: 
+  838:     const hasTransfer = /(송금|이체|입금|remit|wire)/i.test(rawThread);
+  839:     const hasTransferDemand =
+  840:         /(송금\s*해|이체\s*해|입금\s*해|보내\s*주|보내\s*줘|송금\s*요청|이체\s*요청|입금\s*요청)/i.test(rawThread);
+  841: 
+  842:     const hasCashPickup =
+  843:         /(퀵|봉투|현금\s*(수거|전달)|직접\s*전달|대면\s*전달|현금\s*전달|현금\s*수거)/i.test(rawThread);
+  844: 
+  845:     const hasVisitPlace =
+  846:         /(은행으로|은행\s*가서|가까운\s*은행|창구|atm|ATM|지점|방문|오시|오셔|가세요|이동)/i.test(rawThread);
+  847: 
+  848:     const hasContactMove =
+  849:         /(오픈채팅|오픈\s*채팅|카톡|카카오톡|텔레그램|텔레|라인|DM|쪽지|톡방|단톡|채팅방|메신저)/i.test(rawThread);
+  850: 
+  851:     const hasOtp = /(otp|인증번호|인증\s*코드|보안\s*코드)/i.test(rawThread);
+  852: 
+  853:     const hasRemote =
+  854:         /(원격|원격\s*제어|팀뷰|teamviewer|anydesk|supremo|퀵서포트|quick\s*support)/i.test(rawThread);
+  855: 
+  856:     const hasApk =
+  857:         /(apk|설치\s*파일|앱\s*설치|다운로드|파일\s*설치|프로그램\s*설치|업데이트\s*설치)/i.test(rawThread);
+  858: 
+  859:     const hasInstallMention =
+  860:         /(설치|다운로드|앱\s*설치|원격\s*앱|원격\s*지원|지원\s*앱|뷰어\s*설치)/i.test(rawThread);
+  861: 
+  862:     const hasJobScam =
+  863:         /(구인|채용|공고|지원|알바|일자리|업무|면접|현지\s*근무|고수익|톡방|오픈채팅|동남아)/i.test(rawThread);
+  864: 
+  865:     const hasJobHook = /(고수익|부업|재택|알바|구인|채용)/i.test(rawThread);
+  866: 
+  867:     const hasJobPiiRequest =
+  868:         /(신분증|여권|주민등록|사진|업로드|올려|제출|전달)/i.test(rawThread);
+  869: 
+  870:     const hasInvest =
+  871:         /(투자|코인|가상자산|주식|선물|마진|리딩방|수익률|원금\s*보장|고수익\s*확정)/i.test(rawThread);
+  872: 
+  873:     const hasFamily =
+  874:         /(아들|딸|엄마|아빠|가족|지인|친구).*?(사고|납치|급전|합의금|병원|경찰서)/i.test(rawThread);
+  875: 
+  876:     const hasPersonal =
+  877:         /(개인정보|비밀번호|비번|패스워드|계정|아이디|신분증|주민등록|여권|카드번호|cvv|cvc|보안카드|인증서)/i.test(
+  878:             rawThread
+  879:         );
+  880: 
+  881:     const hasTxnAlert =
+  882:         /(승인|결제\s*승인|출금|입금|자동이체|로그인\s*시도\s*감지|접속\s*시도\s*감지|보안\s*알림|거래\s*알림)/i.test(
+  883:             rawThread
+  884:         );
+  885: 
+  886:     const financeLike = /(카드|은행|계좌|승인|결제|정지|해지|분실|도난)/i.test(rawThread);
+  887: 
+  888:     // "benign support" 류(발신자가 경고/검증/안전 안내를 주는 경우) — high 오탐 방지용
+  889:     const benignSupport =
+  890:         /(피싱|스미싱|주의|절대\s*누르|공식\s*번호|고객센터로\s*확인|직접\s*확인)/i.test(rawThread);
+  891: 
+  892:     // ---------- scoreThread hardHigh 구조를 텍스트 기반으로 근사 ----------
+  893:     const installHigh = hasLinkAny && (hasRemote || hasApk || hasInstallMention) && !benignSupport;
+  894: 
+  895:     const investHigh =
+  896:         hasInvest &&
+  897:         (hasLinkAny || hasContactMove) &&
+  898:         (hasInstallMention || hasApk || hasPayRequest || hasTransferDemand || hasUrgent || hasThreat || hasAuthority) &&
+  899:         !benignSupport;
+  900: 
+  901:     const otpAuthorityHigh =
+  902:         hasOtp && hasDemand && (hasThreat || hasAuthority || hasTxnAlert || financeLike) && !benignSupport;
+  903: 
+  904:     const otpLinkDemandHigh = hasOtp && hasLinkAny && hasDemand && !benignSupport;
+  905: 
+  906:     const familyHigh =
+  907:         hasFamily && (hasPayRequest || hasExplicitPayWord || hasUrgent || hasTransferDemand || hasTransfer) && !benignSupport;
+  908: 
+  909:     const jobPiiHigh = hasLinkAny && hasJobScam && hasJobPiiRequest && !benignSupport;

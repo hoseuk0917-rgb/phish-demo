@@ -1,0 +1,4 @@
+﻿@{LineNumber=21; Line=function scoreCls(score: number): "good" | "warn" | "bad" {}
+@{LineNumber=3025; Line=                                            className={`click-row preview-block ${scoreCls(m.score)}`}}
+@{LineNumber=3032; Line=                                                    <span className={`badge ${scoreCls(m.score)}`}>}
+@{LineNumber=3074; Line=                                <span className={`badge ${scoreCls(selected.score)}`}>}

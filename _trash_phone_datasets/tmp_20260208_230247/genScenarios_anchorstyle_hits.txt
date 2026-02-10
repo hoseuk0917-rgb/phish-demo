@@ -1,0 +1,51 @@
+﻿@{LineNumber=17; Line=    | "A_OTP"}
+@{LineNumber=18; Line=    | "A_INSTALL"}
+@{LineNumber=19; Line=    | "A_TRANSFER"}
+@{LineNumber=20; Line=    | "A_GO_BANK"}
+@{LineNumber=83; Line=    anchor_style?: AnchorStyle;}
+@{LineNumber=87; Line=let ANCHOR_STYLE: AnchorStyle = "direct";}
+@{LineNumber=137; Line=        (a as any).anchor_style ?? (a as any)["anchor-style"] ?? (a as any).anchorStyle ?? "direct"}
+@{LineNumber=150; Line=        anchor_style: (rawAnchorStyle === "meta" ? "meta" : "direct"),}
+@{LineNumber=231; Line=        if (a === "A_OTP" && !hasOtp) continue;}
+@{LineNumber=232; Line=        if (a === "A_INSTALL" && !hasInstall) continue;}
+@{LineNumber=234; Line=        if (a === "A_TRANSFER" && !hasTransfer) continue;}
+@{LineNumber=236; Line=        if (a === "A_GO_BANK" && !hasGoBank) continue;}
+@{LineNumber=489; Line=function renderAnchorLineSafe(}
+@{LineNumber=518; Line=    if (ANCHOR_STYLE === "meta") {}
+@{LineNumber=522; Line=        if (a === "A_OTP") base = `OTP(인증번호) 공유/전달을 요구하는 내용이 포함됩니다`;}
+@{LineNumber=523; Line=        if (a === "A_INSTALL") base = `원격지원/지원앱 설치 유도가 포함됩니다 (remote / AnyDesk / TeamViewer)`;}
+@{LineNumber=524; Line=        if (a === "A_TRANSFER")}
+@{LineNumber=526; Line=        if (a === "A_GO_BANK") base = `은행/ATM 방문 및 현금 인출(withdraw/cash) 유도가 포함됩니다 (ATM)`;}
+@{LineNumber=539; Line=    if (a === "A_OTP") out = `OTP(인증번호) 알려주세요`;}
+@{LineNumber=541; Line=    if (a === "A_INSTALL") out = `원격지원 앱(TeamViewer/AnyDesk) 설치해 주세요 (remote)`;}
+@{LineNumber=542; Line=    if (a === "A_TRANSFER")}
+@{LineNumber=544; Line=    if (a === "A_GO_BANK") out = `지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM)`;}
+@{LineNumber=668; Line=            return ["A_OTP"];}
+@{LineNumber=670; Line=            return ["A_INSTALL"];}
+@{LineNumber=676; Line=            return ["A_TRANSFER"];}
+@{LineNumber=678; Line=            return ["A_TRANSFER"];}
+@{LineNumber=680; Line=            return ["A_GO_BANK"];}
+@{LineNumber=686; Line=            return ["A_TRANSFER"];}
+@{LineNumber=688; Line=            return ["A_TRANSFER"];}
+@{LineNumber=971; Line=        if (a === "A_INSTALL") t.push("act_install", "act_remote");}
+@{LineNumber=972; Line=        if (a === "A_OTP") t.push("act_otp_relay");}
+@{LineNumber=973; Line=        if (a === "A_TRANSFER") t.push("act_transfer");}
+@{LineNumber=974; Line=        if (a === "A_GO_BANK") t.push("act_go_bank");}
+@{LineNumber=1102; Line=        const line = renderAnchorLineSafe(rng, a, tone, urlStr, vector, urlKind);}
+@{LineNumber=1225; Line=            ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)}
+@{LineNumber=1362; Line=        effAnchors.includes("A_TRANSFER") ||}
+@{LineNumber=1371; Line=        effAnchors.includes("A_GO_BANK") ||}
+@{LineNumber=1383; Line=    if (!transferCue) effAnchors = effAnchors.filter((a) => a !== "A_TRANSFER");}
+@{LineNumber=1385; Line=    if (!goBankCue) effAnchors = effAnchors.filter((a) => a !== "A_GO_BANK");}
+@{LineNumber=1408; Line=    const hasInstallAnchor = installCue || effAnchors.includes("A_INSTALL");}
+@{LineNumber=1526; Line=    ANCHOR_STYLE = args.anchor_style || "direct";}
+@{LineNumber=1561; Line=            ANCHOR_STYLE === "direct"}
+@{LineNumber=1583; Line=                if (stubFeat.hasGoBank) extra.push("A_GO_BANK");}
+@{LineNumber=1585; Line=                const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));}
+@{LineNumber=1699; Line=                "A_OTP",}
+@{LineNumber=1700; Line=                "A_INSTALL",}
+@{LineNumber=1701; Line=                "A_TRANSFER",}
+@{LineNumber=1705; Line=                "A_GO_BANK",}
+@{LineNumber=1717; Line=                    anchorsEff.includes("A_TRANSFER") ||}
+@{LineNumber=1722; Line=                    anchorsEff.includes("A_GO_BANK") ||}
+@{LineNumber=1731; Line=                if (stagePeak === "install" && !(hasInstallCue || anchorsEff.includes("A_INSTALL"))) {}

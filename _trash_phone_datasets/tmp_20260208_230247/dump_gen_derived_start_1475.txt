@@ -1,0 +1,381 @@
+﻿ 1355:     if (n <= 8) return "M";
+ 1356:     if (n <= 12) return "L";
+ 1357:     return "XL";
+ 1358: }
+ 1359: 
+ 1360: function toScenarioOutput(s: ScenarioInternal): AnyObj {
+ 1361:     const thread = turnsToThread(s.turns, (s as any)?.caller?.caller_display);
+ 1362: 
+ 1363:     const senderText =
+ 1364:         s.turns
+ 1365:             ?.filter((t) => t && (t as any).role === "S")
+ 1366:             ?.map((t) => String((t as any).text ?? ""))
+ 1367:             ?.join("\n")
+ 1368:             ?.trim() || "";
+ 1369: 
+ 1370:     // S 텍스트가 없으면 thread 전체로 폴백
+ 1371:     const effBasis = (senderText || "").trim() || String(thread || "");
+ 1372:     const t = String(effBasis || "");
+ 1373:     const t2 = t.replace(/\s+/g, "");
+ 1374: 
+ 1375:     const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];
+ 1376:     let effAnchors = anchorsEffFromText(allAnchors, effBasis);
+ 1377: 
+ 1378:     // ---- 엔진과 최대한 비슷한 cue들(특히 payment/install 방어) ----
+ 1379:     const hasAmountKRW = (x: string) => /(\d{1,3}(?:,\d{3})+|\d+)\s*(원|만원)/.test(String(x || ""));
+ 1380: 
+ 1381:     const urlMatches = t.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [];
+ 1382:     const urlCount = urlMatches.length;
+ 1383:     const linkHits = Math.min(urlCount, 2);
+ 1384: 
+ 1385:     const qrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(t);
+ 1386: 
+ 1387:     const otpCue =
+ 1388:         /(otp|인증번호|오티피|보안\s*코드|보안코드|확인\s*코드|확인코드|ars|2\s*단계\s*인증|2fa|6\s*자리|6자리)/i.test(t);
+ 1389: 
+ 1390:     const installCue =
+ 1391:         /(teamviewer|anydesk|quicksupport|원격\s*지원|원격|remote|지원앱|apk|설치|install|다운로드|뷰어|viewer|플러그인|plugin)/i.test(t);
+ 1392: 
+ 1393:     const credCue =
+ 1394:         /(아이디|id\b|비밀번호|password|로그인\s*정보|계정\s*정보)/i.test(t) || /(아이디|비밀번호|로그인정보|계정정보)/i.test(t2);
+ 1395: 
+ 1396:     const travelCue =
+ 1397:         /(해외|출국|공항|현지\s*근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t) ||
+ 1398:         /(해외|출국|공항|현지근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t2);
+ 1399: 
+ 1400:     const piiStrongCue =
+ 1401:         /(주민등록|주민번호|신분증|여권|계좌\s*사본|카드번호)/i.test(t) || /(주민등록|주민번호|신분증|여권|계좌사본|카드번호)/i.test(t2);
+ 1402: 
+ 1403:     const piiCue =
+ 1404:         piiStrongCue ||
+ 1405:         /(개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+ 1406:         /(개인정보|사진업로드|업로드|제출)/i.test(t2);
+ 1407: 
+ 1408:     const piiRequestCue =
+ 1409:         /(이름|성함|연락처|전화번호|휴대폰|생년월일|주민등록번호|주민번호|주소|우편번호|계좌번호|카드번호|비밀번호|패스워드|암호|신분증|여권)/i.test(t) &&
+ 1410:         /(알려|말해|남겨|적어|입력|작성|보내|제출|올려|전송|사진|캡처)/i.test(t);
+ 1411: 
+ 1412:     // scoreThread.ts의 paymentAlertOnly 필터와 동일 계열(결제 알림/설정 변경은 payment로 끌지 않음)
+ 1413:     const paymentAlertOnly =
+ 1414:         /(결제\s*알림|알림\s*설정|계좌\s*알림|설정\s*변경|설정이\s*변경|설정\s*확인|자동이체\s*등록|자동\s*이체\s*등록|다른\s*기기\s*로그인\s*시도\s*감지|로그인\s*시도\s*감지|접속\s*시도\s*감지)/i.test(
+ 1415:             t
+ 1416:         );
+ 1417: 
+ 1418:     const escrowLike = /(안전\s*결제|안전\s*거래|에스크로|escrow|거래)/i.test(t);
+ 1419: 
+ 1420:     const strongPayCue = /(입금|송금|이체|납부|지불|충전|선납|보험료)/i.test(t) || hasAmountKRW(t);
+ 1421: 
+ 1422:     const paymentVerb =
+ 1423:         /(보내\s*줘|보내줘|부쳐\s*줘|부쳐줘|입금\s*해|입금해|송금\s*해|송금해|이체\s*해|이체해|납부\s*해|납부해|지불\s*해|지불해|충전\s*해|충전해)/i.test(t) ||
+ 1424:         /(입금|송금|이체|납부|지불|충전|선납|보험료).{0,14}(해\s*줘|해줘|해\s*주|해주|해주세요|부탁|요청|하셔야|바랍니다|주시)/i.test(t) ||
+ 1425:         /(납부|지불|결제).{0,14}(하세요|바랍니다|필요|진행|처리|해주세요)/i.test(t) ||
+ 1426:         /(링크|페이지).{0,14}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t);
+ 1427: 
+ 1428:     const installBeforePay =
+ 1429:         /(설치).{0,10}(후|해야|필요).{0,24}(결제|납부|송금|이체|입금|진행)/i.test(t) ||
+ 1430:         /(결제|납부|송금|이체|입금).{0,18}(하려면|위해).{0,18}(설치)/i.test(t);
+ 1431: 
+ 1432:     const transferCue =
+ 1433:         effAnchors.includes("A_TRANSFER") ||
+ 1434:         /(안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌|계좌번호|예금주|무통장|입금|송금|이체|remit|wire)/i.test(t);
+ 1435: 
+ 1436:     const cashPickupCue =
+ 1437:         effAnchors.includes("A_CASH_PICKUP") ||
+ 1438:         (((/현금|cash/i.test(t) || /현금/.test(t2)) &&
+ 1439:             /(인출|현금\s*인출|현금\s*수령|withdraw|봉투|퀵|대면\s*전달|직접\s*전달|픽업|수거)/i.test(t)) as any);
+ 1440: 
+ 1441:     const goBankCue =
+ 1442:         effAnchors.includes("A_GO_BANK") ||
+ 1443:         ((/(은행|atm|창구)/i.test(t) || /(은행|atm|창구)/i.test(t2)) &&
+ 1444:             (/(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t) || /(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t2)));
+ 1445: 
+ 1446:     const ctxPayWithLinkCue =
+ 1447:         linkHits > 0 &&
+ 1448:         !paymentAlertOnly &&
+ 1449:         (/(링크|페이지|사이트).{0,18}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t) ||
+ 1450:             /(납부|결제|지불|송금|이체|입금).{0,18}(링크|페이지|사이트)/i.test(t)) &&
+ 1451:         (/(해\s*줘|해줘|해\s*주|해주|해주세요|하세요|하셔야|진행|처리|완료|부탁|요청|바랍니다)/i.test(t) || strongPayCue);
+ 1452: 
+ 1453:     // cue 없으면 anchor도 제거(과대 stage/risk 방지)
+ 1454:     if (!transferCue) effAnchors = effAnchors.filter((a) => a !== "A_TRANSFER");
+ 1455:     if (!cashPickupCue) effAnchors = effAnchors.filter((a) => a !== "A_CASH_PICKUP");
+ 1456:     if (!goBankCue) effAnchors = effAnchors.filter((a) => a !== "A_GO_BANK");
+ 1457: 
+ 1458:     // ---- scoreLike (THRESHOLDS 35/65 맞추기) ----
+ 1459:     let scoreLike =
+ 1460:         25 * linkHits +
+ 1461:         (qrCue ? 25 : 0) +
+ 1462:         (otpCue ? 25 : 0) +
+ 1463:         (installCue ? 30 : 0) +
+ 1464:         (ctxPayWithLinkCue ? 22 : 0) +
+ 1465:         (transferCue ? 28 : 0) +
+ 1466:         (cashPickupCue ? 28 : 0) +
+ 1467:         (goBankCue ? 22 : 0) +
+ 1468:         (piiStrongCue ? 40 : piiCue ? 20 : 0) +
+ 1469:         (piiRequestCue ? 18 : 0) +
+ 1470:         (credCue ? 18 : 0) +
+ 1471:         (travelCue ? 22 : 0);
+ 1472: 
+ 1473:     if (scoreLike > 100) scoreLike = 100;
+ 1474: 
+ 1475:     let derivedRisk: Risk = scoreLike >= 65 ? "high" : scoreLike >= 35 ? "medium" : "low";
+ 1476: 
+ 1477:     // ---- stagePeak: scoreThread.ts(stageFromHitsV2) 우선순위 근사 ----
+ 1478:     const hasVerifyHit = linkHits > 0 || qrCue || otpCue || piiCue || piiRequestCue || ctxPayWithLinkCue || credCue || travelCue;
+ 1479:     const hasInstallAnchor = installCue || effAnchors.includes("A_INSTALL");
+ 1480:     const hasPaymentAnchor = transferCue || cashPickupCue || goBankCue || ctxPayWithLinkCue;
+ 1481: 
+ 1482:     let derivedStagePeak: Stage = "info";
+ 1483: 
+ 1484:     if (hasInstallAnchor && installBeforePay) derivedStagePeak = "install";
+ 1485:     else if (hasInstallAnchor && escrowLike && !strongPayCue) derivedStagePeak = "install";
+ 1486:     else if (hasPaymentAnchor) derivedStagePeak = "payment";
+ 1487:     else if (hasInstallAnchor) derivedStagePeak = "install";
+ 1488:     else if (hasVerifyHit) derivedStagePeak = "verify";
+ 1489:     else derivedStagePeak = "info";
+ 1490: 
+ 1491:     // payment 방어: "알림/설정"만이면 verify로
+ 1492:     if (derivedStagePeak === "payment") {
+ 1493:         const hasHardPayContext =
+ 1494:             paymentVerb ||
+ 1495:             strongPayCue ||
+ 1496:             cashPickupCue ||
+ 1497:             goBankCue ||
+ 1498:             /(압류|미납|체납|과태료|벌금|고지|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌)/i.test(t);
+ 1499: 
+ 1500:         if (paymentAlertOnly || !hasHardPayContext) derivedStagePeak = "verify";
+ 1501:     }
+ 1502: 
+ 1503:     // stage가 올라가는데 risk가 low면 medium으로(경계 안정화)
+ 1504:     if (derivedRisk === "low" && (derivedStagePeak === "verify" || derivedStagePeak === "install" || derivedStagePeak === "payment")) {
+ 1505:         derivedRisk = "medium";
+ 1506:     }
+ 1507:     if (derivedStagePeak === "info") derivedRisk = "low";
+ 1508: 
+ 1509:     const scoreMin = derivedRisk === "high" ? 45 : derivedRisk === "medium" ? 25 : 0;
+ 1510: 
+ 1511:     // triggered: s.expected.triggers가 비어있으면 false(benign/hardneg 방어), 있으면 true
+ 1512:     const expectedTriggered = Array.isArray((s as any)?.expected?.triggers) ? (s as any).expected.triggers.length > 0 : derivedRisk !== "low";
+ 1513: 
+ 1514:     const notes = [
+ 1515:         s.impersonation ? String(s.impersonation) : "",
+ 1516:         ...(Array.isArray((s as any).pressures) ? (s as any).pressures.map(String) : []),
+ 1517:     ].filter(Boolean);
+ 1518: 
+ 1519:     // callChecks (call 채널에서만 기본 생성)
+ 1520:     const callChecks =
+ 1521:         s.channel === "call"
+ 1522:             ? {
+ 1523:                 otpAsked: otpCue,
+ 1524:                 remoteAsked: installCue,
+ 1525:                 urgentPressured: /(긴급|지금|즉시|당장|바로|오늘\s*안에|지연\s*시|미조치\s*시)/i.test(t),
+ 1526:                 firstContact: Boolean((s as any)?.caller?.is_first_seen),
+ 1527:             }
+ 1528:             : undefined;
+ 1529: 
+ 1530:     return {
+ 1531:         id: s.id,
+ 1532:         category: s.caseType,
+ 1533:         label: derivedRisk,
+ 1534:         length_bucket: lengthBucketFromTurns(s.turns.length),
+ 1535:         thread,
+ 1536: 
+ 1537:         ...(callChecks ? { callChecks } : {}),
+ 1538: 
+ 1539:         expected: {
+ 1540:             riskLevel: derivedRisk,
+ 1541:             score_min: scoreMin,
+ 1542:             stagePeak: derivedStagePeak,
+ 1543:             triggered: expectedTriggered,
+ 1544:         },
+ 1545: 
+ 1546:         // 기존 필드 유지(리포트/디버그용)
+ 1547:         should_trigger: (s as any)?.expected?.triggers || [],
+ 1548: 
+ 1549:         notes,
+ 1550: 
+ 1551:         meta: {
+ 1552:             ...(s.meta || {}),
+ 1553:             eff_basis: effBasis.slice(0, 4000),
+ 1554:             eff_anchors: effAnchors,
+ 1555:             scoreLike,
+ 1556:             cues: {
+ 1557:                 linkHits,
+ 1558:                 qrCue,
+ 1559:                 otpCue,
+ 1560:                 installCue,
+ 1561:                 transferCue,
+ 1562:                 cashPickupCue,
+ 1563:                 goBankCue,
+ 1564:                 ctxPayWithLinkCue,
+ 1565:                 paymentAlertOnly,
+ 1566:                 escrowLike,
+ 1567:                 strongPayCue,
+ 1568:                 installBeforePay,
+ 1569:             },
+ 1570:         },
+ 1571:     };
+ 1572: }
+ 1573: 
+ 1574: async function readJsonl(filePath: string): Promise<AnyObj[]> {
+ 1575:     const raw = await fs.readFile(filePath, "utf8");
+ 1576:     const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+ 1577:     const out: AnyObj[] = [];
+ 1578:     for (const line of lines) {
+ 1579:         try {
+ 1580:             out.push(JSON.parse(line));
+ 1581:         } catch {
+ 1582:             // skip bad line
+ 1583:         }
+ 1584:     }
+ 1585:     return out;
+ 1586: }
+ 1587: 
+ 1588: async function writeJsonl(filePath: string, rows: AnyObj[]) {
+ 1589:     const dir = path.dirname(filePath);
+ 1590:     await fs.mkdir(dir, { recursive: true });
+ 1591:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1592:     await fs.writeFile(filePath, body, "utf8");
+ 1593: }
+ 1594: 
+ 1595: async function main() {
+ 1596:     const args = parseArgs(process.argv);
+ 1597:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1598:     const rng = mulberry32(args.seed);
+ 1599: 
+ 1600:     const stubs = await readJsonl(args.stubs);
+ 1601:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1602: 
+ 1603:     if (args.registry_out) {
+ 1604:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1605:     }
+ 1606: 
+ 1607:     const outRows: AnyObj[] = [];
+ 1608:     let produced = 0;
+ 1609: 
+ 1610:     for (let i = 0; i < args.count; i++) {
+ 1611:         const stub = stubs[i % stubs.length];
+ 1612:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1613:         const stubFeat = deriveStubFeatures(stub);
+ 1614:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1615: 
+ 1616:         const isBenign = chance(rng, args.benign_ratio);
+ 1617:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1618: 
+ 1619:         // ✅ benign은 "대화 기본문장"에서 위험 cue(원격/출국/ATM 등)가 나오지 않도록
+ 1620:         //    안전 케이스 타입으로 강제 (validator: benign_has_danger_anchor 방지)
+ 1621:         const benignCasePool: CaseType[] = ["delivery_link", "fine_refund_link", "loan_fee"];
+ 1622:         const caseType: CaseType = isBenign ? pick(rng, benignCasePool) : baseType;
+ 1623: 
+ 1624:         // ✅ benign에서는 키워드 주입으로 위험 cue가 섞이지 않게(대화 생성용만)
+ 1625:         const stubKeywordsConv: string[] = isBenign ? [] : stubKeywords;
+ 1626: 
+ 1627:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1628:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1629:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1630:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1631: 
+ 1632:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1633:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1634:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1635: 
+ 1636:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1637:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1638:             ANCHOR_STYLE === "direct"
+ 1639:                 ? "none"
+ 1640:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1641: 
+ 1642:         let attempt = 0;
+ 1643:         let bestErrs: string[] = [];
+ 1644: 
+ 1645:         while (attempt < args.max_retries) {
+ 1646:             attempt++;
+ 1647: 
+ 1648:             // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지
+ 1649:             const impersonation = isBenign ? undefined : impersonationFor(caseType);
+ 1650:             const pressures = isBenign ? [] : pressuresFor(rng, caseType);
+ 1651: 
+ 1652:             // 계획(생성 힌트) 앵커: 대화 생성에만 사용
+ 1653:             let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();
+ 1654: 
+ 1655:             // 스텁 기반 “추가 유도” 보강(핵심수법/유도방식 반영): 과도하게 늘리지 않고 0~1개만 가끔 추가
+ 1656:             if (!isBenign) {
+ 1657:                 const extra: Anchor[] = [];
+ 1658:                 if (stubFeat.hasPII) extra.push("A_PII");
+ 1659:                 if (stubFeat.hasCred) extra.push("A_CRED");
+ 1660:                 if (stubFeat.hasGoBank) extra.push("A_GO_BANK");
+ 1661: 
+ 1662:                 const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));
+ 1663:                 if (filtered.length && chance(rng, 0.35)) {
+ 1664:                     const pickOne = pick(rng, filtered);
+ 1665:                     if (!anchorsPlanned.includes(pickOne)) anchorsPlanned.push(pickOne);
+ 1666:                 }
+ 1667:             }
+ 1668: 
+ 1669:             // vector: 수법에서 필요할 때만 + “분석 힌트 있으면 우선”, 없으면 소량 증강(augmented)
+ 1670:             let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);
+ 1671:             let augmentedVector = false;
+ 1672: 
+ 1673:             if (!isBenign) {
+ 1674:                 if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {
+ 1675:                     vector = "qr";
+ 1676:                 } else if (stubFeat.hasUrl && vector === "none") {
+ 1677:                     vector = "url";
+ 1678:                 } else {
+ 1679:                     // 스텁에 없더라도 기능 데모를 위해 아주 소량만 추가(메타에 표시)
+ 1680:                     if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {
+ 1681:                         vector = chance(rng, 0.5) ? "url" : "qr";
+ 1682:                         augmentedVector = true;
+ 1683:                     }
+ 1684:                 }
+ 1685:             }
+ 1686: 
+ 1687:             // URL/QR 생성(0~1개, 원샷)
+ 1688:             let urlObj: ScenarioInternal["url"] | undefined;
+ 1689:             let qrObj: ScenarioInternal["qr"] | undefined;
+ 1690: 
+ 1691:             let urlKind: UrlKind | undefined;
+ 1692:             let urlStr: string | undefined;
+ 1693: 
+ 1694:             const ownerChoices = ownersFromImpersonation(impersonation);
+ 1695:             const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => ownerChoices.includes(r.owner)).map(r => r.host)));
+ 1696: 
+ 1697:             if (!isBenign && vector === "url") {
+ 1698:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1699:                 const official = pickOfficialUrlEntry(rng, ownerChoices);
+ 1700:                 const officialId = official.url_id;
+ 1701: 
+ 1702:                 urlStr = makeVariantUrlFromOfficial(rng, official, urlKind);
+ 1703:                 const match = urlMatchesRegistry(urlStr, allowedHosts);
+ 1704: 
+ 1705:                 urlObj = { kind: urlKind, value: urlStr, count: 1, match, official_id: officialId };
+ 1706:             }
+ 1707: 
+ 1708:             if (!isBenign && vector === "qr") {
+ 1709:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1710:                 const qr = makeQrLandingUrl(rng, urlKind, ownerChoices);
+ 1711: 
+ 1712:                 urlStr = qr.qr_url;
+ 1713:                 const match = qr.match;
+ 1714: 
+ 1715:                 qrObj = { target_kind: urlKind, note: `QR 스캔 유도(랜딩): ${urlStr}`, match, official_id: qr.official_id };
+ 1716: 
+ 1717:                 if (!anchorsPlanned.includes("A_QR")) anchorsPlanned.push("A_QR");
+ 1718:                 const idx = anchorsPlanned.indexOf("A_LINK");
+ 1719:                 if (idx >= 0) anchorsPlanned.splice(idx, 1);
+ 1720:             }
+ 1721: 
+ 1722:             const caller = chooseCaller(rng, caseType, isBenign);
+ 1723: 
+ 1724:             const turns = buildConversation(
+ 1725:                 rng,
+ 1726:                 caseType,
+ 1727:                 anchorsPlanned,
+ 1728:                 vector,
+ 1729:                 urlStr,
+ 1730:                 urlKind,
+ 1731:                 noiseLevel,
+ 1732:                 maxLen,
+ 1733:                 caller.caller_display,
+ 1734:                 stubKeywordsConv,
+ 1735:                 pressures,

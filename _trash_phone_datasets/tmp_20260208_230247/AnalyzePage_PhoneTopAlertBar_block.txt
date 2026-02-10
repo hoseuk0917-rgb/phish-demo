@@ -1,0 +1,141 @@
+﻿ 1501:     function PhoneTopAlertBar(props: { alert: PhoneAlert }) {
+ 1502:         const a: any = props?.alert as any;
+ 1503:         const level = String(a?.level || "none");
+ 1504:         const title = String(a?.title || "").trim();
+ 1505: 
+ 1506:         const key = `${level}|${title}`;
+ 1507:         const [dismissKey, setDismissKey] = useState<string>("");
+ 1508: 
+ 1509:         useEffect(() => {
+ 1510:             if (dismissKey && dismissKey !== key) setDismissKey("");
+ 1511:         }, [key, dismissKey]);
+ 1512: 
+ 1513:         if (!a || level === "none" || !title) return null;
+ 1514:         if (dismissKey === key) return null;
+ 1515: 
+ 1516:         const isDanger = level === "danger";
+ 1517:         const bg = isDanger ? "rgba(255,70,70,0.88)" : "rgba(255,170,40,0.86)";
+ 1518:         const bd = isDanger ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.18)";
+ 1519: 
+ 1520:         const chips: string[] = Array.isArray(a?.chips)
+ 1521:             ? a.chips.map((x: any) => String(x || "").trim()).filter(Boolean)
+ 1522:             : [];
+ 1523: 
+ 1524:         const toDigits = (s: string) => String(s || "").replace(/\D/g, "");
+ 1525:         const isEmergency = (d: string) => /^\d{2,4}$/.test(d); // 112/118/1332
+ 1526:         const isPhoneLike = (d: string) => d.length >= 7 && d.length <= 12; // 감지된 실제 번호(표시만)
+ 1527: 
+ 1528:         const evidencePhones: string[] = [];
+ 1529:         const emergencyNums: string[] = [];
+ 1530: 
+ 1531:         for (const c of chips) {
+ 1532:             const d = toDigits(c);
+ 1533:             if (!d) continue;
+ 1534: 
+ 1535:             if (isEmergency(d)) {
+ 1536:                 if (!emergencyNums.includes(d)) emergencyNums.push(d);
+ 1537:                 continue;
+ 1538:             }
+ 1539:             if (isPhoneLike(d)) {
+ 1540:                 if (!evidencePhones.includes(c)) evidencePhones.push(c);
+ 1541:                 continue;
+ 1542:             }
+ 1543:         }
+ 1544: 
+ 1545:         const shownEvidence = evidencePhones.slice(0, 2);
+ 1546:         const shownEmergency = emergencyNums.slice(0, 3);
+ 1547: 
+ 1548:         return (
+ 1549:             <div
+ 1550:                 style={{
+ 1551:                     position: "absolute",
+ 1552:                     left: 10,
+ 1553:                     right: 10,
+ 1554:                     top: 8,
+ 1555:                     zIndex: 60,
+ 1556:                     pointerEvents: "none",
+ 1557:                 }}
+ 1558:             >
+ 1559:                 <div
+ 1560:                     style={{
+ 1561:                         pointerEvents: "auto",
+ 1562:                         display: "flex",
+ 1563:                         flexDirection: "column",
+ 1564:                         gap: 8,
+ 1565:                         padding: "10px 12px",
+ 1566:                         borderRadius: 16,
+ 1567:                         background: bg,
+ 1568:                         border: `1px solid ${bd}`,
+ 1569:                         boxShadow: "0 10px 24px rgba(0,0,0,0.30)",
+ 1570:                         backdropFilter: "blur(6px)",
+ 1571:                     }}
+ 1572:                 >
+ 1573:                     {/* 1줄: 문구 + 닫기 */}
+ 1574:                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+ 1575:                         <div
+ 1576:                             style={{
+ 1577:                                 minWidth: 0,
+ 1578:                                 color: "rgba(255,255,255,0.98)",
+ 1579:                                 fontSize: 13,
+ 1580:                                 fontWeight: 900,
+ 1581:                                 whiteSpace: "nowrap",
+ 1582:                                 overflow: "hidden",
+ 1583:                                 textOverflow: "ellipsis",
+ 1584:                             }}
+ 1585:                             title={title}
+ 1586:                         >
+ 1587:                             {title}
+ 1588:                         </div>
+ 1589: 
+ 1590:                         <button
+ 1591:                             className="btn"
+ 1592:                             onClick={() => setDismissKey(key)}
+ 1593:                             title="닫기"
+ 1594:                             style={{
+ 1595:                                 padding: "6px 10px",
+ 1596:                                 borderRadius: 999,
+ 1597:                                 background: "rgba(0,0,0,0.18)",
+ 1598:                                 border: "1px solid rgba(255,255,255,0.22)",
+ 1599:                                 color: "rgba(255,255,255,0.98)",
+ 1600:                                 fontWeight: 900,
+ 1601:                                 lineHeight: 1,
+ 1602:                             }}
+ 1603:                         >
+ 1604:                             ×
+ 1605:                         </button>
+ 1606:                     </div>
+ 1607: 
+ 1608:                     {/* 2줄: 감지번호(근거) + (고위험이면) 신고/상담 전화버튼 */}
+ 1609:                     {(shownEvidence.length || (isDanger && shownEmergency.length)) ? (
+ 1610:                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+ 1611:                             {shownEvidence.map((p) => (
+ 1612:                                 <span
+ 1613:                                     key={`e-${p}`}
+ 1614:                                     title="감지된 번호(근거)"
+ 1615:                                     style={{
+ 1616:                                         display: "inline-flex",
+ 1617:                                         alignItems: "center",
+ 1618:                                         gap: 6,
+ 1619:                                         padding: "6px 10px",
+ 1620:                                         borderRadius: 999,
+ 1621:                                         background: "rgba(0,0,0,0.14)",
+ 1622:                                         border: "1px solid rgba(255,255,255,0.20)",
+ 1623:                                         color: "rgba(255,255,255,0.98)",
+ 1624:                                         fontSize: 12,
+ 1625:                                         fontWeight: 850,
+ 1626:                                     }}
+ 1627:                                 >
+ 1628:                                     <span style={{ fontSize: 13 }}>☎</span>
+ 1629:                                     <span>{p}</span>
+ 1630:                                 </span>
+ 1631:                             ))}
+ 1632: 
+ 1633:                             {isDanger
+ 1634:                                 ? shownEmergency.map((n) => (
+ 1635:                                     <a
+ 1636:                                         key={`c-${n}`}
+ 1637:                                         href={`tel:${n}`}
+ 1638:                                         title={`신고/상담 전화 ${n}`}
+ 1639:                                         style={{
+ 1640:                                             textDecoration: "none",
+ 1641:                                             display: "inline-flex",

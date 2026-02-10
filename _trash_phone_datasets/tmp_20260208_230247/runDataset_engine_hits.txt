@@ -1,0 +1,435 @@
+﻿@{Path=C:\projects\phish-demo\node_modules\@types\node\test.d.ts; LineNumber=615; Line=                    thresholds: {}
+@{Path=C:\projects\phish-demo\node_modules\pdf-parse\dist\pdf-parse\esm\PDFParse.d.ts; LineNumber=37; Line=     * @param params - Parse options controlling pagination, link handling, and line/cell thresholds.}
+@{Path=C:\projects\phish-demo\node_modules\pdf-parse\dist\pdf-parse\esm\PDFParse.d.ts; LineNumber=57; Line=     * @param params - ParseParameters controlling page selection, thresholds and output format.}
+@{Path=C:\projects\phish-demo\node_modules\pdf-parse\dist\pdf-parse\web\pdf-parse.es.d.ts; LineNumber=668; Line=     * @param params - Parse options controlling pagination, link handling, and line/cell thresholds.}
+@{Path=C:\projects\phish-demo\node_modules\pdf-parse\dist\pdf-parse\web\pdf-parse.es.d.ts; LineNumber=688; Line=     * @param params - ParseParameters controlling page selection, thresholds and output format.}
+@{Path=C:\projects\phish-demo\node_modules\typescript\lib\lib.dom.d.ts; LineNumber=18971; Line=     * The IntersectionObserver interface's read-only **`thresholds`** property returns the list of intersection thresholds that was specified when the observer was instantiated with only one threshold ratio was provided when instantiating the object, this will be an array containing that single value.}
+@{Path=C:\projects\phish-demo\node_modules\typescript\lib\lib.dom.d.ts; LineNumber=18973; Line=     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IntersectionObserver/thresholds)}
+@{Path=C:\projects\phish-demo\node_modules\typescript\lib\lib.dom.d.ts; LineNumber=18975; Line=    readonly thresholds: ReadonlyArray<number>;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=7; Line=  RiskLevel,}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=14; Line=import { scoreThread } from "./scoring/scoreThread";}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=86; Line=export type AnalyzeThreadOptions = {}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=88; Line=  thresholds?: Partial<{ medium: number; high: number }>;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=102; Line=export function analyzeThread(input: AnalysisInput, opts?: AnalyzeThreadOptions): AnalysisResult {}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=181; Line=  const scored = scoreThread(messages, input.callChecks, opts);}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=207; Line=  let riskLevel: RiskLevel = scored.riskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=333; Line=  const thrMed = opts?.thresholds?.medium ?? 35;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=334; Line=  const thrHigh = opts?.thresholds?.high ?? 65;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=384; Line=    const soft = Number(pf.thresholdSoft);}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=441; Line=  const uiRiskLevel: RiskLevel = incidentFloor >= thrHigh ? "high" : riskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=526; Line=    riskLevel,}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=535; Line=    riskLevel,}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=539; Line=    uiRiskLevel,}
+@{Path=C:\projects\phish-demo\src\engine\index.ts; LineNumber=544; Line=    stagePeak: scored.stagePeak,}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=30; Line=    thresholdSoft: number;}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=74; Line=    // thresholds}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=75; Line=    thresholdSoft?: number; // show “의심” UI (quiet)}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=1287; Line=    //    (풀필터(scoreThread)에서만 처리)}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=1309; Line=    const thresholdSoft = opts?.thresholdSoft ?? DEFAULT_SOFT;}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=1357; Line=    let action: PrefilterAction = score >= thresholdAuto ? "auto" : score >= thresholdSoft ? "soft" : "none";}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=1381; Line=    const thresholdGate = Math.min(18, thresholdSoft);}
+@{Path=C:\projects\phish-demo\src\engine\prefilter\prefilter.ts; LineNumber=1449; Line=        thresholdSoft,}
+@{Path=C:\projects\phish-demo\src\engine\report\buildPackage.ts; LineNumber=1; Line=import type { ActionItem, EvidenceItem, RiskLevel, SignalSummary } from "../../types/analysis";}
+@{Path=C:\projects\phish-demo\src\engine\report\buildPackage.ts; LineNumber=4; Line=  riskLevel: RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\report\buildPackage.ts; LineNumber=14; Line=  lines.push(`- 위험도: ${args.riskLevel.toUpperCase()} (${args.scoreTotal}/100)`);}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=3; Line=export type Thresholds = typeof THRESHOLDS;}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=35; Line=export const THRESHOLDS = {}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=55; Line=export function normalizeThresholds(partial?: Partial<Record<keyof Thresholds, number>>): Thresholds {}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=56; Line=  if (!partial) return THRESHOLDS;}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=57; Line=  const out: any = { ...THRESHOLDS };}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=59; Line=    const key = k as keyof Thresholds;}
+@{Path=C:\projects\phish-demo\src\engine\rules\weights.ts; LineNumber=66; Line=  return out as Thresholds;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\escalation.ts; LineNumber=1; Line=import type { RiskLevel } from "../../types/analysis";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\escalation.ts; LineNumber=2; Line=import { THRESHOLDS } from "../rules/weights";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\escalation.ts; LineNumber=4; Line=export function toRiskLevel(scoreTotal: number, hardHigh: boolean): RiskLevel {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\escalation.ts; LineNumber=9; Line=  if (scoreTotal >= THRESHOLDS.medium) return "medium";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1; Line=// src/engine/scoring/scoreThread.ts}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=7; Line=import { toRiskLevel } from "./escalation";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=10; Line=type RiskLevel = ReturnType<typeof toRiskLevel>;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=12; Line=export type ScoreThreadContextMode = "auto" | "rolling" | "sticky";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=21; Line=export type ScoreThreadContextOptions = {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=22; Line=  mode?: ScoreThreadContextMode;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=29; Line=export type ScoreThreadOptions = {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=31; Line=  context?: ScoreThreadContextOptions;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=34; Line=export type ScoreThreadResult = {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=36; Line=  riskLevel: RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=37; Line=  stagePeak: StageId;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=62; Line=    mode: ScoreThreadContextMode;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=359; Line=  // 금액은 stageFromHitsV2 쪽에서 다른 단서(요구/계좌/압박/룰 hit)와 결합될 때만 쓰이도록 둔다.}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=531; Line=function stageFromHitsV2(content: string, hits: Hit[]): { stage: StageId; triggers: string[]; normalized: Hit[] } {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=848; Line=  ctx?: ScoreThreadContextOptions}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=849; Line=): { selected: Array<{ originalIndex: number; text: string }>; meta: ScoreThreadResult["context"] } {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=850; Line=  const mode: ScoreThreadContextMode = ctx?.mode || "auto";}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=998; Line=export function scoreThread(}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1001; Line=  opts?: ScoreThreadOptions}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1002; Line=): ScoreThreadResult & { hits: Hit[]; signals: ReturnType<typeof buildSignalsFromHits> } {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1010; Line=  const messageSummaries: ScoreThreadResult["messageSummaries"] = [];}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1297; Line=    const { stage, triggers, normalized } = stageFromHitsV2(content, msgHitsRaw);}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1453; Line=  // stagePeak은 “Threat에 포함된 메시지들” 기준으로 한번 더 산정 (R/comply 영향 제거)}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1463; Line=  const { stage: stagePeak, triggers: stageTriggers } = stageFromHitsV2(stageText, sortedHits);}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1627; Line=  let riskLevel: RiskLevel = toRiskLevel(scoreTotal, hardHigh);}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1631; Line=  if (riskLevel === ("high" as RiskLevel) && !hardHigh && !hasCoreAction) {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1632; Line=    riskLevel = "medium" as RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1636; Line=  if (riskLevel === ("high" as RiskLevel) && !hardHigh) {}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1637; Line=    riskLevel = "medium" as RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1641; Line=  if (isAdviceOnlyThread(rawThread)) riskLevel = "low" as RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1660; Line=    riskLevel === ("high" as RiskLevel) &&}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1676; Line=  if (alertSettingOnly) riskLevel = "medium" as RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1683; Line=    riskLevel === ("high" as RiskLevel) &&}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1697; Line=  if (remoteOnly) riskLevel = "medium" as RiskLevel;}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1704; Line=    riskLevel,}
+@{Path=C:\projects\phish-demo\src\engine\scoring\scoreThread.ts; LineNumber=1705; Line=    stagePeak,}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=2; Line=export type RiskLevel = "low" | "medium" | "high";}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=11; Line=  severity: RiskLevel;}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=105; Line=  thresholdSoft: number;}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=135; Line=  riskLevel: RiskLevel;}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=139; Line=  uiRiskLevel?: RiskLevel;}
+@{Path=C:\projects\phish-demo\src\types\analysis.ts; LineNumber=144; Line=  stagePeak?: string;}
+@{Path=C:\projects\phish-demo\tmp\audit_catalog_vs_fullfilter.ts; LineNumber=4; Line=import { scoreThread } from "../src/engine/scoring/scoreThread";}
+@{Path=C:\projects\phish-demo\tmp\audit_catalog_vs_fullfilter.ts; LineNumber=43; Line=// 엔진 ruleId는 scoreThread.ts에서 보이던 것들(transfer/link/otp/remote/ctx_* 등)로 묶음.}
+@{Path=C:\projects\phish-demo\tmp\audit_catalog_vs_fullfilter.ts; LineNumber=306; Line=            const scored: any = scoreThread(messages as any, undefined as any, undefined as any);}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=24; Line=function getExpectedStagePeak(o: any): string {}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=27; Line=        e?.stagePeak ??}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=30; Line=        o?.expectedStagePeak ??}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=31; Line=        o?.stagePeakExpected ??}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=32; Line=        o?.stagePeak;}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=36; Line=function getGotStagePeak(res: any): { stage: string; triggers: string[] } {}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=58; Line=    const outPath = arg("--out") || "./tmp/stagepeak_mismatch.tsv";}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=69; Line=    out.write(["id", "expected_stagePeak", "got_stagePeak", "got_triggers_top3"].join("\t") + "\n");}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=78; Line=        const expected = getExpectedStagePeak(obj);}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=81; Line=        const res = analyzeThread({ threadText } as any);}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=82; Line=        const got = getGotStagePeak(res);}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=104; Line=    console.log("mismatch by got.stagePeak:", gotSorted);}
+@{Path=C:\projects\phish-demo\tmp\audit_stagepeak_mismatch.ts; LineNumber=105; Line=    console.log("top triggers (stagePeak):", trigSorted);}
+@{Path=C:\projects\phish-demo\tmp\cover_full_run.ts; LineNumber=1; Line=import { analyzeThread } from "../src/engine/index.ts";}
+@{Path=C:\projects\phish-demo\tmp\cover_full_run.ts; LineNumber=17; Line=  const a = analyzeThread({ thread: t, mode: "qv" } as any);}
+@{Path=C:\projects\phish-demo\tmp\cover_full_run.ts; LineNumber=20; Line=  console.log(JSON.stringify({ scoreTotal: a.scoreTotal, risk: a.riskLevel, triggered: a.triggered, signalsTop: top }, null, 0));}
+@{Path=C:\projects\phish-demo\tmp\cover_pf_vs_engine.ts; LineNumber=6; Line=import { scoreThread } from "../src/engine/scoring/scoreThread";}
+@{Path=C:\projects\phish-demo\tmp\cover_pf_vs_engine.ts; LineNumber=75; Line=// 엔진 stagePeak 트리거(문자열)로 이미 올라오는 케이스(네 로그 기반)}
+@{Path=C:\projects\phish-demo\tmp\cover_pf_vs_engine.ts; LineNumber=137; Line=        const scored: any = scoreThread(messages, (obj?.callChecks ?? undefined) as any, undefined as any);}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=32; Line=const res:any = await analyzeThread({ threadText, callChecks } as any);}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=35; Line=const riskLevel = String(res.riskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=36; Line=const uiRiskLevel = String(res.uiRiskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=37; Line=const stagePeak = String(res.stagePeak ?? res.stage ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_case.ts; LineNumber=40; Line=console.log("riskLevel =", riskLevel, "uiRiskLevel =", uiRiskLevel, "stagePeak =", stagePeak);}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=26; Line=  String(row?.expected?.riskLevel ?? row?.expected?.risk ?? row?.expectedRisk ?? row?.riskLevel ?? row?.risk ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=28; Line=const res:any = await analyzeThread({ threadText: pickThread(row), callChecks: !!row.callChecks } as any);}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=30; Line=const gotRisk = String(res.riskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=31; Line=const gotUiRisk = String(res.uiRiskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=32; Line=const gotStage = String(res.stagePeak ?? res.stage ?? "");}
+@{Path=C:\projects\phish-demo\tmp\dump_expected_vs_got.ts; LineNumber=37; Line=console.log("got: riskLevel =", gotRisk, "uiRiskLevel =", gotUiRisk, "stagePeak =", gotStage, "scoreTotal =", gotScore);}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=41; Line=    const outPath = arg("--out") || "./tmp/stagepeak_mismatch_detail.tsv";}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=49; Line=            "expectedStagePeak",}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=50; Line=            "gotStagePeak",           // runDataset 축(=analyzeThread 기반)}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=51; Line=            "gotStagePeak_byMsgs",    // messageSummaries max}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=52; Line=            "gotStagePeak_byTL",      // stageTimeline peak(=마지막 stage)}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=54; Line=            "riskLevel",}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=71; Line=        const expected = String(obj?.expected?.stagePeak ?? obj?.expectedStagePeak ?? "").trim();}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=79; Line=        const res: any = analyzeThread(}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=87; Line=        // runDataset 쪽과 같은 축: messageSummaries/stageTimeline 기반 peak}
+@{Path=C:\projects\phish-demo\tmp\dump_stagepeak_mismatch_detail.ts; LineNumber=117; Line=                    String(res?.riskLevel ?? ""),}
+@{Path=C:\projects\phish-demo\tmp\print_risk_fields.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tmp\print_risk_fields.ts; LineNumber=11; Line=const res:any = analyzeThread({ threadText: String(row.thread ?? ""), callChecks: { otpAsked:false, remoteAsked:false, urgentPressured:false, firstContact:false, ...(row.callChecks??{}) } } as any);}
+@{Path=C:\projects\phish-demo\tmp\print_risk_fields.ts; LineNumber=13; Line=console.log("riskLevel=", res.riskLevel);}
+@{Path=C:\projects\phish-demo\tmp\print_risk_fields.ts; LineNumber=14; Line=console.log("uiRiskLevel=", res.uiRiskLevel);}
+@{Path=C:\projects\phish-demo\tmp\probe_hits_detail.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\probe_hits_detail.ts; LineNumber=16; Line=const res:any = await analyzeThread({ threadText: pickThread(row), callChecks: (row.callChecks ?? false) } as any);}
+@{Path=C:\projects\phish-demo\tmp\probe_hits_detail.ts; LineNumber=18; Line=console.log("riskLevel=", res.riskLevel, "uiRiskLevel=", res.uiRiskLevel, "scoreTotal=", res.scoreTotal, "uiScoreTotal=", res.uiScoreTotal);}
+@{Path=C:\projects\phish-demo\tmp\probe_one_case.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\probe_one_case.ts; LineNumber=22; Line=const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tmp\probe_one_case.ts; LineNumber=44; Line=console.log("riskLevel    =", (res as any).riskLevel);}
+@{Path=C:\projects\phish-demo\tmp\probe_one_case.ts; LineNumber=45; Line=console.log("uiRiskLevel  =", (res as any).uiRiskLevel);}
+@{Path=C:\projects\phish-demo\tmp\probe_one_case.ts; LineNumber=47; Line=console.log("stagePeak    =", (res as any).stagePeak);}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=27; Line=  const res:any = await analyzeThread({ threadText, callChecks } as any);}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=29; Line=  const gotRisk = String(res.riskLevel ?? "").toLowerCase().trim();}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=30; Line=  const gotStage = String(res.stagePeak ?? res.stage ?? "").trim();}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=35; Line=  row.expected.riskLevel = gotRisk || row.expected.riskLevel;}
+@{Path=C:\projects\phish-demo\tmp\relabel_expected_risk_stage.ts; LineNumber=36; Line=  row.expected.stagePeak = gotStage || row.expected.stagePeak;}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=35; Line=  const res:any = await analyzeThread({ threadText, callChecks } as any);}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=38; Line=  const riskLevel = String(res.riskLevel ?? "n/a");}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=39; Line=  const uiRiskLevel = String(res.uiRiskLevel ?? "n/a");}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=40; Line=  const stagePeak = String(res.stagePeak ?? res.stage ?? "n/a");}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=42; Line=  const key = `${riskLevel}|${uiRiskLevel}|${stagePeak}`;}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=51; Line=  if (String(riskLevel).toLowerCase() === "high" && reasonLabels.length === 0) {}
+@{Path=C:\projects\phish-demo\tmp\scan_metrics.ts; LineNumber=52; Line=    hiNoReason.push({ id, scoreTotal, stagePeak, riskLevel, uiRiskLevel });}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=27; Line=  const res:any = await analyzeThread({ threadText, callChecks } as any);}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=30; Line=  const risk = String(res.riskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=31; Line=  const uiRisk = String(res.uiRiskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=46; Line=    if (examples.length < 12) examples.push({ id, riskLevel: risk, scoreTotal: score, derivedFromScore: d, uiRiskLevel: uiRisk || null, uiScoreTotal: Number.isFinite(uiScore)? uiScore : null, simBoost });}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=53; Line=console.log("mismatch(scoreTotal vs riskLevel)=", mismatchScoreVsRisk);}
+@{Path=C:\projects\phish-demo\tmp\scan_ui_mismatch.ts; LineNumber=54; Line=console.log("mismatch(score/uiScore vs uiRiskLevel)=", mismatchScoreVsUi);}
+@{Path=C:\projects\phish-demo\tools\buildSimIndex.ts; LineNumber=5; Line=import { scoreThread } from "../src/engine/scoring/scoreThread";}
+@{Path=C:\projects\phish-demo\tools\buildSimIndex.ts; LineNumber=74; Line=        const r = scoreThread(messages, callChecks);}
+@{Path=C:\projects\phish-demo\tools\buildSimIndex.ts; LineNumber=80; Line=            expectedRisk: row?.expected?.riskLevel,}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=10; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=454; Line=// ---- analyzeThreadCompat: payload 캐시로 대폭 가속 ----}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=460; Line=async function analyzeThreadCompat(mutatedThread: string) {}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=508; Line=            const got0: any = await analyzeThread(p.make(text, msgs, blocks));}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=761; Line=            _eg_normStage((it as any).stagePeak);}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=778; Line=        const v = _eg_getAny(node, ["riskLevel", "riskLevelId", "risk_level", "risk_level_id"]);}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=803; Line=        const v = _eg_getAny(node, ["stagePeak", "stagePeakId", "stage_peak", "stage_peak_id", "peakStage", "peak_stage"]);}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=843; Line=        pickStr(exp?.riskLevel) ||}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=846; Line=        pickStr(exp?.riskLevelId) ||}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=853; Line=        pickStr(exp?.stagePeak) ||}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=855; Line=        pickStr(exp?.stagePeakId) ||}
+@{Path=C:\projects\phish-demo\tools\mutate_mlm.ts; LineNumber=1292; Line=                        const { got0, payloadName } = await analyzeThreadCompat(mutatedThread);}
+@{Path=C:\projects\phish-demo\tools\patchDemoPhones.ts; LineNumber=103; Line=        if (tr.length === 0 && (String(exp.riskLevel || "").toLowerCase() === "low" || exp.riskLevel === "low")) {}
+@{Path=C:\projects\phish-demo\tools\probeCase.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine";}
+@{Path=C:\projects\phish-demo\tools\probeCase.ts; LineNumber=18; Line=  const r = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\probeCase.ts; LineNumber=32; Line=    got: { risk: r.riskLevel, score: r.scoreTotal, stagePeak: r.stagePeak },}
+@{Path=C:\projects\phish-demo\tools\probeCaseV2.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\probeCaseV2.ts; LineNumber=36; Line=  const r = analyzeThread(input);}
+@{Path=C:\projects\phish-demo\tools\probeCaseV2.ts; LineNumber=47; Line=        got: { riskLevel: r.riskLevel, scoreTotal: r.scoreTotal },}
+@{Path=C:\projects\phish-demo\tools\probeCaseV2.ts; LineNumber=48; Line=        stagePeak: { byHitsTop: stageByHits, byTimeline: stageByTimeline, byMessageSummaries: stageByMsgs },}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=6; Line=type RiskLevel = "low" | "medium" | "high";}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=12; Line=function stagePeakFromResult(r: any): StageId {}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=31; Line=  // 엔진이 stagePeak 같은 요약 필드를 주는 경우 우선 반영}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=32; Line=  bump(r?.stagePeak);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=34; Line=  bump(r?.stagePeakByHitsTop);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=35; Line=  bump(r?.stagePeakByTimeline);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=36; Line=  bump(r?.stagePeakByMessageSummaries);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=140; Line=    const res: any = analyzeThread(input);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=142; Line=    const gotRisk = res.riskLevel as RiskLevel;}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=144; Line=    const gotStage = stagePeakFromResult(res);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=150; Line=    if (exp?.riskLevel && gotRisk !== exp.riskLevel) why.push(`risk mismatch: expected=${exp.riskLevel} got=${gotRisk}`);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=152; Line=    if (exp?.stagePeak && gotStage !== exp.stagePeak) why.push(`stagePeak mismatch: expected=${exp.stagePeak} got=${gotStage}`);}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=161; Line=        got: { riskLevel: gotRisk, scoreTotal: gotScore, stagePeak: gotStage, triggered: gotTrig },}
+@{Path=C:\projects\phish-demo\tools\probeFails.ts; LineNumber=174; Line=      `- ${f.id} | risk ${f.expected?.riskLevel ?? "?"}->${f.got.riskLevel} | stage ${f.expected?.stagePeak ?? "?"}->${f.got.stagePeak} | scoreMin ${f.expected?.score_min ?? "-"} | gotScore ${f.got.scoreTotal}`}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=1; Line=// tools/runDataset.ts — FULL UPDATED (SWAP-IN)}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=6; Line= *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=7; Line= *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl --sim}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=8; Line= *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl --sim --sim-gate 0.9}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=29; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=31; Line=import type { AnalysisInput, AnalysisResult, RiskLevel, StageId } from "../src/types/analysis";}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=35; Line=    riskLevel: RiskLevel;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=37; Line=    stagePeak?: StageId;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=58; Line=    got: { riskLevel: RiskLevel; scoreTotal: number; stagePeak: StageId; triggered: boolean };}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=110; Line=        // - "threat": gotRisk는 riskLevel만 사용(정책 기준)}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=111; Line=        // - "ui": gotRisk는 uiRiskLevel 우선(UI 표시용 비교)}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=196; Line=function stagePeakFromResult(r: AnalysisResult): StageId {}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=226; Line=    const risk = String(rr?.riskLevel ?? "").toLowerCase().trim(); // "low" | "medium" | "high"}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=239; Line=    const softFromPf = Number(pf?.thresholdSoft);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=240; Line=    // low에서는 thresholdSoft(보통 28)가 너무 빡세서 FN이 나옴 → 20으로 캡}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=274; Line=        const soft = Number(pf.thresholdSoft);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=306; Line=    if (w.startsWith("stagePeak mismatch:")) return "stage_mismatch";}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=308; Line=    if (w.startsWith("analyzeThread threw:")) return "engine_throw";}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=339; Line=    const expDist: Record<RiskLevel, number> = { low: 0, medium: 0, high: 0 };}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=340; Line=    const gotDist: Record<RiskLevel, number> = { low: 0, medium: 0, high: 0 };}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=345; Line=        expDist[row.expected.riskLevel] = (expDist[row.expected.riskLevel] ?? 0) + 1;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=369; Line=            res = simOpts ? analyzeThread(input, simOpts) : analyzeThread(input);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=371; Line=            const why = [`analyzeThread threw: ${String(e?.message || e)}`];}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=376; Line=                got: { riskLevel: "low", scoreTotal: 0, stagePeak: "info", triggered: false },}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=387; Line=        const gotRisk: RiskLevel = (() => {}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=388; Line=            const pick = (x: any): RiskLevel | "" => {}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=390; Line=                if (v === "low" || v === "medium" || v === "high") return v as RiskLevel;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=394; Line=            // 1) UI 모드: uiRiskLevel 우선(비교용)}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=396; Line=                const u = pick((res as any)?.uiRiskLevel);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=400; Line=            // 2) Threat 모드(또는 UI 없음): riskLevel 신뢰(엔진이 이미 정책을 반영해야 함)}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=401; Line=            const t = pick((res as any)?.riskLevel ?? (res as any)?.risk ?? (res as any)?.riskLevelId ?? (res as any)?.riskLevel);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=412; Line=        const gotStage = stagePeakFromResult(res);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=420; Line=            const soft0 = Number((res as any)?.prefilter?.thresholdSoft);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=435; Line=                    const soft1 = Number(pf.thresholdSoft);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=453; Line=                                const soft = Number(pf.thresholdSoft);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=487; Line=        if (gotRisk === row.expected.riskLevel) riskOk++;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=488; Line=        else why.push(`risk mismatch: expected=${row.expected.riskLevel} got=${gotRisk}`);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=499; Line=        if (row.expected.stagePeak) {}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=500; Line=            if (gotStage === row.expected.stagePeak) stageOk++;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=501; Line=            else why.push(`stagePeak mismatch: expected=${row.expected.stagePeak} got=${gotStage}`);}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=515; Line=            const expRisk = String(row.expected.riskLevel ?? "").toLowerCase().trim();}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=517; Line=                (row.expected as any).stagePeak ?? (row.expected as any).stage_peak ?? ""}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=540; Line=                got: { riskLevel: gotRisk, scoreTotal: gotScore, stagePeak: gotStage, triggered: gotTrig },}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=600; Line=            const rp = `${f.expected.riskLevel}->${f.got.riskLevel}`;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=603; Line=            const es = f.expected.stagePeak || "none";}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=604; Line=            const sp = `${es}->${f.got.stagePeak}`;}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=636; Line=                `  expected: risk=${f.expected.riskLevel}` +}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=638; Line=                `${f.expected.stagePeak ? ` stagePeak=${f.expected.stagePeak}` : ""}` +}
+@{Path=C:\projects\phish-demo\tools\runDataset.ts; LineNumber=642; Line=                `  got:      risk=${f.got.riskLevel} score=${f.got.scoreTotal} stagePeak=${f.got.stagePeak} triggered=${f.got.triggered}`,}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=5; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=69; Line=function stagePeakFromResult(r: AnalysisResult): StageId {}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=106; Line=  console.log(`risk=${rr.riskLevel} score=${rr.scoreTotal} stagePeak=${stagePeakFromResult(r)}`);}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=143; Line=  const base = analyzeThread(input);}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=146; Line=  // ✅ PROBE: analyzeThread 밖에서 직접 similarity를 돌려서 “매칭 자체가 되는지” 확인}
+@{Path=C:\projects\phish-demo\tools\runOne.ts; LineNumber=157; Line=  const withSim = analyzeThread(input, {}
+@{Path=C:\projects\phish-demo\tools\_debug_one_fail.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_debug_one_fail.ts; LineNumber=8; Line=const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_debug_one_fail.ts; LineNumber=16; Line=    risk: (res as any).riskLevel,}
+@{Path=C:\projects\phish-demo\tools\_debug_one_fail.ts; LineNumber=17; Line=    uiRisk: (res as any).uiRiskLevel,}
+@{Path=C:\projects\phish-demo\tools\_distRiskUi.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_distRiskUi.ts; LineNumber=13; Line=  const res=await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_distRiskUi.ts; LineNumber=18; Line=  const r=String((res as any).riskLevel||"none").toLowerCase().trim() || "none";}
+@{Path=C:\projects\phish-demo\tools\_distRiskUi.ts; LineNumber=19; Line=  const u=String((res as any).uiRiskLevel||"none").toLowerCase().trim() || "none";}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=33; Line=function stagePeakFromRes(res: any): string {}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=46; Line=    const threat = normRisk(res?.riskLevel) || "low";}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=47; Line=    const ui = normRisk(res?.uiRiskLevel) || threat;}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=50; Line=    // 기본은 UI 우선(네 runDataset 현재 로직과 맞추기 쉬움)}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=58; Line=    const stage = stagePeakFromRes(res);}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=70; Line=    const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=86; Line=                stagePeak: stagePeakFromRes(res),}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=88; Line=                uiRiskLevel: String(res?.uiRiskLevel ?? ""),}
+@{Path=C:\projects\phish-demo\tools\_exportCandidateShowcase.ts; LineNumber=89; Line=                threatRiskLevel: String(res?.riskLevel ?? ""),}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=4; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=53; Line=  // expected에 uiRiskLevel/threatRiskLevel이 있으면 그걸 힌트로 자동 판정}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=54; Line=  if (Object.prototype.hasOwnProperty.call(exp, "uiRiskLevel")) return true;}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=55; Line=  if (Object.prototype.hasOwnProperty.call(exp, "threatRiskLevel")) return false;}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=57; Line=  // 기본은 Threat(엔진 riskLevel) 기준}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=65; Line=      pickRisk(exp?.uiRiskLevel) ||}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=66; Line=      pickRisk(exp?.riskLevel) ||}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=72; Line=    pickRisk(exp?.threatRiskLevel) ||}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=73; Line=    pickRisk(exp?.riskLevel) ||}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=80; Line=  // 1) preferUi면 uiRiskLevel 우선}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=82; Line=    const u0 = pickRisk(res?.uiRiskLevel);}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=86; Line=  // 2) threat riskLevel}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=87; Line=  const r0 = pickRisk(res?.riskLevel ?? res?.risk ?? res?.riskLevelId);}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=104; Line=// ✅ stagePeak 없으면 timeline/hitsTop에서 최고 stage 추출}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=111; Line=      const s = norm(it?.stage ?? it?.stageId ?? it?.stagePeak ?? it?.peakStage);}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=128; Line=  // (선택) 정말 마지막 fallback: stagePeak도 후보로만 추가}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=129; Line=  const sp = norm(res?.stagePeak);}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=163; Line=  const expStage = norm(row?.expected?.stagePeak ?? row?.expected?.stage_peak ?? "");}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=177; Line=  const res = await analyzeThread(input as any);}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=202; Line=        riskLevel: gotRisk,}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=203; Line=        threatRiskLevel: pickRisk((res as any)?.riskLevel) || "",}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=204; Line=        uiRiskLevel: pickRisk((res as any)?.uiRiskLevel) || "",}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=206; Line=        stagePeak: gotStage,}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=210; Line=        riskLevel: expRisk || "",}
+@{Path=C:\projects\phish-demo\tools\_exportFails.ts; LineNumber=212; Line=        stagePeak: expStage || "",}
+@{Path=C:\projects\phish-demo\tools\_failRuleFreq.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_failRuleFreq.ts; LineNumber=12; Line=  const res = await analyzeThread(({ threadText: thread, callChecks: [] } as any));}
+@{Path=C:\projects\phish-demo\tools\_find_score_min_fail.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_find_score_min_fail.ts; LineNumber=12; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_find_score_min_fail.ts; LineNumber=19; Line=    console.log(row.id, { expMin, score, threat: (res as any).riskLevel, ui: (res as any).uiRiskLevel });}
+@{Path=C:\projects\phish-demo\tools\_h2m_is_cap.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_h2m_is_cap.ts; LineNumber=17; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_h2m_is_cap.ts; LineNumber=23; Line=  const risk = String((res as any).riskLevel);}
+@{Path=C:\projects\phish-demo\tools\_h2m_split.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_h2m_split.ts; LineNumber=14; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_h2m_toprules.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_h2m_toprules.ts; LineNumber=19; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_h2m_toprules.ts; LineNumber=24; Line=  const risk = String((res as any).riskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tools\_h2m_toprules.ts; LineNumber=25; Line=  const uiRisk = String((res as any).uiRiskLevel ?? "");}
+@{Path=C:\projects\phish-demo\tools\_list_softcap.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_list_softcap.ts; LineNumber=10; Line=  const res=await analyzeThread({ threadText: thread, callChecks:{ otpAsked:false, remoteAsked:false, urgentPressured:false, firstContact:false, ...(row.callChecks??{}) } } as any);}
+@{Path=C:\projects\phish-demo\tools\_list_softcap.ts; LineNumber=19; Line=      threatRisk: (res as any).riskLevel,}
+@{Path=C:\projects\phish-demo\tools\_list_softcap.ts; LineNumber=20; Line=      uiRisk: (res as any).uiRiskLevel,}
+@{Path=C:\projects\phish-demo\tools\_m2h_hardanchor_check.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_m2h_hardanchor_check.ts; LineNumber=25; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_m2h_rulefreq.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_m2h_rulefreq.ts; LineNumber=22; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_onecase_stagecheck.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_onecase_stagecheck.ts; LineNumber=62; Line=const res = await analyzeThread(input as any);}
+@{Path=C:\projects\phish-demo\tools\_onecase_stagecheck.ts; LineNumber=66; Line=  risk: (res as any)?.riskLevel,}
+@{Path=C:\projects\phish-demo\tools\_probePayload.ts; LineNumber=1; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_probePayload.ts; LineNumber=52; Line=    const res = await analyzeThread(toInput(p) as any);}
+@{Path=C:\projects\phish-demo\tools\_probePayload.ts; LineNumber=55; Line=      risk: (res as any)?.riskLevel,}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=3; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=47; Line=  const r0 = norm(res?.riskLevel ?? res?.risk ?? res?.riskLevelId);}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=63; Line=  // ✅ runDataset쪽과 최대한 동일하게: callChecks는 true로}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=89; Line=    const res = await analyzeThread(makePayload(_PREF_KIND, text) as any);}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=95; Line=    const res = await analyzeThread(makePayload(k, text) as any);}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=102; Line=  return analyzeThread(makePayload("threadText", text) as any);}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=126; Line=  // ✅ runDataset이 뭘 보더라도 동일 입력이 되게 동기화만 유지}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=138; Line=  exp.riskLevel = risk;}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=141; Line=  // ✅ risk-only면 나머지는 건드리지 않음 (stagePeak/triggered/triggers 보존)}
+@{Path=C:\projects\phish-demo\tools\_relabelWithEngine.ts; LineNumber=151; Line=    riskLevel: risk,}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_risk.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_risk.ts; LineNumber=12; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_risk.ts; LineNumber=17; Line=  const gotRisk = String((res as any).riskLevel ?? "low");}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_risk.ts; LineNumber=24; Line=  row.expected.riskLevel = gotRisk;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_threat.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_threat.ts; LineNumber=22; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_threat.ts; LineNumber=27; Line=  const threat = normRisk((res as any).riskLevel) || "low";}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_threat.ts; LineNumber=33; Line=  (row.expected as any).threatRiskLevel = threat;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_threat.ts; LineNumber=34; Line=  row.expected.riskLevel = threat;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=30; Line=  const res = await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=41; Line=  const threat = normRisk((res as any).riskLevel) || "low";}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=42; Line=  const ui = normRisk((res as any).uiRiskLevel) || threat;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=54; Line=  (row.expected as any).threatRiskLevel = threat;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=55; Line=  (row.expected as any).uiRiskLevel = ui;}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=57; Line=  // runDataset 비교용 대표 riskLevel은 UI 기준으로 둠}
+@{Path=C:\projects\phish-demo\tools\_relabel_expected_ui.ts; LineNumber=58; Line=  row.expected.riskLevel = ui;}
+@{Path=C:\projects\phish-demo\tools\_showHits.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_showHits.ts; LineNumber=22; Line=const res = await analyzeThread({ threadText: thread } as any);}
+@{Path=C:\projects\phish-demo\tools\_showHits.ts; LineNumber=26; Line=    risk: (res as any)?.riskLevel,}
+@{Path=C:\projects\phish-demo\tools\_ui_uplift_stats.ts; LineNumber=2; Line=import { analyzeThread } from "../src/engine/index";}
+@{Path=C:\projects\phish-demo\tools\_ui_uplift_stats.ts; LineNumber=16; Line=  const res=await analyzeThread({}
+@{Path=C:\projects\phish-demo\tools\_ui_uplift_stats.ts; LineNumber=21; Line=  const r=String(res?.riskLevel ?? "none").toLowerCase().trim();}
+@{Path=C:\projects\phish-demo\tools\_ui_uplift_stats.ts; LineNumber=22; Line=  const u=String(res?.uiRiskLevel ?? r).toLowerCase().trim();}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=51; Line=        stagePeak: Stage;}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=758; Line=    // ✅ 엔진(scoreThread)처럼 "rawThread 텍스트" 기준으로 stage를 산정}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=789; Line=function riskFromSignals(}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1341; Line=    // scoreThread.ts의 paymentAlertOnly 필터와 동일 계열(결제 알림/설정 변경은 payment로 끌지 않음)}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1387; Line=    // ---- scoreLike (THRESHOLDS 35/65 맞추기) ----}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1406; Line=    // ---- stagePeak: scoreThread.ts(stageFromHitsV2) 우선순위 근사 ----}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1411; Line=    let derivedStagePeak: Stage = "info";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1413; Line=    if (hasInstallAnchor && installBeforePay) derivedStagePeak = "install";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1414; Line=    else if (hasInstallAnchor && escrowLike && !strongPayCue) derivedStagePeak = "install";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1415; Line=    else if (hasPaymentAnchor) derivedStagePeak = "payment";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1416; Line=    else if (hasInstallAnchor) derivedStagePeak = "install";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1417; Line=    else if (hasVerifyHit) derivedStagePeak = "verify";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1418; Line=    else derivedStagePeak = "info";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1421; Line=    if (derivedStagePeak === "payment") {}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1429; Line=        if (paymentAlertOnly || !hasHardPayContext) derivedStagePeak = "verify";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1433; Line=    if (derivedRisk === "low" && (derivedStagePeak === "verify" || derivedStagePeak === "install" || derivedStagePeak === "payment")) {}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1436; Line=    if (derivedStagePeak === "info") derivedRisk = "low";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1469; Line=            riskLevel: derivedRisk,}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1471; Line=            stagePeak: derivedStagePeak,}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1716; Line=            let stagePeak: Stage;}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1718; Line=                stagePeak = "info";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1720; Line=                stagePeak = stageFromAnchors(caseType, anchorsEff, vector, urlKind, urlMatch, pressuresEff, senderText);}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1732; Line=                if (stagePeak === "payment" && !(hasTransferCue || hasCashCue)) {}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1733; Line=                    stagePeak = "verify";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1737; Line=                if (stagePeak === "install" && !(hasInstallCue || anchorsEff.includes("A_INSTALL"))) {}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1738; Line=                    stagePeak = "verify";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1745; Line=                if (vector === "url" && !hasUrlInText) stagePeak = "info";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1746; Line=                if (vector === "qr" && !(hasQrCue || hasUrlInText)) stagePeak = "info";}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1751; Line=                : riskFromSignals(anchorsEff, pressuresEff, impersonation, vector, urlKind, urlMatch, senderText);}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenariosFromStubs.ts; LineNumber=1772; Line=                expected: { risk, stagePeak, triggers },}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=5; Line=import { analyzeThread } from "../../src/engine";}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=6; Line=import type { AnalysisInput, AnalysisResult, StageId, RiskLevel } from "../../src/types/analysis";}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=13; Line=        "  --margin: score_min = max(0, round(threshold(riskLevel) - margin)) (default 5)\n" +}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=60; Line=function stagePeakFromResult(r: AnalysisResult): StageId {}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=97; Line=function pickRisk(v: any): RiskLevel | "" {}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=99; Line=    if (s === "low" || s === "medium" || s === "high") return s as RiskLevel;}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=103; Line=// ✅ runDataset의 hardHigh 탐색과 동일 계열로 맞춤}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=114; Line=function policyRiskFromResult(res: any, scoreTotal: number): RiskLevel {}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=117; Line=    const raw = pickRisk(res?.riskLevel ?? res?.risk ?? res?.riskLevelId ?? res?.risk_level);}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=132; Line=    // - 없으면 runDataset 기본과 맞추기 위해 true를 기본값으로 사용}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=180; Line=            const res = analyzeThread(input);}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=183; Line=            const riskLevel = policyRiskFromResult(res as any, scoreTotal);}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=184; Line=            const stagePeak = stagePeakFromResult(res);}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=188; Line=                riskLevel === "high" ? 65 :}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=189; Line=                    riskLevel === "medium" ? 35 : 0;}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=201; Line=            exp.riskLevel = riskLevel;}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=203; Line=            exp.stagePeak = stagePeak;}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=204; Line=            exp.stage_peak = stagePeak; // 호환}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=206; Line=            r.label = riskLevel;}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=210; Line=            if (riskLevel === "low") {}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=219; Line=                rawRisk: pickRisk((res as any)?.riskLevel ?? (res as any)?.risk ?? (res as any)?.riskLevelId),}
+@{Path=C:\projects\phish-demo\tools\analysis\relabelDatasetFromEngine.ts; LineNumber=220; Line=                policyRisk: riskLevel,}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=14; Line=    expected: { riskLevel?: Risk; score_min?: number; stagePeak?: Stage; triggered?: boolean };}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=15; Line=    got: { riskLevel?: Risk; scoreTotal?: number; stagePeak?: Stage; triggered?: boolean };}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=72; Line=    if (w.startsWith("stagePeak mismatch:")) return "stage";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=75; Line=    if (w.startsWith("analyzeThread threw:")) return "engine_throw";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=114; Line=        const er = r.expected?.riskLevel ?? "NA";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=115; Line=        const gr = r.got?.riskLevel ?? "NA";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=118; Line=        const es = r.expected?.stagePeak ?? "NA";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=119; Line=        const gs = r.got?.stagePeak ?? "NA";}
+@{Path=C:\projects\phish-demo\tools\analysis\reportFails.ts; LineNumber=152; Line=                `  - ${it.id} exp(${it.expected?.riskLevel}/${it.expected?.stagePeak}/${it.expected?.score_min ?? 0}) got(${it.got?.riskLevel}/${it.got?.stagePeak}/${it.got?.scoreTotal ?? 0})`}
+@{Path=C:\projects\phish-demo\tools\datasets\buildDemoSets.ts; LineNumber=90; Line=    const e = String(rec.expected?.riskLevel ?? "").toLowerCase();}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=7; Line=type RiskLevel = "low" | "medium" | "high";}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=13; Line=    expected: { riskLevel: RiskLevel; score_min?: number; stagePeak?: StageId; triggered?: boolean };}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=14; Line=    got: { riskLevel: RiskLevel; scoreTotal: number; stagePeak: StageId; triggered: boolean };}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=22; Line=    // runDataset dump가 아닌 원본 dataset enrich용(있으면)}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=81; Line=    if (w.startsWith("stagePeak mismatch:")) return "stage_mismatch";}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=83; Line=    if (w.startsWith("analyzeThread threw:")) return "engine_throw";}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=176; Line=        const rp = `${f.expected?.riskLevel ?? "?"} → ${f.got?.riskLevel ?? "?"}`;}
+@{Path=C:\projects\phish-demo\tools\mutate\failureMiner.ts; LineNumber=179; Line=        const sp = `${f.expected?.stagePeak ?? "?"} → ${f.got?.stagePeak ?? "?"}`;}

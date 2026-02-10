@@ -1,0 +1,221 @@
+﻿ 2945:                 <>
+ 2946:                     <div style={{ height: 10 }} />
+ 2947:                     <div className="card" style={{ background: "var(--panel2)" }}>
+ 2948:                         <div className="row-between">
+ 2949:                             <div>
+ 2950:                                 <div className="card-title">Top risky blocks</div>
+ 2951:                                 <div className="card-desc">클릭하면 해당 BLK로 점프 + 상세 카드 열림</div>
+ 2952:                             </div>
+ 2953: 
+ 2954:                             <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+ 2955:                                 {deepEnabled && embedSignals.enabled ? (
+ 2956:                                     <span
+ 2957:                                         className="pill"
+ 2958:                                         title={
+ 2959:                                             embedSignals.top?.length
+ 2960:                                                 ? embedSignals.top.map((x) => `${x.label} ${Math.round(Math.max(0, Math.min(1, Number(x.sim || 0))) * 100)}%`).join(" | ")
+ 2961:                                                 : undefined
+ 2962:                                         }
+ 2963:                                     >
+ 2964:                                         {(() => {
+ 2965:                                             const pct = Math.round(Math.max(0, Math.min(1, Number(embedSignals.maxSim || 0))) * 100);
+ 2966:                                             const best = embedSignals.top?.length ? embedSignals.top[0].label : "n/a";
+ 2967:                                             const trig = embedSignals.triggered ? " · TRIGGER" : "";
+ 2968:                                             return `EMB: ${best} · ${pct}%${trig}`;
+ 2969:                                         })()}
+ 2970:                                     </span>
+ 2971:                                 ) : null}
+ 2972: 
+ 2973:                                 <span className="pill">Top 6</span>
+ 2974:                             </div>
+ 2975:                         </div>
+ 2976: 
+ 2977:                         <div style={{ height: 10 }} />
+ 2978: 
+ 2979:                         <ul className="list">
+ 2980:                             {(() => {
+ 2981:                                 const base = blocksTop.slice(0, 6);
+ 2982:                                 const head = base.slice(0, 4);
+ 2983:                                 const used = new Set<number>(head.map((x) => x.index));
+ 2984: 
+ 2985:                                 const extra = (embedSignals as any)?.blockTop ? (embedSignals as any).blockTop : [];
+ 2986:                                 const picks: any[] = [];
+ 2987: 
+ 2988:                                 if (preview && Array.isArray(preview.messageSummaries)) {
+ 2989:                                     for (const e of extra) {
+ 2990:                                         const idx = Number((e as any)?.index || 0);
+ 2991:                                         if (!idx || used.has(idx)) continue;
+ 2992: 
+ 2993:                                         const mm = preview.messageSummaries.find((x) => x.index === idx);
+ 2994:                                         if (mm) {
+ 2995:                                             picks.push(mm);
+ 2996:                                             used.add(idx);
+ 2997:                                         }
+ 2998:                                         if (picks.length >= 2) break;
+ 2999:                                     }
+ 3000:                                 }
+ 3001: 
+ 3002:                                 const tail: any[] = [];
+ 3003:                                 for (const m of base) {
+ 3004:                                     if (used.has(m.index)) continue;
+ 3005:                                     tail.push(m);
+ 3006:                                     used.add(m.index);
+ 3007:                                     if (head.length + picks.length + tail.length >= 6) break;
+ 3008:                                 }
+ 3009: 
+ 3010:                                 const list = [...head, ...picks, ...tail].slice(0, 6);
+ 3011: 
+ 3012:                                 return list.map((m: any) => {
+ 3013:                                     const actor = String((m as any)?.actorHint || "").trim();
+ 3014:                                     const speaker = String((m as any)?.speakerLabel || "").trim();
+ 3015: 
+ 3016:                                     const emb = (embedSignals as any)?.byIndex?.[m.index] || null;
+ 3017:                                     const embPct = emb ? Math.round(Math.max(0, Math.min(1, Number(emb.sim || 0))) * 100) : 0;
+ 3018:                                     const embTitle = emb?.top?.length
+ 3019:                                         ? emb.top.map((x: any) => `${x.label} ${Math.round(Number(x.sim || 0) * 100)}%`).join(" | ")
+ 3020:                                         : "";
+ 3021: 
+ 3022:                                     return (
+ 3023:                                         <li
+ 3024:                                             key={m.index}
+ 3025:                                             className={`click-row preview-block ${scoreCls(m.score)}`}
+ 3026:                                             role="button"
+ 3027:                                             tabIndex={0}
+ 3028:                                             onClick={() => onJumpBlock(m.index)}
+ 3029:                                         >
+ 3030:                                             <div className="row-between">
+ 3031:                                                 <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+ 3032:                                                     <span className={`badge ${scoreCls(m.score)}`}>
+ 3033:                                                         BLK {m.index} · {m.score}/100
+ 3034:                                                     </span>
+ 3035:                                                     <span className={`badge ${stageBadge(m.stage).cls}`}>{stageBadge(m.stage).label}</span>
+ 3036: 
+ 3037:                                                     {actor ? (
+ 3038:                                                         <span
+ 3039:                                                             className={`badge ${actor === "demand" ? "bad" : actor === "comply" ? "warn" : "good"
+ 3040:                                                                 }`}
+ 3041:                                                         >
+ 3042:                                                             {actor.toUpperCase()}
+ 3043:                                                         </span>
+ 3044:                                                     ) : null}
+ 3045: 
+ 3046:                                                     {speaker ? <span className="pill">Speaker: {speaker}</span> : null}
+ 3047: 
+ 3048:                                                     {emb ? (
+ 3049:                                                         <span className="pill" title={embTitle || undefined}>
+ 3050:                                                             EMB: {String(emb.label || "n/a")} · {embPct}%
+ 3051:                                                         </span>
+ 3052:                                                     ) : null}
+ 3053:                                                 </div>
+ 3054:                                             </div>
+ 3055: 
+ 3056:                                             <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+ 3057:                                                 {m.preview}
+ 3058:                                             </div>
+ 3059:                                         </li>
+ 3060:                                     );
+ 3061:                                 });
+ 3062:                             })()}
+ 3063:                         </ul>
+ 3064:                     </div>
+ 3065:                 </>
+ 3066:             ) : null}
+ 3067: 
+ 3068:             {selected && (
+ 3069:                 <>
+ 3070:                     <div style={{ height: 12 }} />
+ 3071:                     <div className="card detail-card">
+ 3072:                         <div className="row-between">
+ 3073:                             <div className="row" style={{ gap: 10 }}>
+ 3074:                                 <span className={`badge ${scoreCls(selected.score)}`}>
+ 3075:                                     BLK {selected.index} · {selected.score}/100
+ 3076:                                 </span>
+ 3077:                                 <span className={`badge ${stageBadge(selected.stage).cls}`}>{stageBadge(selected.stage).label}</span>
+ 3078:                                 {selected.stageTriggers.length ? (
+ 3079:                                     <span className="pill">Triggers: {selected.stageTriggers.join(" · ")}</span>
+ 3080:                                 ) : (
+ 3081:                                     <span className="pill">Triggers: n/a</span>
+ 3082:                                 )}
+ 3083: 
+ 3084:                                 {(() => {
+ 3085:                                     const emb = (embedSignals as any)?.byIndex?.[selected.index] || null;
+ 3086:                                     if (!emb) return null;
+ 3087: 
+ 3088:                                     const pct = Math.round(Math.max(0, Math.min(1, Number(emb.sim || 0))) * 100);
+ 3089:                                     const title = emb?.top?.length
+ 3090:                                         ? emb.top.map((x: any) => `${x.label} ${Math.round(Number(x.sim || 0) * 100)}%`).join(" | ")
+ 3091:                                         : "";
+ 3092: 
+ 3093:                                     return (
+ 3094:                                         <span className="pill" title={title || undefined}>
+ 3095:                                             EMB: {String(emb.label || "n/a")} · {pct}%
+ 3096:                                         </span>
+ 3097:                                     );
+ 3098:                                 })()}
+ 3099:                             </div>
+ 3100: 
+ 3101: 
+ 3102:                             <div className="row" style={{ gap: 8 }}>
+ 3103:                                 <button className="btn" onClick={() => setSelectedBlock(null)}>
+ 3104:                                     Close
+ 3105:                                 </button>
+ 3106:                                 <button
+ 3107:                                     className="btn"
+ 3108:                                     onClick={() => {
+ 3109:                                         if (!taRef.current || !selectedRange) return;
+ 3110:                                         jumpByRange(taRef.current, selectedRange.start, selectedRange.end);
+ 3111:                                     }}
+ 3112:                                     disabled={!selectedRange}
+ 3113:                                 >
+ 3114:                                     Jump
+ 3115:                                 </button>
+ 3116:                             </div>
+ 3117:                         </div>
+ 3118: 
+ 3119:                         <div style={{ height: 10 }} />
+ 3120: 
+ 3121:                         <div className="grid2">
+ 3122:                             <div className="card" style={{ background: "var(--panel2)" }}>
+ 3123:                                 <div className="card-title">원문</div>
+ 3124:                                 <div className="card-desc">선택 블록 전체 텍스트</div>
+ 3125:                                 <div style={{ height: 10 }} />
+ 3126:                                 <div className="copybox detail-box">{selectedRawText || selected.text}</div>
+ 3127: 
+ 3128:                                 <div style={{ height: 10 }} />
+ 3129:                                 <div className="row">
+ 3130:                                     <button className="btn" onClick={() => void copyText(String(selectedRawText || selected.text || ""))}>
+ 3131:                                         Copy text
+ 3132:                                     </button>
+ 3133:                                     <button
+ 3134:                                         className="btn"
+ 3135:                                         onClick={() => {
+ 3136:                                             const t = selected.topRules
+ 3137:                                                 .slice(0, 6)
+ 3138:                                                 .map((r) => `- ${r.label} [${r.stage}] +${r.weight}`)
+ 3139:                                                 .join("\n");
+ 3140:                                             void copyText(t || "n/a");
+ 3141:                                         }}
+ 3142:                                     >
+ 3143:                                         Copy top rules
+ 3144:                                     </button>
+ 3145:                                 </div>
+ 3146:                             </div>
+ 3147: 
+ 3148:                             <div className="card" style={{ background: "var(--panel2)" }}>
+ 3149:                                 <div className="card-title">메타</div>
+ 3150:                                 <div className="card-desc">룰/URL 요약</div>
+ 3151:                                 <div style={{ height: 10 }} />
+ 3152: 
+ 3153:                                 <div className="pill">Top rules</div>
+ 3154:                                 <div style={{ height: 8 }} />
+ 3155:                                 {selected.topRules.length === 0 ? (
+ 3156:                                     <div className="muted">없음</div>
+ 3157:                                 ) : (
+ 3158:                                     <ul className="list">
+ 3159:                                         {selected.topRules.slice(0, 6).map((r, i) => (
+ 3160:                                             <li key={`${r.label}-${i}`}>
+ 3161:                                                 <b>{r.label}</b> <span className="muted">[{r.stage}] +{r.weight}</span>
+ 3162:                                             </li>
+ 3163:                                         ))}
+ 3164:                                     </ul>
+ 3165:                                 )}

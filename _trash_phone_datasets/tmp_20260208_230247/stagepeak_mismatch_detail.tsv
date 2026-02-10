@@ -1,0 +1,118 @@
+caseId	expectedStagePeak	gotStagePeak	gotStagePeak_byMsgs	gotStagePeak_byTL	scoreTotal	riskLevel	topHitIds	topStageTriggers
+SC00004	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00006	info	verify	verify	verify	100	medium	link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+HN00010	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+BN00012	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00014	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00023	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00025	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00029	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+BN00036	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+BN00040	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00042	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+BN00043	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00046	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00050	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,authority,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00053	info	verify	verify	verify	100	medium	link,link_mention,personalinfo,pii_request,authority,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00054	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+BN00059	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00071	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00076	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00082	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00086	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,urgent,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+HN00090	info	payment	payment	payment	75.5	high	ctx_cash_pickup,urgent,call_urgent,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함)
+SC00091	info	verify	verify	verify	100	medium	urgent,urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00093	info	verify	verify	verify	100	medium	link,link_mention,authority,personalinfo,pii_request,call_first_contact,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00095	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00096	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00098	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00101	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,urgent,call_urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+HN00117	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00123	info	verify	verify	verify	100	medium	urgent,urgent,link,link_mention,personalinfo,pii_request,call_urgent,authority,call_first_contact,ctx_benefit_link_mention,link,government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00127	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+BN00137	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00139	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00143	info	verify	verify	verify	100	medium	link,link_mention,urgent,personalinfo,pii_request,call_urgent,authority,call_first_contact,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00149	info	verify	verify	verify	100	medium	link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00152	info	verify	verify	verify	100	medium	urgent,link,link_mention,link_mention,urgent,personalinfo,pii_request,link,personalinfo,pii_request,authority,ctx_benefit_link_mention	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00154	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00158	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+HN00159	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00160	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00169	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00171	info	verify	verify	verify	100	medium	urgent,link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00174	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00183	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,urgent,call_urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+BN00190	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00192	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00195	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00197	info	verify	verify	verify	100	medium	link,link_mention,urgent,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00203	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,call_urgent,call_first_contact,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00209	info	verify	verify	verify	100	medium	link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00212	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00213	info	verify	verify	verify	100	medium	link,link_mention,urgent,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00217	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00224	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00225	info	verify	verify	verify	100	medium	urgent,link,link_mention,urgent,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00228	info	verify	verify	verify	100	medium	link,link_mention,personalinfo,pii_request,urgent,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구 | 긴급/즉시/압박(통화 유지 포함)
+SC00230	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00236	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00238	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00246	info	verify	verify	verify	95.1	medium	urgent,link,link_mention,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | URL 포함 | URL 포함
+SC00247	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00249	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+HN00259	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00262	info	verify	verify	verify	100	medium	urgent,urgent,link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00263	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00269	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00278	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00289	info	verify	verify	verify	100	medium	urgent,link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00299	info	verify	verify	verify	100	medium	link,link_mention,urgent,personalinfo,pii_request,authority,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00303	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,call_urgent,call_first_contact,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00309	verify	payment	payment	payment	95.5	medium	go_bank_atm,urgent,threat,urgent,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시 | 긴급/즉시/압박(통화 유지 포함)
+SC00324	verify	payment	payment	payment	95.5	medium	go_bank_atm,urgent,threat,urgent,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시 | 긴급/즉시/압박(통화 유지 포함)
+SC00327	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00328	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,call_urgent,threat,call_first_contact,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00330	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00334	verify	payment	payment	payment	100	high	ctx_cash_pickup,ctx_cash_pickup,urgent,urgent,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00337	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00346	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,call_urgent,call_first_contact	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00352	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00357	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+HN00358	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00359	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+HN00363	info	payment	payment	payment	62	high	ctx_cash_pickup,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함)
+SC00366	verify	payment	payment	payment	97.7	high	ctx_cash_pickup,urgent,ctx_cash_pickup,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함)
+HN00375	info	payment	payment	payment	62	high	ctx_cash_pickup,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함)
+SC00380	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00381	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00387	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,link	긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+HN00388	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+BN00394	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00399	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00401	info	verify	verify	verify	100	medium	urgent,link,link_mention,authority,personalinfo,pii_request,call_urgent,call_first_contact,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00411	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00414	info	verify	verify	verify	100	medium	link,link_mention,personalinfo,pii_request,authority,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+BN00417	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00419	verify	payment	payment	payment	89.2	high	ctx_cash_pickup,urgent,ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00421	info	verify	verify	verify	100	medium	urgent,link,link_mention,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+HN00433	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00440	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00443	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00444	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+SC00445	info	verify	verify	verify	100	medium	urgent,urgent,link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00447	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00453	verify	payment	payment	payment	88.5	medium	go_bank_atm,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시
+BN00457	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00459	info	verify	verify	verify	100	medium	urgent,link,link_mention,authority,personalinfo,pii_request,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 긴급/즉시/압박(통화 유지 포함) | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00463	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+HN00465	info	payment	payment	payment	32	low	ctx_cash_pickup	맥락: 현금 수거/퀵 전달 유도
+SC00466	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,call_urgent,call_first_contact,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함)
+SC00470	verify	payment	payment	payment	95.5	medium	go_bank_atm,urgent,threat,urgent,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시 | 긴급/즉시/압박(통화 유지 포함)
+SC00478	verify	payment	payment	payment	95.5	medium	go_bank_atm,urgent,threat,urgent,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시 | 긴급/즉시/압박(통화 유지 포함)
+SC00486	info	verify	verify	verify	100	medium	link,link_mention,personalinfo,pii_request,authority,ctx_benefit_link_mention,link,government_benefit,ctx_government_benefit,government_benefit,ctx_government_benefit	기관/담당자 사칭(권위) | 맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼 | 개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00487	info	verify	verify	verify	95.1	medium	link,link_mention,personalinfo,pii_request,link	개인정보/자격정보 요구 | 개인정보/자격정보 요구
+SC00492	verify	payment	payment	payment	100	high	ctx_cash_pickup,urgent,ctx_cash_pickup,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+HN00494	info	verify	verify	verify	10	low	ctx_benefit_link_mention,government_benefit,ctx_government_benefit	맥락: 지원/환급/대상자 조회 + 링크 언급 | 지원금/환급/대상자 미끼
+SC00495	verify	payment	payment	payment	100	high	ctx_cash_pickup,ctx_cash_pickup,urgent,urgent	맥락: 현금 수거/퀵 전달 유도 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | 맥락: 현금 수거/퀵 전달 유도
+SC00496	verify	payment	payment	payment	100	medium	go_bank_atm,urgent,urgent,threat,urgent	불이익/위협/정지/범죄 프레이밍 | 긴급/즉시/압박(통화 유지 포함) | 긴급/즉시/압박(통화 유지 포함) | ATM/은행 방문·조작 지시

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ko_scam_scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "category",
+    "label",
+    "thread"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 3,
+      "pattern": "^[A-Z]{2}-\\d{4,}$"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bank_impersonation",
+        "prosecutor_police_impersonation",
+        "delivery_phishing",
+        "government_subsidy",
+        "loan_scam",
+        "card_issue",
+        "account_seizure",
+        "remote_app_install",
+        "otp_takeover",
+        "family_emergency",
+        "romance_investment",
+        "job_highpay_abroad",
+        "gifticon_market",
+        "invoice_tax",
+        "service_account",
+        "safe_case",
+        "gray_zone"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "length_bucket": {
+      "type": "string",
+      "enum": [
+        "S",
+        "M",
+        "L"
+      ]
+    },
+    "thread": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "riskLevel": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "score_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "stage_peak": {
+          "type": "string",
+          "enum": [
+            "info",
+            "verify",
+            "install",
+            "payment"
+          ]
+        }
+      }
+    },
+    "should_trigger": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "maxItems": 20
+    },
+    "callChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "otpAsked": {
+          "type": "boolean"
+        },
+        "remoteAsked": {
+          "type": "boolean"
+        },
+        "urgentPressured": {
+          "type": "boolean"
+        },
+        "firstContact": {
+          "type": "boolean"
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

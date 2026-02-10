@@ -1,0 +1,3 @@
+﻿@{LineNumber=304; Line=    if (w.startsWith("risk mismatch:")) return "risk_mismatch";}
+@{LineNumber=488; Line=        else why.push(`risk mismatch: expected=${row.expected.riskLevel} got=${gotRisk}`);}
+@{LineNumber=560; Line=    console.log(`Risk match: ${riskOk}/${total} (${percent(riskOk, total)})`);}

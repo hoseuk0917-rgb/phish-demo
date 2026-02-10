@@ -1,0 +1,76 @@
+﻿@{LineNumber=33; Line=    caseType: CaseType;}
+@{LineNumber=45; Line=    anchors: Anchor[];}
+@{LineNumber=57; Line=type CaseType =}
+@{LineNumber=76; Line=    benign_ratio: number; // 0..1}
+@{LineNumber=77; Line=    hardneg_ratio: number; // 0..1 (benign 내부 비중)}
+@{LineNumber=145; Line=        benign_ratio: clamp01(parseFloat(String(a.benign_ratio || "0.25"))),}
+@{LineNumber=146; Line=        hardneg_ratio: clamp01(parseFloat(String(a.hardneg_ratio || "0.6"))),}
+@{LineNumber=187; Line=function anchorsEffFromText(anchors: Anchor[], senderText: string): Anchor[] {}
+@{LineNumber=227; Line=    for (const a of anchors) {}
+@{LineNumber=303; Line=function chooseCaller(rng: () => number, caseType: CaseType, isBenign: boolean): ScenarioInternal["caller"] {}
+@{LineNumber=317; Line=    if (isBenign) {}
+@{LineNumber=323; Line=    if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") {}
+@{LineNumber=330; Line=    if (caseType === "go_bank_atm") {}
+@{LineNumber=625; Line=function inferCaseTypeFromStub(rng: () => number, stub: AnyObj): CaseType {}
+@{LineNumber=644; Line=    const pool: CaseType[] = [}
+@{LineNumber=662; Line=function requiredAnchors(caseType: CaseType): Anchor[] {}
+@{LineNumber=663; Line=    switch (caseType) {}
+@{LineNumber=692; Line=function defaultVectorFor(caseType: CaseType): Vector {}
+@{LineNumber=693; Line=    switch (caseType) {}
+@{LineNumber=704; Line=function impersonationFor(caseType: CaseType): string | undefined {}
+@{LineNumber=705; Line=    switch (caseType) {}
+@{LineNumber=721; Line=function pressuresFor(rng: () => number, caseType: CaseType): string[] {}
+@{LineNumber=722; Line=    switch (caseType) {}
+@{LineNumber=750; Line=    caseType: CaseType,}
+@{LineNumber=751; Line=    anchors: Anchor[],}
+@{LineNumber=790; Line=    anchors: Anchor[],}
+@{LineNumber=801; Line=    // ✅ 링크/QR 존재 여부는 "텍스트"로만 판단(anchors 힌트로 false positive 금지)}
+@{LineNumber=958; Line=    caseType: CaseType,}
+@{LineNumber=959; Line=    anchors: Anchor[],}
+@{LineNumber=968; Line=    for (const a of anchors) {}
+@{LineNumber=993; Line=    if (caseType === "job_travel") t.push("job_lure");}
+@{LineNumber=994; Line=    if (caseType === "blackmail_sexvisit") t.push("cat_blackmail");}
+@{LineNumber=1002; Line=    caseType: CaseType,}
+@{LineNumber=1003; Line=    anchors: Anchor[],}
+@{LineNumber=1025; Line=        if (caseType === "delivery_link") return pick(rng, ["OO택배", "배송업체"] as const);}
+@{LineNumber=1026; Line=        if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") return pick(rng, ["OO은행", "금융감독원"] as const);}
+@{LineNumber=1027; Line=        if (caseType === "go_bank_atm") return pick(rng, ["OO지방법원", "검찰"] as const);}
+@{LineNumber=1050; Line=    switch (caseType) {}
+@{LineNumber=1101; Line=    for (const a of anchors) {}
+@{LineNumber=1106; Line=    if (anchors.length === 0) {}
+@{LineNumber=1202; Line=function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {}
+@{LineNumber=1208; Line=    if (!isBenign && (!s.anchors || s.anchors.length === 0)) errs.push("malicious_missing_anchor");}
+@{LineNumber=1223; Line=    if (isBenign) {}
+@{LineNumber=1224; Line=        const bad = s.anchors.some((a) =>}
+@{LineNumber=1230; Line=    if (!isBenign && s.caller.is_whitelisted) {}
+@{LineNumber=1304; Line=    const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];}
+@{LineNumber=1461; Line=        category: s.caseType,}
+@{LineNumber=1545; Line=        const isBenign = chance(rng, args.benign_ratio);}
+@{LineNumber=1546; Line=        const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);}
+@{LineNumber=1548; Line=        const caseType: CaseType = baseType;}
+@{LineNumber=1555; Line=        const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);}
+@{LineNumber=1572; Line=            const impersonation = isBenign ? undefined : impersonationFor(caseType);}
+@{LineNumber=1573; Line=            const pressures = isBenign ? [] : pressuresFor(rng, caseType);}
+@{LineNumber=1576; Line=            let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();}
+@{LineNumber=1579; Line=            if (!isBenign) {}
+@{LineNumber=1593; Line=            let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);}
+@{LineNumber=1596; Line=            if (!isBenign) {}
+@{LineNumber=1597; Line=                if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {}
+@{LineNumber=1603; Line=                    if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {}
+@{LineNumber=1620; Line=            if (!isBenign && vector === "url") {}
+@{LineNumber=1631; Line=            if (!isBenign && vector === "qr") {}
+@{LineNumber=1645; Line=            const caller = chooseCaller(rng, caseType, isBenign);}
+@{LineNumber=1649; Line=                caseType,}
+@{LineNumber=1695; Line=            // ✅ eff anchors: “텍스트에 실제 cue가 존재하는 것만”으로 재구성(트리거/라벨 정합용)}
+@{LineNumber=1711; Line=            if (isBenign) {}
+@{LineNumber=1714; Line=                stagePeak = stageFromAnchors(caseType, anchorsEff, vector, urlKind, urlMatch, pressuresEff, senderText);}
+@{LineNumber=1743; Line=            const risk: Risk = isBenign}
+@{LineNumber=1747; Line=            const triggers = triggersFrom(caseType, anchorsEff, pressuresEff, impersonation, vector, urlKind);}
+@{LineNumber=1750; Line=                id: safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1),}
+@{LineNumber=1751; Line=                caseType,}
+@{LineNumber=1758; Line=                // ✅ 출력/검증은 eff anchors 기준(텍스트 기반)}
+@{LineNumber=1759; Line=                anchors: anchorsEff,}
+@{LineNumber=1779; Line=                    // (디버그용) planned vs eff anchors 같이 보관}
+@{LineNumber=1785; Line=            const errs = validateScenario(s, isBenign);}
+@{LineNumber=1797; Line=            const successId = safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1);}
+@{LineNumber=1804; Line=                    error: "generator_failed_constraints",}

@@ -1,0 +1,261 @@
+﻿    1: // tools/runDataset.ts — FULL UPDATED (SWAP-IN)
+    2: /**
+    3:  * Dataset runner for phish-demo
+    4:  *
+    5:  * Run:
+    6:  *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl
+    7:  *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl --sim
+    8:  *   npx tsx tools/runDataset.ts --path datasets/ko_scam/scenarios_ko_v1.jsonl --sim --sim-gate 0.9
+    9:  *
+   10:  * Flags:
+   11:  *   --path <jsonl>
+   12:  *   --limit <n>
+   13:  *   --only-fail
+   14:  *   --show-fails <n>
+   15:  *
+   16:  *   --dump-fails <jsonl>      // ✅ 모든 fail을 JSONL로 저장 (thread/meta/notes 포함)
+   17:  *   --dump-summary <tsv>      // ✅ fail 요약(원인/리스크쌍/스테이지쌍) TSV 저장
+   18:  *
+   19:  *   --sim
+   20:  *   --sim-index <path>
+   21:  *   --sim-topk <n>
+   22:  *   --sim-gate <0..1>         (alias: --sim-min, --sim-minsim)
+   23:  */
+   24: 
+   25: import fs from "node:fs";
+   26: import path from "node:path";
+   27: import process from "node:process";
+   28: 
+   29: import { analyzeThread } from "../src/engine/index";
+   30: import { prefilterThread } from "../src/engine/prefilter/prefilter";
+   31: import type { AnalysisInput, AnalysisResult, RiskLevel, StageId } from "../src/types/analysis";
+   32: import type { SimIndexItem } from "../src/engine/similarity/simIndex";
+   33: 
+   34: type ScenarioExpected = {
+   35:     riskLevel: RiskLevel;
+   36:     score_min?: number;
+   37:     stagePeak?: StageId;
+   38:     triggered?: boolean;
+   39: };
+   40: 
+   41: type ScenarioRow = {
+   42:     id: string;
+   43:     label?: string;
+   44:     thread: string;
+   45:     callChecks?: any;
+   46:     expected: ScenarioExpected;
+   47: 
+   48:     // (dataset jsonl이 더 많은 필드를 갖는 경우를 대비)
+   49:     notes?: any;
+   50:     meta?: any;
+   51:     should_trigger?: any;
+   52: };
+   53: 
+   54: type FailItem = {
+   55:     id: string;
+   56:     label: string;
+   57:     expected: ScenarioExpected;
+   58:     got: { riskLevel: RiskLevel; scoreTotal: number; stagePeak: StageId; triggered: boolean };
+   59:     why: string[];
+   60: 
+   61:     // ✅ 디버그용 풀 컨텍스트
+   62:     thread: string;
+   63:     senderText: string;
+   64: 
+   65:     notes?: any;
+   66:     meta?: any;
+   67:     should_trigger?: any;
+   68: };
+   69: 
+   70: const STAGE_RANK: Record<StageId, number> = { info: 0, verify: 1, install: 2, payment: 3 };
+   71: 
+   72: function clamp01(n: number) {
+   73:     if (!Number.isFinite(n)) return 0;
+   74:     return Math.max(0, Math.min(1, n));
+   75: }
+   76: 
+   77: function absPath(p: string) {
+   78:     return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+   79: }
+   80: 
+   81: function ensureDirForFile(filePath: string) {
+   82:     const dir = path.dirname(filePath);
+   83:     fs.mkdirSync(dir, { recursive: true });
+   84: }
+   85: 
+   86: function writeJsonl(filePath: string, rows: any[]) {
+   87:     const abs = absPath(filePath);
+   88:     ensureDirForFile(abs);
+   89:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+   90:     fs.writeFileSync(abs, body, "utf-8");
+   91: }
+   92: 
+   93: function writeText(filePath: string, text: string) {
+   94:     const abs = absPath(filePath);
+   95:     ensureDirForFile(abs);
+   96:     fs.writeFileSync(abs, text, "utf-8");
+   97: }
+   98: 
+   99: function parseArgs(argv: string[]) {
+  100:     const out = {
+  101:         path: "datasets/ko_scam/scenarios_ko_v1.jsonl",
+  102:         limit: 0,
+  103:         onlyFail: false,
+  104:         showFails: 3,
+  105: 
+  106:         dumpFails: "",
+  107:         dumpSummary: "",
+  108: 
+  109:         // ✅ risk source mode
+  110:         // - "threat": gotRisk는 riskLevel만 사용(정책 기준)
+  111:         // - "ui": gotRisk는 uiRiskLevel 우선(UI 표시용 비교)
+  112:         riskMode: "threat" as "ui" | "threat",
+  113: 
+  114:         simEnabled: false,
+  115:         simIndexPath: "public/simindex_ko_v2.json",
+  116:         simTopK: 10,
+  117:         simGate: 0.9, // gate for boost (engine uses it as simMinSim)
+  118:     };
+  119: 
+  120:     const has = (k: string) => argv.includes(k);
+  121: 
+  122:     const get = (k: string) => {
+  123:         const i = argv.findIndex((x) => x === k);
+  124:         return i >= 0 ? (argv[i + 1] ?? "") : "";
+  125:     };
+  126: 
+  127:     const p = get("--path");
+  128:     if (p) out.path = p;
+  129: 
+  130:     const lim = get("--limit");
+  131:     if (lim && Number.isFinite(Number(lim))) out.limit = Math.max(0, Math.floor(Number(lim)));
+  132: 
+  133:     if (has("--only-fail")) out.onlyFail = true;
+  134: 
+  135:     const sf = get("--show-fails");
+  136:     if (sf && Number.isFinite(Number(sf))) out.showFails = Math.max(0, Math.floor(Number(sf)));
+  137: 
+  138:     // ✅ dumps
+  139:     const df = get("--dump-fails");
+  140:     if (df) out.dumpFails = df;
+  141:     else if (has("--dump-fails")) throw new Error("Missing value: --dump-fails <path>");
+  142: 
+  143:     const ds = get("--dump-summary");
+  144:     if (ds) out.dumpSummary = ds;
+  145:     else if (has("--dump-summary")) throw new Error("Missing value: --dump-summary <path>");
+  146: 
+  147:     // ✅ risk mode flags
+  148:     // threat 우선(둘 다 주면 threat가 이김)
+  149:     if (has("--prefer-threat") || has("--preferThreat")) out.riskMode = "threat";
+  150:     else if (has("--prefer-ui") || has("--preferUi")) out.riskMode = "ui";
+  151: 
+  152:     // SIM
+  153:     if (has("--sim")) out.simEnabled = true;
+  154: 
+  155:     const si = get("--sim-index");
+  156:     if (si) out.simIndexPath = si;
+  157: 
+  158:     const topk = get("--sim-topk");
+  159:     if (topk && Number.isFinite(Number(topk))) out.simTopK = Math.max(1, Math.floor(Number(topk)));
+  160: 
+  161:     const gateStr = get("--sim-gate") || get("--sim-min") || get("--sim-minsim");
+  162:     if (gateStr && Number.isFinite(Number(gateStr))) out.simGate = clamp01(Number(gateStr));
+  163: 
+  164:     // if user provided sim-index explicitly, assume sim on
+  165:     if (!out.simEnabled && (has("--sim-index") || !!si)) out.simEnabled = true;
+  166: 
+  167:     return out;
+  168: }
+  169: 
+  170: function readJsonl(filePath: string): ScenarioRow[] {
+  171:     const abs = absPath(filePath);
+  172:     const raw = fs.readFileSync(abs, "utf-8").replace(/\r\n/g, "\n");
+  173:     const rows: ScenarioRow[] = [];
+  174: 
+  175:     for (const line of raw.split("\n")) {
+  176:         const t = line.trim();
+  177:         if (!t) continue;
+  178:         try {
+  179:             const obj = JSON.parse(t);
+  180:             if (obj && typeof obj === "object") rows.push(obj as ScenarioRow);
+  181:         } catch {
+  182:             // skip
+  183:         }
+  184:     }
+  185:     return rows;
+  186: }
+  187: 
+  188: function loadSimIndexItems(simIndexPath: string): SimIndexItem[] {
+  189:     const abs = absPath(simIndexPath);
+  190:     const txt = fs.readFileSync(abs, "utf-8");
+  191:     const json = JSON.parse(txt) as any;
+  192:     const items = Array.isArray(json?.items) ? json.items : [];
+  193:     return items as SimIndexItem[];
+  194: }
+  195: 
+  196: function stagePeakFromResult(r: AnalysisResult): StageId {
+  197:     const rr: any = r as any;
+  198: 
+  199:     let best: StageId = "info";
+  200: 
+  201:     const ms = Array.isArray(rr.messageSummaries) ? rr.messageSummaries : [];
+  202:     for (const m of ms) {
+  203:         const s = m?.stage as StageId;
+  204:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+  205:     }
+  206: 
+  207:     const tl = Array.isArray(rr.stageTimeline) ? rr.stageTimeline : [];
+  208:     for (const e of tl) {
+  209:         const s = e?.stage as StageId;
+  210:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+  211:     }
+  212: 
+  213:     const ht = Array.isArray(rr.hitsTop) ? rr.hitsTop : [];
+  214:     for (const h of ht) {
+  215:         const s = h?.stage as StageId;
+  216:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+  217:     }
+  218: 
+  219:     return best;
+  220: }
+  221: 
+  222: function triggeredFromResult(r: AnalysisResult): boolean {
+  223:     const rr: any = r as any;
+  224:     const pf: any = rr?.prefilter;
+  225: 
+  226:     const risk = String(rr?.riskLevel ?? "").toLowerCase().trim(); // "low" | "medium" | "high"
+  227:     const scoreTotal = Number(rr?.scoreTotal);
+  228: 
+  229:     const hits = Array.isArray(rr?.hitsTop) ? rr.hitsTop : [];
+  230:     const hitsTopLen = hits.length;
+  231: 
+  232:     // hitsTop에서 “강도” 추정(엔진/버전별 필드명 차이를 흡수)
+  233:     const maxHitWeight = hits.reduce((m: number, h: any) => {
+  234:         const w = Number(h?.weightSum ?? h?.weight ?? h?.score ?? h?.points ?? 0);
+  235:         return Number.isFinite(w) ? Math.max(m, w) : m;
+  236:     }, 0);
+  237: 
+  238:     // prefilter soft threshold를 “low fallback”의 기준으로 재사용(없으면 28로)
+  239:     const softFromPf = Number(pf?.thresholdSoft);
+  240:     // low에서는 thresholdSoft(보통 28)가 너무 빡세서 FN이 나옴 → 20으로 캡
+  241:     const lowGate = Math.min(Number.isFinite(softFromPf) ? softFromPf : 28, 20);
+  242: 
+  243:     // ✅ medium/high fallback용: BN00079/BN00100(score=54)을 내려가게 하는 컷
+  244:     const medHighScoreGate = 58;
+  245:     const medHighHitGate = 20;
+  246: 
+  247:     function fallbackTriggered(): boolean {
+  248:         if (hitsTopLen <= 0) return false;
+  249:         if (!Number.isFinite(scoreTotal)) return false;
+  250: 
+  251:         // low: 0점/무의미 점수는 승격 금지 + 강한 히트만
+  252:         if (risk === "low") {
+  253:             if (scoreTotal < 15) return false;
+  254:             return maxHitWeight >= lowGate;
+  255:         }
+  256: 
+  257:         // medium/high: 점수 + 히트강도 둘 다 만족할 때만 승격
+  258:         return scoreTotal >= medHighScoreGate && maxHitWeight >= medHighHitGate;
+  259:     }
+  260: 
+  261:     // 1) prefilter가 있으면: prefilter의 “정석 기준”이 1차

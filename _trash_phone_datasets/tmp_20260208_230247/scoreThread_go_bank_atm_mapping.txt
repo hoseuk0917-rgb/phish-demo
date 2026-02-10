@@ -1,0 +1,61 @@
+﻿ 1490:   const hasOtpFinance = riskHits.some(
+ 1491:     (h) => h.ruleId === "ctx_otp_finance" || h.ruleId === "ctx_otp_proxy" || h.ruleId === "ctx_denial_after_otp"
+ 1492:   );
+ 1493: 
+ 1494:   const hasPiiRequest = riskHits.some((h) => h.ruleId === "pii_request" || h.ruleId === "personalinfo");
+ 1495: 
+ 1496:   const hasTransfer = riskHits.some((h) => h.ruleId === "transfer" || h.ruleId === "safe_account" || h.ruleId === "ctx_transfer_phrase");
+ 1497:   const hasPayRequest = hasTransfer || riskHits.some((h) => h.ruleId === "ctx_payment_request" || h.ruleId === "ctx_pay_with_link");
+ 1498: 
+ 1499:   const hasContactMove = riskHits.some((h) => h.ruleId === "ctx_contact_move");
+ 1500:   const hasVisitPlace = riskHits.some((h) => h.ruleId === "ctx_visit_place" || h.ruleId === "go_bank_atm");
+ 1501:   const hasTransferDemand = riskHits.some((h) => h.ruleId === "ctx_transfer_demand");
+ 1502:   const hasCashPickup = riskHits.some((h) => h.ruleId === "ctx_cash_pickup");
+ 1503:   const hasJobHook = riskHits.some((h) => h.ruleId === "ctx_job_hook");
+ 1504: 
+ 1505:   const hosts = getHostsFromText(rawThread);
+ 1506:   const hasUrl = hosts.length > 0;
+ 1507:   const hasLinkAny = hasLink || hasUrl;
+ 1508: 
+ 1509:   const itSupportCue = /회사\s*it|it\s*지원|공식\s*원격|helpdesk|헬프데스크|사내\s*공지|공지/i.test(rawThread);
+ 1510: 
+ 1511:   // 내부 포털/인프라로 '명확히' 보이는 호스트만 benign 후보로 취급
+ 1512:   const internalHost =
+ 1513:     hosts.some((h) => /(^|\.)intranet(\.|$)/i.test(h)) ||
+ 1514:     hosts.some((h) => /(^|\.)internal(\.|$)/i.test(h)) ||
+ 1515:     hosts.some((h) => /(^|\.)corp(\.|$)/i.test(h)) ||
+ 1516:     hosts.some((h) => /(^|\.)portal(\.|$)/i.test(h)) ||
+ 1517:     hosts.some((h) => /(^|\.)servicenow(\.|$)/i.test(h)) ||
+ 1518:     hosts.some((h) => /(^|\.)jira(\.|$)/i.test(h)) ||
+ 1519:     hosts.some((h) => /(^|\.)confluence(\.|$)/i.test(h));
+ 1520: 
+ 1521:   // itSupportCue + internalHost가 동시에 성립하고, "강한 액션"이 없을 때만 benignSupport로 완화
+ 1522:   const benignSupport =
+ 1523:     itSupportCue &&
+ 1524:     internalHost &&
+ 1525:     !(
+ 1526:       hasRemote ||
+ 1527:       hasOtp ||
+ 1528:       hasOtpFinance ||
+ 1529:       hasApk ||
+ 1530:       hasInstallMention ||
+ 1531:       hasPayRequest ||
+ 1532:       hasTransfer ||
+ 1533:       hasTransferDemand ||
+ 1534:       hasCashPickup ||
+ 1535:       hasVisitPlace ||
+ 1536:       hasPiiRequest ||
+ 1537:       hasJobHook ||
+ 1538:       !!(call?.otpAsked || call?.remoteAsked)
+ 1539:     );
+ 1540: 
+ 1541:   // ✅ 코어 액션(진행 단계의 핵): 이 중 하나라도 있어야 High 후보가 됨
+ 1542:   const hasCoreAction =
+ 1543:     hasOtp ||
+ 1544:     hasOtpFinance ||
+ 1545:     hasRemote ||
+ 1546:     hasApk ||
+ 1547:     hasInstallMention ||
+ 1548:     hasPayRequest ||
+ 1549:     hasTransfer ||
+ 1550:     hasTransferDemand ||

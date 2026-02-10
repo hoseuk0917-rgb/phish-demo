@@ -1,0 +1,241 @@
+﻿  531: function stageFromHitsV2(content: string, hits: Hit[]): { stage: StageId; triggers: string[]; normalized: Hit[] } {
+  532:   const text = String(content || "");
+  533: 
+  534:   const normalizedAll0 = hits.map((h) => ({ ...h, stage: normalizeHitStage(text, h) }));
+  535:   const normalizedAll = expandStageAliases(normalizedAll0);
+  536: 
+  537:   const idOf = (h: Hit) => String((h as any)?.ruleId ?? "").trim();
+  538: 
+  539:   // matched 기반 필터는 유지하되, ctx_/url_ 류는 placeholder matched 때문에 항상 보존
+  540:   const normalized = normalizedAll.filter((h) => {
+  541:     const id = idOf(h);
+  542:     if (id.startsWith("ctx_") || id.startsWith("url_")) return true;
+  543: 
+  544:     const ms = (h as any)?.matched as string[] | undefined;
+  545:     if (!ms || ms.length === 0) return true;
+  546:     return ms.some((m) => m && text.includes(m));
+  547:   });
+  548: 
+  549:   const pick = (pred: (h: Hit) => boolean) =>
+  550:     normalized
+  551:       .filter(pred)
+  552:       .sort((a, b) => b.weight - a.weight)
+  553:       .slice(0, 2)
+  554:       .map((h) => h.label);
+  555: 
+  556:   const t = text;
+  557:   const escrowLike = /(안전\s*결제|안전\s*거래|에스크로|escrow|거래)/i.test(t);
+  558: 
+  559:   const strongPayCue = hasStrongPayCueText(t);
+  560:   const hasAmt = hasAmountKRW(t);
+  561: 
+  562:   const payNoun = /(납부|송금|이체|입금|결제|지불|충전|선납|보험료|수수료|보증금|예치금|가입비|등록비|예약금|계약금|핀\s*번호|상품권|기프트|코인|지갑|qr)/i.test(t);
+  563:   const payImperative =
+  564:     /(해\s*줘|해줘|해\s*주|해주|해주세요|하세요|하셔야|바랍니다|요청|부탁|필수|반드시|진행|처리|완료)/i.test(t) ||
+  565:     /(지금\s*(바로|즉시)|긴급|오늘\s*안에|기한\s*내)/i.test(t);
+  566: 
+  567:   // “지시/요구” 문맥으로 payment 승격(강한 키워드/금액/명령어)
+  568:   const payDemandText = strongPayCue || hasAmt || (payNoun && payImperative);
+  569: 
+  570:   const hasPressure =
+  571:     normalized.some((h) => ["urgent", "threat", "authority", "ctx_demand"].includes(idOf(h))) ||
+  572:     /(긴급|즉시|바로|오늘\s*안에|기한\s*내|반드시|필수)/i.test(t);
+  573: 
+  574:   // install
+  575:   const INSTALL_HARD = new Set(["apk", "remote", "call_remote", "url_download_ext"]);
+  576:   const INSTALL_SOFT = new Set(["install_app", "ctx_install_mention"]);
+  577: 
+  578:   const installBeforePay =
+  579:     /(설치).{0,10}(후|해야|필요).{0,24}(결제|납부|송금|이체|입금|진행)/i.test(t) ||
+  580:     /(결제|납부|송금|이체|입금).{0,18}(하려면|위해).{0,18}(설치)/i.test(t);
+  581: 
+  582:   const hasHardInstall = normalized.some((h) => h.stage === "install" && INSTALL_HARD.has(idOf(h)));
+  583:   const hasAnyInstall = hasHardInstall || normalized.some((h) => h.stage === "install" && INSTALL_SOFT.has(idOf(h)));
+  584: 
+  585:   if (hasHardInstall) {
+  586:     return { stage: "install", triggers: pick((h) => h.stage === "install" && INSTALL_HARD.has(idOf(h))), normalized };
+  587:   }
+  588:   if (hasAnyInstall && escrowLike && !strongPayCue) {
+  589:     return {
+  590:       stage: "install",
+  591:       triggers: pick((h) => h.stage === "install" && (INSTALL_HARD.has(idOf(h)) || INSTALL_SOFT.has(idOf(h)))),
+  592:       normalized,
+  593:     };
+  594:   }
+  595:   if (hasAnyInstall && installBeforePay) {
+  596:     return {
+  597:       stage: "install",
+  598:       triggers: pick((h) => h.stage === "install" && (INSTALL_HARD.has(idOf(h)) || INSTALL_SOFT.has(idOf(h)))),
+  599:       normalized,
+  600:     };
+  601:   }
+  602: 
+  603:   // payment (기존보다 “무조건 payment”를 줄임)
+  604:   // - ALWAYS: 이 자체로 payment로 봐도 되는 것
+  605:   const PAYMENT_ALWAYS = new Set(["ctx_cash_pickup", "ctx_giftcard", "ctx_crypto_wallet", "ctx_account_rental", "ctx_qr_pay"]);
+  606: 
+  607:   // - CONDITIONAL: 문맥(요구/금액/압박)이 있어야 payment
+  608:   const PAYMENT_COND = new Set(["safe_account", "go_bank_atm", "ctx_transfer_demand", "ctx_payment_request"]);
+  609: 
+  610:   // - SOFT: 기본 verify(단, 요구/금액이면 payment)
+  611:   const PAYMENT_SOFT = new Set(["transfer", "ctx_transfer_phrase", "ctx_pay_with_link"]);
+  612: 
+  613:   const hasPayAlways = normalized.some((h) => h.stage === "payment" && PAYMENT_ALWAYS.has(idOf(h)));
+  614:   const hasPayCond = normalized.some((h) => h.stage === "payment" && PAYMENT_COND.has(idOf(h)));
+  615:   const hasPaySoft = normalized.some((h) => h.stage === "payment" && PAYMENT_SOFT.has(idOf(h)));
+  616: 
+  617:   if (hasPayAlways) {
+  618:     return { stage: "payment", triggers: pick((h) => h.stage === "payment" && PAYMENT_ALWAYS.has(idOf(h))), normalized };
+  619:   }
+  620: 
+  621:   if (hasPayCond) {
+  622:     if (payDemandText || hasPressure) {
+  623:       return { stage: "payment", triggers: pick((h) => h.stage === "payment" && PAYMENT_COND.has(idOf(h))), normalized };
+  624:     }
+  625:     return {
+  626:       stage: "verify",
+  627:       triggers: pick((h) => h.stage === "payment" && PAYMENT_COND.has(idOf(h))),
+  628:       normalized,
+  629:     };
+  630:   }
+  631: 
+  632:   if (hasPaySoft) {
+  633:     if (payDemandText || (hasPressure && strongPayCue)) {
+  634:       return { stage: "payment", triggers: pick((h) => h.stage === "payment" && PAYMENT_SOFT.has(idOf(h))), normalized };
+  635:     }
+  636:     return { stage: "verify", triggers: pick((h) => h.stage === "payment" && PAYMENT_SOFT.has(idOf(h))), normalized };
+  637:   }
+  638: 
+  639:   // verify
+  640:   const VERIFY_STRONG = new Set([
+  641:     "otp",
+  642:     "ctx_otp_finance",
+  643:     "ctx_otp_relay",
+  644:     "ctx_otp_proxy",
+  645:     "account_verify",
+  646:     "link",
+  647:     "link_mention",
+  648:     "shortener",
+  649:     "personalinfo",
+  650:     "pii_request",
+  651:   ]);
+  652: 
+  653:   const VERIFY_WEAK = new Set([
+  654:     "messenger_phishing",
+  655:     "ctx_contact_move",
+  656:     "ctx_profile_link_mention",
+  657:     "government_benefit",
+  658:     "ctx_government_benefit",
+  659:     "ctx_visit_place",
+  660:     "ctx_refund_lure",
+  661:     "ctx_loan_hook",
+  662:     "ctx_benefit_link",
+  663:     "ctx_benefit_link_mention",
+  664:   ]);
+  665: 
+  666:   const hasStrongVerify = normalized.some((h) => h.stage === "verify" && VERIFY_STRONG.has(idOf(h)));
+  667:   if (hasStrongVerify) {
+  668:     return { stage: "verify", triggers: pick((h) => h.stage === "verify" && VERIFY_STRONG.has(idOf(h))), normalized };
+  669:   }
+  670: 
+  671:   const verifyCueText = /(인증|로그인|확인|접속|클릭|눌러|링크|url|주소|입력|작성|제출|전송|보내|캡처|사진)/i.test(t);
+  672:   const hasWeakVerify = normalized.some((h) => h.stage === "verify" && VERIFY_WEAK.has(idOf(h)));
+  673:   if (hasWeakVerify && verifyCueText) {
+  674:     return { stage: "verify", triggers: pick((h) => h.stage === "verify" && VERIFY_WEAK.has(idOf(h))), normalized };
+  675:   }
+  676: 
+  677:   const triggers = normalized
+  678:     .filter((h) => h.stage === "info")
+  679:     .sort((a, b) => b.weight - a.weight)
+  680:     .slice(0, 2)
+  681:     .map((h) => h.label);
+  682: 
+  683:   return { stage: "info", triggers, normalized };
+  684: }
+  685: 
+  686: function addCtxHit(
+  687:   ctxHits: Hit[],
+  688:   ruleId: string,
+  689:   label: string,
+  690:   stage: StageId,
+  691:   weight: number,
+  692:   content: string,
+  693:   matched: string[]
+  694: ) {
+  695:   ctxHits.push({
+  696:     ruleId,
+  697:     label,
+  698:     stage,
+  699:     weight,
+  700:     matched,
+  701:     sample: content.length > 140 ? content.slice(0, 140) + "..." : content,
+  702:   });
+  703: }
+  704: 
+  705: function isSelfAckText(t: string) {
+  706:   return /(제가\s*한\s*건데|제가\s*한\s*거|제가\s*했|내가\s*했|내가\s*한|제가\s*바꿨|내가\s*바꿨|제가\s*변경|내가\s*변경|제가\s*설정\s*바꿨|제가\s*설정했|응\s*내가|맞아\s*내가|내가\s*결제했)/i.test(
+  707:     t
+  708:   );
+  709: }
+  710: 
+  711: function isAdviceOnlyThread(raw: string) {
+  712:   const hasAdvice =
+  713:     /(좋대|추천|권장|제일\s*안전|가장\s*안전|공식\s*고객센터|고객센터\s*번호|문의하는\s*게|문의가\s*안전|안전하게)/i.test(raw) &&
+  714:     !/(압류|출석|수사|검찰|경찰|기소|체포|고지|미납|체납|과태료|벌금|환급금|대출|선납|보험료)/i.test(raw);
+  715: 
+  716:   const hasAction =
+  717:     /(링크|https?:\/\/|otp|인증번호|송금|이체|입금|납부|설치|원격|팀뷰어|anydesk|quicksupport)/i.test(raw);
+  718: 
+  719:   return hasAdvice && !hasAction;
+  720: }
+  721: 
+  722: /**
+  723:  * 강한 행동요구:
+  724:  * - 프리필터/컨텍스트 윈도우 확장(풀필터 호출 근거) 용도
+  725:  * - High 판정의 필요조건이 아님(High는 hardHigh 구조로만 허용)
+  726:  */
+  727: function hasStrongActionDemandText(t: string) {
+  728:   const s = String(t || "");
+  729: 
+  730:   const hasOtpRelay =
+  731:     /(인증번호|otp|오티피|승인\s*번호|승인번호|보안\s*코드|보안코드|확인\s*코드|확인코드|ars|2\s*단계\s*인증|2fa|6\s*자리|6자리)/i.test(s) &&
+  732:     /(보내|알려|전달|말해|읽어|불러|캡처|말씀)/i.test(s);
+  733: 
+  734:   const hasPayDemand =
+  735:     /(보내\s*줘|보내줘|부쳐\s*줘|부쳐줘|입금\s*해|입금해|송금\s*해|송금해|이체\s*해|이체해|납부\s*해|납부해|지불\s*해|지불해|충전\s*해|충전해)/i.test(s) ||
+  736:     (/(납부|송금|이체|입금|지불|충전|선납|보험료|수수료)/i.test(s) &&
+  737:       /(해주세요|하세요|하셔야|부탁|요청|바랍니다|주시|진행|처리|완료|필수|반드시)/i.test(s)) ||
+  738:     hasAmountKRW(s);
+  739: 
+  740:   const hasInstallDemand =
+  741:     /(설치|다운로드|받아|깔아|실행|연결|접속|등록|인증)/i.test(s) &&
+  742:     /(앱|어플|프로그램|원격|팀뷰어|teamviewer|anydesk|애니데스크|퀵서포트|quicksupport|뷰어|viewer|플러그인|plugin|apk|exe|msi|dmg|pkg)/i.test(
+  743:       s
+  744:     );
+  745: 
+  746:   const safeAccountDemand =
+  747:     /(안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌)/i.test(s) &&
+  748:     /(이체|송금|입금|옮기|이전)/i.test(s);
+  749: 
+  750:   return hasOtpRelay || hasPayDemand || hasInstallDemand || safeAccountDemand;
+  751: }
+  752: 
+  753: /**
+  754:  * hardHigh: “상황을 단정하는 단일 신호”가 아니라 “구조/조합”으로만 High 허용
+  755:  * - authority/threat/urgent는 단독으론 제외(보조로만 사용)
+  756:  * - ctx_* 맥락 히트 조합 위주
+  757:  */
+  758: function computeHardHighFromHits(hits: Hit[], threadText: string) {
+  759:   const has = (id: string) => hits.some((h) => String(h.ruleId || "") === id);
+  760:   const hasAny = (ids: string[]) => ids.some((id) => has(id));
+  761: 
+  762:   const install = hasAny(["ctx_install_mention", "install_app", "apk", "remote", "url_download_ext"]);
+  763:   const otp = hasAny(["ctx_otp_proxy", "ctx_otp_relay", "ctx_otp_finance", "otp"]);
+  764:   const pay = hasAny([
+  765:     "ctx_transfer_phrase",
+  766:     "ctx_transfer_demand",
+  767:     "transfer",
+  768:     "ctx_payment_request",
+  769:     "ctx_pay_with_link",
+  770:     "safe_account",
+  771:     "ctx_cash_pickup",

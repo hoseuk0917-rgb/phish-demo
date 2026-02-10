@@ -1,0 +1,300 @@
+﻿ 1520:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1521:     await fs.writeFile(filePath, body, "utf8");
+ 1522: }
+ 1523: 
+ 1524: async function main() {
+ 1525:     const args = parseArgs(process.argv);
+ 1526:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1527:     const rng = mulberry32(args.seed);
+ 1528: 
+ 1529:     const stubs = await readJsonl(args.stubs);
+ 1530:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1531: 
+ 1532:     if (args.registry_out) {
+ 1533:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1534:     }
+ 1535: 
+ 1536:     const outRows: AnyObj[] = [];
+ 1537:     let produced = 0;
+ 1538: 
+ 1539:     for (let i = 0; i < args.count; i++) {
+ 1540:         const stub = stubs[i % stubs.length];
+ 1541:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1542:         const stubFeat = deriveStubFeatures(stub);
+ 1543:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1544: 
+ 1545:         const isBenign = chance(rng, args.benign_ratio);
+ 1546:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1547: 
+ 1548:         const caseType: CaseType = baseType;
+ 1549: 
+ 1550:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1551:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1552:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1553:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1554: 
+ 1555:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1556:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1557:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1558: 
+ 1559:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1560:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1561:             ANCHOR_STYLE === "direct"
+ 1562:                 ? "none"
+ 1563:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1564: 
+ 1565:         let attempt = 0;
+ 1566:         let bestErrs: string[] = [];
+ 1567: 
+ 1568:         while (attempt < args.max_retries) {
+ 1569:             attempt++;
+ 1570: 
+ 1571:             // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지
+ 1572:             const impersonation = isBenign ? undefined : impersonationFor(caseType);
+ 1573:             const pressures = isBenign ? [] : pressuresFor(rng, caseType);
+ 1574: 
+ 1575:             // 계획(생성 힌트) 앵커: 대화 생성에만 사용
+ 1576:             let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();
+ 1577: 
+ 1578:             // 스텁 기반 “추가 유도” 보강(핵심수법/유도방식 반영): 과도하게 늘리지 않고 0~1개만 가끔 추가
+ 1579:             if (!isBenign) {
+ 1580:                 const extra: Anchor[] = [];
+ 1581:                 if (stubFeat.hasPII) extra.push("A_PII");
+ 1582:                 if (stubFeat.hasCred) extra.push("A_CRED");
+ 1583:                 if (stubFeat.hasGoBank) extra.push("A_GO_BANK");
+ 1584: 
+ 1585:                 const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));
+ 1586:                 if (filtered.length && chance(rng, 0.35)) {
+ 1587:                     const pickOne = pick(rng, filtered);
+ 1588:                     if (!anchorsPlanned.includes(pickOne)) anchorsPlanned.push(pickOne);
+ 1589:                 }
+ 1590:             }
+ 1591: 
+ 1592:             // vector: 수법에서 필요할 때만 + “분석 힌트 있으면 우선”, 없으면 소량 증강(augmented)
+ 1593:             let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);
+ 1594:             let augmentedVector = false;
+ 1595: 
+ 1596:             if (!isBenign) {
+ 1597:                 if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {
+ 1598:                     vector = "qr";
+ 1599:                 } else if (stubFeat.hasUrl && vector === "none") {
+ 1600:                     vector = "url";
+ 1601:                 } else {
+ 1602:                     // 스텁에 없더라도 기능 데모를 위해 아주 소량만 추가(메타에 표시)
+ 1603:                     if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {
+ 1604:                         vector = chance(rng, 0.5) ? "url" : "qr";
+ 1605:                         augmentedVector = true;
+ 1606:                     }
+ 1607:                 }
+ 1608:             }
+ 1609: 
+ 1610:             // URL/QR 생성(0~1개, 원샷)
+ 1611:             let urlObj: ScenarioInternal["url"] | undefined;
+ 1612:             let qrObj: ScenarioInternal["qr"] | undefined;
+ 1613: 
+ 1614:             let urlKind: UrlKind | undefined;
+ 1615:             let urlStr: string | undefined;
+ 1616: 
+ 1617:             const ownerChoices = ownersFromImpersonation(impersonation);
+ 1618:             const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => ownerChoices.includes(r.owner)).map(r => r.host)));
+ 1619: 
+ 1620:             if (!isBenign && vector === "url") {
+ 1621:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1622:                 const official = pickOfficialUrlEntry(rng, ownerChoices);
+ 1623:                 const officialId = official.url_id;
+ 1624: 
+ 1625:                 urlStr = makeVariantUrlFromOfficial(rng, official, urlKind);
+ 1626:                 const match = urlMatchesRegistry(urlStr, allowedHosts);
+ 1627: 
+ 1628:                 urlObj = { kind: urlKind, value: urlStr, count: 1, match, official_id: officialId };
+ 1629:             }
+ 1630: 
+ 1631:             if (!isBenign && vector === "qr") {
+ 1632:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1633:                 const qr = makeQrLandingUrl(rng, urlKind, ownerChoices);
+ 1634: 
+ 1635:                 urlStr = qr.qr_url;
+ 1636:                 const match = qr.match;
+ 1637: 
+ 1638:                 qrObj = { target_kind: urlKind, note: `QR 스캔 유도(랜딩): ${urlStr}`, match, official_id: qr.official_id };
+ 1639: 
+ 1640:                 if (!anchorsPlanned.includes("A_QR")) anchorsPlanned.push("A_QR");
+ 1641:                 const idx = anchorsPlanned.indexOf("A_LINK");
+ 1642:                 if (idx >= 0) anchorsPlanned.splice(idx, 1);
+ 1643:             }
+ 1644: 
+ 1645:             const caller = chooseCaller(rng, caseType, isBenign);
+ 1646: 
+ 1647:             const turns = buildConversation(
+ 1648:                 rng,
+ 1649:                 caseType,
+ 1650:                 anchorsPlanned,
+ 1651:                 vector,
+ 1652:                 urlStr,
+ 1653:                 urlKind,
+ 1654:                 noiseLevel,
+ 1655:                 maxLen,
+ 1656:                 caller.caller_display,
+ 1657:                 stubKeywords,
+ 1658:                 pressures,
+ 1659:                 impersonation,
+ 1660:             );
+ 1661: 
+ 1662:             const senderText = turns
+ 1663:                 .filter((t) => t.role === "S")
+ 1664:                 .map((t) => t.text)
+ 1665:                 .join(" ");
+ 1666: 
+ 1667:             const hasPayCue = /(계좌번호|예금주|입금|송금|이체|ATM|현금\s*인출|퀵|대면\s*전달|remit|wire|withdraw|cash)/i.test(senderText);
+ 1668:             const hasInstallCue = /(teamviewer|anydesk|원격|지원앱|앱\s*설치|설치|remote|apk)/i.test(senderText);
+ 1669: 
+ 1670:             // urlMatch 가져오기
+ 1671:             const urlMatch = (urlObj?.match ?? qrObj?.match) as (boolean | undefined);
+ 1672: 
+ 1673:             // ✅ pressures는 "텍스트에 실제로 존재" 기준으로 재구성해서 expected 과대/과소를 줄임
+ 1674:             const pressuresEff = (() => {
+ 1675:                 const ps: string[] = [];
+ 1676: 
+ 1677:                 // urgent: “급하게/서둘러/재촉” 같은 표현도 잡기
+ 1678:                 if (/(긴급|즉시|지금\s*바로|바로\s*처리|급하게|서둘러|재촉|빨리\s*진행)/i.test(senderText)) {
+ 1679:                     ps.push("press_urgent");
+ 1680:                 }
+ 1681: 
+ 1682:                 // secrecy: “혼자만/절대/외부” 등 변형 포함
+ 1683:                 if (/(공유\s*금지|보안상|비밀\s*유지|지인에게도\s*말하지|외부\s*유출|혼자만|절대\s*말하지)/i.test(senderText)) {
+ 1684:                     ps.push("press_secrecy");
+ 1685:                 }
+ 1686: 
+ 1687:                 // threat: “수사/검거/기소” 계열도 포함
+ 1688:                 if (/(계좌\s*정지|법적\s*조치|체포|구속|영장|고소|처벌|벌금|동결|압수|수사|검거|기소)/i.test(senderText)) {
+ 1689:                     ps.push("press_threat");
+ 1690:                 }
+ 1691: 
+ 1692:                 return uniqSorted(ps);
+ 1693:             })();
+ 1694: 
+ 1695:             // ✅ eff anchors: “텍스트에 실제 cue가 존재하는 것만”으로 재구성(트리거/라벨 정합용)
+ 1696:             const allAnchors: Anchor[] = [
+ 1697:                 "A_LINK",
+ 1698:                 "A_QR",
+ 1699:                 "A_OTP",
+ 1700:                 "A_INSTALL",
+ 1701:                 "A_TRANSFER",
+ 1702:                 "A_CRED",
+ 1703:                 "A_PII",
+ 1704:                 "A_CASH_PICKUP",
+ 1705:                 "A_GO_BANK",
+ 1706:                 "A_TRAVEL",
+ 1707:             ];
+ 1708:             const anchorsEff = anchorsEffFromText(allAnchors, senderText);
+ 1709: 
+ 1710:             let stagePeak: Stage;
+ 1711:             if (isBenign) {
+ 1712:                 stagePeak = "info";
+ 1713:             } else {
+ 1714:                 stagePeak = stageFromAnchors(caseType, anchorsEff, vector, urlKind, urlMatch, pressuresEff, senderText);
+ 1715: 
+ 1716:                 const hasTransferCue =
+ 1717:                     anchorsEff.includes("A_TRANSFER") ||
+ 1718:                     /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire)/i.test(senderText);
+ 1719: 
+ 1720:                 const hasCashCue =
+ 1721:                     anchorsEff.includes("A_CASH_PICKUP") ||
+ 1722:                     anchorsEff.includes("A_GO_BANK") ||
+ 1723:                     /(현금|인출|withdraw|cash|퀵|대면\s*전달|봉투|픽업|atm)/i.test(senderText);
+ 1724: 
+ 1725:                 // payment인데 실제 "송금/현금" 근거가 없으면 verify로 방어
+ 1726:                 if (stagePeak === "payment" && !(hasTransferCue || hasCashCue)) {
+ 1727:                     stagePeak = "verify";
+ 1728:                 }
+ 1729: 
+ 1730:                 // install인데 실제 설치 근거가 없으면 verify로 방어
+ 1731:                 if (stagePeak === "install" && !(hasInstallCue || anchorsEff.includes("A_INSTALL"))) {
+ 1732:                     stagePeak = "verify";
+ 1733:                 }
+ 1734: 
+ 1735:                 // 링크/QR 방어:
+ 1736:                 const hasUrlInText = /https?:\/\/\S+/i.test(senderText);
+ 1737:                 const hasQrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(senderText);
+ 1738: 
+ 1739:                 if (vector === "url" && !hasUrlInText) stagePeak = "info";
+ 1740:                 if (vector === "qr" && !(hasQrCue || hasUrlInText)) stagePeak = "info";
+ 1741:             }
+ 1742: 
+ 1743:             const risk: Risk = isBenign
+ 1744:                 ? "low"
+ 1745:                 : riskFromSignals(anchorsEff, pressuresEff, impersonation, vector, urlKind, urlMatch, senderText);
+ 1746: 
+ 1747:             const triggers = triggersFrom(caseType, anchorsEff, pressuresEff, impersonation, vector, urlKind);
+ 1748: 
+ 1749:             const s: ScenarioInternal = {
+ 1750:                 id: safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1),
+ 1751:                 caseType,
+ 1752:                 channel: pick(rng, ["sms", "call", "chat"] as Channel[]),
+ 1753:                 caller,
+ 1754:                 vector,
+ 1755:                 url: urlObj,
+ 1756:                 qr: qrObj,
+ 1757: 
+ 1758:                 // ✅ 출력/검증은 eff anchors 기준(텍스트 기반)
+ 1759:                 anchors: anchorsEff,
+ 1760: 
+ 1761:                 // ✅ "실제 텍스트에 존재" 기준으로 저장(출력 notes/toScenarioOutput도 이 값을 씀)
+ 1762:                 pressures: pressuresEff,
+ 1763: 
+ 1764:                 impersonation,
+ 1765:                 turns,
+ 1766:                 expected: { risk, stagePeak, triggers },
+ 1767:                 meta: {
+ 1768:                     stub_hint: String(stub.normalized_ref || stub.id || stub.url || stub.title || "").slice(0, 180),
+ 1769:                     stub_features: stubFeat,
+ 1770:                     stub_keywords: stubKeywords,
+ 1771:                     augmented_vector: augmentedVector,
+ 1772:                     noiseLevel,
+ 1773:                     attempt,
+ 1774: 
+ 1775:                     // (디버그용) 원본/유효 pressures 같이 보관
+ 1776:                     pressures_raw: pressures,
+ 1777:                     pressures_eff: pressuresEff,
+ 1778: 
+ 1779:                     // (디버그용) planned vs eff anchors 같이 보관
+ 1780:                     anchors_planned: anchorsPlanned,
+ 1781:                     anchors_eff: anchorsEff,
+ 1782:                 },
+ 1783:             };
+ 1784: 
+ 1785:             const errs = validateScenario(s, isBenign);
+ 1786:             if (errs.length === 0) {
+ 1787:                 outRows.push(toScenarioOutput(s));
+ 1788:                 produced++;
+ 1789:                 break;
+ 1790:             } else {
+ 1791:                 bestErrs = errs;
+ 1792:             }
+ 1793:         }
+ 1794: 
+ 1795:         if (attempt >= args.max_retries) {
+ 1796:             // 마지막 시도에서 "성공"으로 outRows에 이미 추가된 경우(예: attempt==max_retries) FAIL을 추가로 넣지 않음
+ 1797:             const successId = safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1);
+ 1798:             const last = outRows[outRows.length - 1] as any;
+ 1799:             const lastId = last?.id;
+ 1800: 
+ 1801:             if (lastId !== successId) {
+ 1802:                 outRows.push({
+ 1803:                     id: safeId("FAIL", i + 1),
+ 1804:                     error: "generator_failed_constraints",
+ 1805:                     errors: bestErrs,
+ 1806:                 });
+ 1807:             }
+ 1808:         }
+ 1809:     }
+ 1810: 
+ 1811:     await writeJsonl(args.out, outRows);
+ 1812:     console.log(`[genScenariosFromStubs] wrote=${outRows.length} produced=${produced} out=${args.out}`);
+ 1813:     if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);
+ 1814: }
+ 1815: 
+ 1816: main().catch((e) => {
+ 1817:     console.error(e);
+ 1818:     process.exit(1);
+ 1819: });

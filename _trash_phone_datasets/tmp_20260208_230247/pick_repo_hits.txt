@@ -1,0 +1,2 @@
+﻿@{Path=C:\projects\phish-demo\tools\analysis\extractSignals.ts; LineNumber=172; Line=    const pick = (cat: string) =>}
+@{Path=C:\projects\phish-demo\tools\analysis\genScenarioStubsFromClusters.ts; LineNumber=471; Line=        const pick = chosen?.norm || "(none)";}

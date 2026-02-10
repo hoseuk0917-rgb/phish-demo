@@ -1,0 +1,562 @@
+﻿ 1269:         if (si < 0) {
+ 1270:             // S 라인이 아예 없으면 S 라인 하나 만들어서 앞에 둠
+ 1271:             lines.unshift(`S: (${cd})`);
+ 1272:             si = 0;
+ 1273:         }
+ 1274:         if (!phoneLike(lines[si])) {
+ 1275:             lines[si] = lines[si].replace(/^S:\s*/, `S: (${cd}) `);
+ 1276:         }
+ 1277:     }
+ 1278: 
+ 1279:     return lines.join("\n");
+ 1280: }
+ 1281: 
+ 1282: function lengthBucketFromTurns(n: number) {
+ 1283:     if (n <= 4) return "S";
+ 1284:     if (n <= 8) return "M";
+ 1285:     if (n <= 12) return "L";
+ 1286:     return "XL";
+ 1287: }
+ 1288: 
+ 1289: function toScenarioOutput(s: ScenarioInternal): AnyObj {
+ 1290:     const thread = turnsToThread(s.turns, (s as any)?.caller?.caller_display);
+ 1291: 
+ 1292:     const senderText =
+ 1293:         s.turns
+ 1294:             ?.filter((t) => t && (t as any).role === "S")
+ 1295:             ?.map((t) => String((t as any).text ?? ""))
+ 1296:             ?.join("\n")
+ 1297:             ?.trim() || "";
+ 1298: 
+ 1299:     // S 텍스트가 없으면 thread 전체로 폴백
+ 1300:     const effBasis = (senderText || "").trim() || String(thread || "");
+ 1301:     const t = String(effBasis || "");
+ 1302:     const t2 = t.replace(/\s+/g, "");
+ 1303: 
+ 1304:     const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];
+ 1305:     let effAnchors = anchorsEffFromText(allAnchors, effBasis);
+ 1306: 
+ 1307:     // ---- 엔진과 최대한 비슷한 cue들(특히 payment/install 방어) ----
+ 1308:     const hasAmountKRW = (x: string) => /(\d{1,3}(?:,\d{3})+|\d+)\s*(원|만원)/.test(String(x || ""));
+ 1309: 
+ 1310:     const urlMatches = t.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [];
+ 1311:     const urlCount = urlMatches.length;
+ 1312:     const linkHits = Math.min(urlCount, 2);
+ 1313: 
+ 1314:     const qrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(t);
+ 1315: 
+ 1316:     const otpCue =
+ 1317:         /(otp|인증번호|오티피|보안\s*코드|보안코드|확인\s*코드|확인코드|ars|2\s*단계\s*인증|2fa|6\s*자리|6자리)/i.test(t);
+ 1318: 
+ 1319:     const installCue =
+ 1320:         /(teamviewer|anydesk|quicksupport|원격\s*지원|원격|remote|지원앱|apk|설치|install|다운로드|뷰어|viewer|플러그인|plugin)/i.test(t);
+ 1321: 
+ 1322:     const credCue =
+ 1323:         /(아이디|id\b|비밀번호|password|로그인\s*정보|계정\s*정보)/i.test(t) || /(아이디|비밀번호|로그인정보|계정정보)/i.test(t2);
+ 1324: 
+ 1325:     const travelCue =
+ 1326:         /(해외|출국|공항|현지\s*근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t) ||
+ 1327:         /(해외|출국|공항|현지근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t2);
+ 1328: 
+ 1329:     const piiStrongCue =
+ 1330:         /(주민등록|주민번호|신분증|여권|계좌\s*사본|카드번호)/i.test(t) || /(주민등록|주민번호|신분증|여권|계좌사본|카드번호)/i.test(t2);
+ 1331: 
+ 1332:     const piiCue =
+ 1333:         piiStrongCue ||
+ 1334:         /(개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+ 1335:         /(개인정보|사진업로드|업로드|제출)/i.test(t2);
+ 1336: 
+ 1337:     const piiRequestCue =
+ 1338:         /(이름|성함|연락처|전화번호|휴대폰|생년월일|주민등록번호|주민번호|주소|우편번호|계좌번호|카드번호|비밀번호|패스워드|암호|신분증|여권)/i.test(t) &&
+ 1339:         /(알려|말해|남겨|적어|입력|작성|보내|제출|올려|전송|사진|캡처)/i.test(t);
+ 1340: 
+ 1341:     // scoreThread.ts의 paymentAlertOnly 필터와 동일 계열(결제 알림/설정 변경은 payment로 끌지 않음)
+ 1342:     const paymentAlertOnly =
+ 1343:         /(결제\s*알림|알림\s*설정|계좌\s*알림|설정\s*변경|설정이\s*변경|설정\s*확인|자동이체\s*등록|자동\s*이체\s*등록|다른\s*기기\s*로그인\s*시도\s*감지|로그인\s*시도\s*감지|접속\s*시도\s*감지)/i.test(
+ 1344:             t
+ 1345:         );
+ 1346: 
+ 1347:     const escrowLike = /(안전\s*결제|안전\s*거래|에스크로|escrow|거래)/i.test(t);
+ 1348: 
+ 1349:     const strongPayCue = /(입금|송금|이체|납부|지불|충전|선납|보험료)/i.test(t) || hasAmountKRW(t);
+ 1350: 
+ 1351:     const paymentVerb =
+ 1352:         /(보내\s*줘|보내줘|부쳐\s*줘|부쳐줘|입금\s*해|입금해|송금\s*해|송금해|이체\s*해|이체해|납부\s*해|납부해|지불\s*해|지불해|충전\s*해|충전해)/i.test(t) ||
+ 1353:         /(입금|송금|이체|납부|지불|충전|선납|보험료).{0,14}(해\s*줘|해줘|해\s*주|해주|해주세요|부탁|요청|하셔야|바랍니다|주시)/i.test(t) ||
+ 1354:         /(납부|지불|결제).{0,14}(하세요|바랍니다|필요|진행|처리|해주세요)/i.test(t) ||
+ 1355:         /(링크|페이지).{0,14}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t);
+ 1356: 
+ 1357:     const installBeforePay =
+ 1358:         /(설치).{0,10}(후|해야|필요).{0,24}(결제|납부|송금|이체|입금|진행)/i.test(t) ||
+ 1359:         /(결제|납부|송금|이체|입금).{0,18}(하려면|위해).{0,18}(설치)/i.test(t);
+ 1360: 
+ 1361:     const transferCue =
+ 1362:         effAnchors.includes("A_TRANSFER") ||
+ 1363:         /(안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌|계좌번호|예금주|무통장|입금|송금|이체|remit|wire)/i.test(t);
+ 1364: 
+ 1365:     const cashPickupCue =
+ 1366:         effAnchors.includes("A_CASH_PICKUP") ||
+ 1367:         (((/현금|cash/i.test(t) || /현금/.test(t2)) &&
+ 1368:             /(인출|현금\s*인출|현금\s*수령|withdraw|봉투|퀵|대면\s*전달|직접\s*전달|픽업|수거)/i.test(t)) as any);
+ 1369: 
+ 1370:     const goBankCue =
+ 1371:         effAnchors.includes("A_GO_BANK") ||
+ 1372:         ((/(은행|atm|창구)/i.test(t) || /(은행|atm|창구)/i.test(t2)) &&
+ 1373:             (/(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t) || /(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t2)));
+ 1374: 
+ 1375:     const ctxPayWithLinkCue =
+ 1376:         linkHits > 0 &&
+ 1377:         !paymentAlertOnly &&
+ 1378:         (/(링크|페이지|사이트).{0,18}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t) ||
+ 1379:             /(납부|결제|지불|송금|이체|입금).{0,18}(링크|페이지|사이트)/i.test(t)) &&
+ 1450:         s.channel === "call"
+ 1451:             ? {
+ 1452:                 otpAsked: otpCue,
+ 1453:                 remoteAsked: installCue,
+ 1454:                 urgentPressured: /(긴급|지금|즉시|당장|바로|오늘\s*안에|지연\s*시|미조치\s*시)/i.test(t),
+ 1455:                 firstContact: Boolean((s as any)?.caller?.is_first_seen),
+ 1456:             }
+ 1457:             : undefined;
+ 1458: 
+ 1459:     return {
+ 1460:         id: s.id,
+ 1461:         category: s.caseType,
+ 1462:         label: derivedRisk,
+ 1463:         length_bucket: lengthBucketFromTurns(s.turns.length),
+ 1464:         thread,
+ 1465: 
+ 1466:         ...(callChecks ? { callChecks } : {}),
+ 1467: 
+ 1468:         expected: {
+ 1469:             riskLevel: derivedRisk,
+ 1470:             score_min: scoreMin,
+ 1471:             stagePeak: derivedStagePeak,
+ 1472:             triggered: expectedTriggered,
+ 1473:         },
+ 1474: 
+ 1475:         // 기존 필드 유지(리포트/디버그용)
+ 1476:         should_trigger: (s as any)?.expected?.triggers || [],
+ 1477: 
+ 1478:         notes,
+ 1479: 
+ 1480:         meta: {
+ 1481:             ...(s.meta || {}),
+ 1482:             eff_basis: effBasis.slice(0, 4000),
+ 1483:             eff_anchors: effAnchors,
+ 1484:             scoreLike,
+ 1485:             cues: {
+ 1486:                 linkHits,
+ 1487:                 qrCue,
+ 1488:                 otpCue,
+ 1489:                 installCue,
+ 1490:                 transferCue,
+ 1491:                 cashPickupCue,
+ 1492:                 goBankCue,
+ 1493:                 ctxPayWithLinkCue,
+ 1494:                 paymentAlertOnly,
+ 1495:                 escrowLike,
+ 1496:                 strongPayCue,
+ 1497:                 installBeforePay,
+ 1498:             },
+ 1499:         },
+ 1500:     };
+ 1501: }
+ 1502: 
+ 1503: async function readJsonl(filePath: string): Promise<AnyObj[]> {
+ 1504:     const raw = await fs.readFile(filePath, "utf8");
+ 1505:     const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+ 1506:     const out: AnyObj[] = [];
+ 1507:     for (const line of lines) {
+ 1508:         try {
+ 1509:             out.push(JSON.parse(line));
+ 1510:         } catch {
+ 1511:             // skip bad line
+ 1512:         }
+ 1513:     }
+ 1514:     return out;
+ 1515: }
+ 1516: 
+ 1517: async function writeJsonl(filePath: string, rows: AnyObj[]) {
+ 1518:     const dir = path.dirname(filePath);
+ 1519:     await fs.mkdir(dir, { recursive: true });
+ 1520:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1521:     await fs.writeFile(filePath, body, "utf8");
+ 1522: }
+ 1523: 
+ 1524: async function main() {
+ 1525:     const args = parseArgs(process.argv);
+ 1526:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1527:     const rng = mulberry32(args.seed);
+ 1528: 
+ 1529:     const stubs = await readJsonl(args.stubs);
+ 1530:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1531: 
+ 1532:     if (args.registry_out) {
+ 1533:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1534:     }
+ 1535: 
+ 1536:     const outRows: AnyObj[] = [];
+ 1537:     let produced = 0;
+ 1538: 
+ 1539:     for (let i = 0; i < args.count; i++) {
+ 1540:         const stub = stubs[i % stubs.length];
+ 1541:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1542:         const stubFeat = deriveStubFeatures(stub);
+ 1543:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1544: 
+ 1545:         const isBenign = chance(rng, args.benign_ratio);
+ 1546:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1547: 
+ 1548:         const caseType: CaseType = baseType;
+ 1549: 
+ 1550:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1551:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1552:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1553:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1554: 
+ 1555:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1556:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1557:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1558: 
+ 1559:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1560:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1456:             }
+ 1457:             : undefined;
+ 1458: 
+ 1459:     return {
+ 1460:         id: s.id,
+ 1461:         category: s.caseType,
+ 1462:         label: derivedRisk,
+ 1463:         length_bucket: lengthBucketFromTurns(s.turns.length),
+ 1464:         thread,
+ 1465: 
+ 1466:         ...(callChecks ? { callChecks } : {}),
+ 1467: 
+ 1468:         expected: {
+ 1469:             riskLevel: derivedRisk,
+ 1470:             score_min: scoreMin,
+ 1471:             stagePeak: derivedStagePeak,
+ 1472:             triggered: expectedTriggered,
+ 1473:         },
+ 1474: 
+ 1475:         // 기존 필드 유지(리포트/디버그용)
+ 1476:         should_trigger: (s as any)?.expected?.triggers || [],
+ 1477: 
+ 1478:         notes,
+ 1479: 
+ 1480:         meta: {
+ 1481:             ...(s.meta || {}),
+ 1482:             eff_basis: effBasis.slice(0, 4000),
+ 1483:             eff_anchors: effAnchors,
+ 1484:             scoreLike,
+ 1485:             cues: {
+ 1486:                 linkHits,
+ 1487:                 qrCue,
+ 1488:                 otpCue,
+ 1489:                 installCue,
+ 1490:                 transferCue,
+ 1491:                 cashPickupCue,
+ 1492:                 goBankCue,
+ 1493:                 ctxPayWithLinkCue,
+ 1494:                 paymentAlertOnly,
+ 1495:                 escrowLike,
+ 1496:                 strongPayCue,
+ 1497:                 installBeforePay,
+ 1498:             },
+ 1499:         },
+ 1500:     };
+ 1501: }
+ 1502: 
+ 1503: async function readJsonl(filePath: string): Promise<AnyObj[]> {
+ 1504:     const raw = await fs.readFile(filePath, "utf8");
+ 1505:     const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+ 1506:     const out: AnyObj[] = [];
+ 1507:     for (const line of lines) {
+ 1508:         try {
+ 1509:             out.push(JSON.parse(line));
+ 1510:         } catch {
+ 1511:             // skip bad line
+ 1512:         }
+ 1513:     }
+ 1514:     return out;
+ 1515: }
+ 1516: 
+ 1517: async function writeJsonl(filePath: string, rows: AnyObj[]) {
+ 1518:     const dir = path.dirname(filePath);
+ 1519:     await fs.mkdir(dir, { recursive: true });
+ 1520:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1521:     await fs.writeFile(filePath, body, "utf8");
+ 1522: }
+ 1523: 
+ 1524: async function main() {
+ 1525:     const args = parseArgs(process.argv);
+ 1526:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1527:     const rng = mulberry32(args.seed);
+ 1528: 
+ 1529:     const stubs = await readJsonl(args.stubs);
+ 1530:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1531: 
+ 1532:     if (args.registry_out) {
+ 1533:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1534:     }
+ 1535: 
+ 1536:     const outRows: AnyObj[] = [];
+ 1537:     let produced = 0;
+ 1538: 
+ 1539:     for (let i = 0; i < args.count; i++) {
+ 1540:         const stub = stubs[i % stubs.length];
+ 1541:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1542:         const stubFeat = deriveStubFeatures(stub);
+ 1543:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1544: 
+ 1545:         const isBenign = chance(rng, args.benign_ratio);
+ 1546:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1547: 
+ 1548:         const caseType: CaseType = baseType;
+ 1549: 
+ 1550:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1551:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1552:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1553:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1554: 
+ 1555:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1556:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1557:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1558: 
+ 1559:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1560:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1561:             ANCHOR_STYLE === "direct"
+ 1562:                 ? "none"
+ 1563:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1564: 
+ 1565:         let attempt = 0;
+ 1566:         let bestErrs: string[] = [];
+ 1551:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1552:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1553:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1554: 
+ 1555:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1556:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1557:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1558: 
+ 1559:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1560:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1561:             ANCHOR_STYLE === "direct"
+ 1562:                 ? "none"
+ 1563:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1564: 
+ 1565:         let attempt = 0;
+ 1566:         let bestErrs: string[] = [];
+ 1567: 
+ 1568:         while (attempt < args.max_retries) {
+ 1569:             attempt++;
+ 1570: 
+ 1571:             // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지
+ 1572:             const impersonation = isBenign ? undefined : impersonationFor(caseType);
+ 1573:             const pressures = isBenign ? [] : pressuresFor(rng, caseType);
+ 1574: 
+ 1575:             // 계획(생성 힌트) 앵커: 대화 생성에만 사용
+ 1576:             let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();
+ 1577: 
+ 1578:             // 스텁 기반 “추가 유도” 보강(핵심수법/유도방식 반영): 과도하게 늘리지 않고 0~1개만 가끔 추가
+ 1579:             if (!isBenign) {
+ 1580:                 const extra: Anchor[] = [];
+ 1581:                 if (stubFeat.hasPII) extra.push("A_PII");
+ 1582:                 if (stubFeat.hasCred) extra.push("A_CRED");
+ 1583:                 if (stubFeat.hasGoBank) extra.push("A_GO_BANK");
+ 1584: 
+ 1585:                 const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));
+ 1586:                 if (filtered.length && chance(rng, 0.35)) {
+ 1587:                     const pickOne = pick(rng, filtered);
+ 1588:                     if (!anchorsPlanned.includes(pickOne)) anchorsPlanned.push(pickOne);
+ 1589:                 }
+ 1590:             }
+ 1591: 
+ 1592:             // vector: 수법에서 필요할 때만 + “분석 힌트 있으면 우선”, 없으면 소량 증강(augmented)
+ 1593:             let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);
+ 1594:             let augmentedVector = false;
+ 1595: 
+ 1596:             if (!isBenign) {
+ 1597:                 if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {
+ 1598:                     vector = "qr";
+ 1599:                 } else if (stubFeat.hasUrl && vector === "none") {
+ 1600:                     vector = "url";
+ 1601:                 } else {
+ 1602:                     // 스텁에 없더라도 기능 데모를 위해 아주 소량만 추가(메타에 표시)
+ 1603:                     if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {
+ 1604:                         vector = chance(rng, 0.5) ? "url" : "qr";
+ 1605:                         augmentedVector = true;
+ 1606:                     }
+ 1607:                 }
+ 1608:             }
+ 1609: 
+ 1610:             // URL/QR 생성(0~1개, 원샷)
+ 1611:             let urlObj: ScenarioInternal["url"] | undefined;
+ 1612:             let qrObj: ScenarioInternal["qr"] | undefined;
+ 1613: 
+ 1614:             let urlKind: UrlKind | undefined;
+ 1615:             let urlStr: string | undefined;
+ 1616: 
+ 1617:             const ownerChoices = ownersFromImpersonation(impersonation);
+ 1618:             const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => ownerChoices.includes(r.owner)).map(r => r.host)));
+ 1619: 
+ 1620:             if (!isBenign && vector === "url") {
+ 1621:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1622:                 const official = pickOfficialUrlEntry(rng, ownerChoices);
+ 1623:                 const officialId = official.url_id;
+ 1624: 
+ 1625:                 urlStr = makeVariantUrlFromOfficial(rng, official, urlKind);
+ 1626:                 const match = urlMatchesRegistry(urlStr, allowedHosts);
+ 1627: 
+ 1628:                 urlObj = { kind: urlKind, value: urlStr, count: 1, match, official_id: officialId };
+ 1629:             }
+ 1630: 
+ 1631:             if (!isBenign && vector === "qr") {
+ 1632:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1633:                 const qr = makeQrLandingUrl(rng, urlKind, ownerChoices);
+ 1634: 
+ 1635:                 urlStr = qr.qr_url;
+ 1636:                 const match = qr.match;
+ 1637: 
+ 1638:                 qrObj = { target_kind: urlKind, note: `QR 스캔 유도(랜딩): ${urlStr}`, match, official_id: qr.official_id };
+ 1639: 
+ 1640:                 if (!anchorsPlanned.includes("A_QR")) anchorsPlanned.push("A_QR");
+ 1641:                 const idx = anchorsPlanned.indexOf("A_LINK");
+ 1642:                 if (idx >= 0) anchorsPlanned.splice(idx, 1);
+ 1643:             }
+ 1644: 
+ 1645:             const caller = chooseCaller(rng, caseType, isBenign);
+ 1646: 
+ 1647:             const turns = buildConversation(
+ 1648:                 rng,
+ 1649:                 caseType,
+ 1650:                 anchorsPlanned,
+ 1651:                 vector,
+ 1652:                 urlStr,
+ 1653:                 urlKind,
+ 1654:                 noiseLevel,
+ 1655:                 maxLen,
+ 1656:                 caller.caller_display,
+ 1657:                 stubKeywords,
+ 1658:                 pressures,
+ 1659:                 impersonation,
+ 1660:             );
+ 1661: 
+ 1741:             }
+ 1742: 
+ 1743:             const risk: Risk = isBenign
+ 1744:                 ? "low"
+ 1745:                 : riskFromSignals(anchorsEff, pressuresEff, impersonation, vector, urlKind, urlMatch, senderText);
+ 1746: 
+ 1747:             const triggers = triggersFrom(caseType, anchorsEff, pressuresEff, impersonation, vector, urlKind);
+ 1748: 
+ 1749:             const s: ScenarioInternal = {
+ 1750:                 id: safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1),
+ 1751:                 caseType,
+ 1752:                 channel: pick(rng, ["sms", "call", "chat"] as Channel[]),
+ 1753:                 caller,
+ 1754:                 vector,
+ 1755:                 url: urlObj,
+ 1756:                 qr: qrObj,
+ 1757: 
+ 1758:                 // ✅ 출력/검증은 eff anchors 기준(텍스트 기반)
+ 1759:                 anchors: anchorsEff,
+ 1760: 
+ 1761:                 // ✅ "실제 텍스트에 존재" 기준으로 저장(출력 notes/toScenarioOutput도 이 값을 씀)
+ 1762:                 pressures: pressuresEff,
+ 1763: 
+ 1764:                 impersonation,
+ 1765:                 turns,
+ 1766:                 expected: { risk, stagePeak, triggers },
+ 1767:                 meta: {
+ 1768:                     stub_hint: String(stub.normalized_ref || stub.id || stub.url || stub.title || "").slice(0, 180),
+ 1769:                     stub_features: stubFeat,
+ 1770:                     stub_keywords: stubKeywords,
+ 1771:                     augmented_vector: augmentedVector,
+ 1772:                     noiseLevel,
+ 1773:                     attempt,
+ 1774: 
+ 1775:                     // (디버그용) 원본/유효 pressures 같이 보관
+ 1776:                     pressures_raw: pressures,
+ 1777:                     pressures_eff: pressuresEff,
+ 1778: 
+ 1779:                     // (디버그용) planned vs eff anchors 같이 보관
+ 1780:                     anchors_planned: anchorsPlanned,
+ 1781:                     anchors_eff: anchorsEff,
+ 1782:                 },
+ 1783:             };
+ 1784: 
+ 1785:             const errs = validateScenario(s, isBenign);
+ 1786:             if (errs.length === 0) {
+ 1787:                 outRows.push(toScenarioOutput(s));
+ 1788:                 produced++;
+ 1789:                 break;
+ 1790:             } else {
+ 1791:                 bestErrs = errs;
+ 1792:             }
+ 1793:         }
+ 1794: 
+ 1795:         if (attempt >= args.max_retries) {
+ 1796:             outRows.push({
+ 1797:                 id: safeId("FAIL", i + 1),
+ 1798:                 error: "generator_failed_constraints",
+ 1799:                 errors: bestErrs,
+ 1800:             });
+ 1801:         }
+ 1802:     }
+ 1803: 
+ 1804:     await writeJsonl(args.out, outRows);
+ 1805:     console.log(`[genScenariosFromStubs] wrote=${outRows.length} produced=${produced} out=${args.out}`);
+ 1806:     if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);
+ 1807: }
+ 1808: 
+ 1809: main().catch((e) => {
+ 1810:     console.error(e);
+ 1811:     process.exit(1);
+ 1812: });
+ 1767:                 meta: {
+ 1768:                     stub_hint: String(stub.normalized_ref || stub.id || stub.url || stub.title || "").slice(0, 180),
+ 1769:                     stub_features: stubFeat,
+ 1770:                     stub_keywords: stubKeywords,
+ 1771:                     augmented_vector: augmentedVector,
+ 1772:                     noiseLevel,
+ 1773:                     attempt,
+ 1774: 
+ 1775:                     // (디버그용) 원본/유효 pressures 같이 보관
+ 1776:                     pressures_raw: pressures,
+ 1777:                     pressures_eff: pressuresEff,
+ 1778: 
+ 1779:                     // (디버그용) planned vs eff anchors 같이 보관
+ 1780:                     anchors_planned: anchorsPlanned,
+ 1781:                     anchors_eff: anchorsEff,
+ 1782:                 },
+ 1783:             };
+ 1784: 
+ 1785:             const errs = validateScenario(s, isBenign);
+ 1786:             if (errs.length === 0) {
+ 1787:                 outRows.push(toScenarioOutput(s));
+ 1788:                 produced++;
+ 1789:                 break;
+ 1790:             } else {
+ 1791:                 bestErrs = errs;
+ 1792:             }
+ 1793:         }
+ 1794: 
+ 1795:         if (attempt >= args.max_retries) {
+ 1796:             outRows.push({
+ 1797:                 id: safeId("FAIL", i + 1),
+ 1798:                 error: "generator_failed_constraints",
+ 1799:                 errors: bestErrs,
+ 1800:             });
+ 1801:         }
+ 1802:     }
+ 1803: 
+ 1804:     await writeJsonl(args.out, outRows);
+ 1805:     console.log(`[genScenariosFromStubs] wrote=${outRows.length} produced=${produced} out=${args.out}`);
+ 1806:     if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);
+ 1807: }
+ 1808: 
+ 1809: main().catch((e) => {
+ 1810:     console.error(e);
+ 1811:     process.exit(1);
+ 1812: });

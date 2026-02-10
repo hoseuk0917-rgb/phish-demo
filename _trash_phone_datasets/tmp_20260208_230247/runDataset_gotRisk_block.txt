@@ -1,0 +1,101 @@
+  370:         } catch (e: any) {
+  371:             const why = [`analyzeThread threw: ${String(e?.message || e)}`];
+  372:             fails.push({
+  373:                 id: row.id,
+  374:                 label: row.label ?? "",
+  375:                 expected: row.expected,
+  376:                 got: { riskLevel: "low", scoreTotal: 0, stagePeak: "info", triggered: false },
+  377:                 why,
+  378:                 thread: String(row.thread ?? ""),
+  379:                 senderText: senderTextFromThread(String(row.thread ?? "")),
+  380:                 notes: (row as any).notes,
+  381:                 meta: (row as any).meta,
+  382:                 should_trigger: (row as any).should_trigger,
+  383:             });
+  384:             continue;
+  385:         }
+  386: 
+  387:         const gotRisk: RiskLevel = (() => {
+  388:             const pick = (x: any): RiskLevel | "" => {
+  389:                 const v = String(x ?? "").toLowerCase().trim();
+  390:                 if (v === "low" || v === "medium" || v === "high") return v as RiskLevel;
+  391:                 return "";
+  392:             };
+  393: 
+  394:             // ? 정책: high는 hardHigh에서만 허용
+  395:             const hardHigh = Boolean(
+  396:                 (res as any)?.hardHigh ??
+  397:                 (res as any)?.flags?.hardHigh ??
+  398:                 (res as any)?.meta?.hardHigh ??
+  399:                 (res as any)?.escalation?.hardHigh
+  400:             );
+  401: 
+  402:             // 1) UI 모드: uiRiskLevel 우선(비교용)
+  403:             if (args.riskMode === "ui") {
+  404:                 const u = pick((res as any)?.uiRiskLevel);
+  405:                 if (u) return u === "high" && !hardHigh ? "medium" : u;
+  406:             }
+  407: 
+  408:             // 2) Threat 모드(또는 UI 없음): riskLevel만(정책 기준)
+  409:             const t = pick((res as any)?.riskLevel ?? (res as any)?.risk ?? (res as any)?.riskLevelId ?? res.riskLevel);
+  410:             if (t) return t === "high" && !hardHigh ? "medium" : t;
+  411: 
+  412:             // 3) fallback: 점수로 high 금지(= hardHigh만 high)
+  413:             const s = Number((res as any)?.scoreTotal ?? 0);
+  414:             if (hardHigh) return "high";
+  415:             if (s >= 35) return "medium";
+  416:             return "low";
+  417:         })();
+  418: 
+  419:         const gotScore = res.scoreTotal;
+  420:         const gotStage = stagePeakFromResult(res);
+  421: 
+  422:         // triggers: 1) engine/prefilter 기반 → 2) 로컬 prefilter 재실행 → 3) callChecks → 4) scoreTotal>=soft
+  423:         let gotTrig = triggeredFromResult(res);
+  424: 
+  425:         // soft 기준(가능하면 res.prefilter의 soft를 쓰고, 없으면 로컬 pf에서 보충)
+  426:         let softRef: number | null = null;
+  427:         try {
+  428:             const soft0 = Number((res as any)?.prefilter?.thresholdSoft);
+  429:             if (Number.isFinite(soft0)) softRef = soft0;
+  430:         } catch {
+  431:         }
+  432: 
+  433:         if (!gotTrig) {
+  434:             try {
+  435:                 const fullThread = String((row as any).threadText ?? row.thread ?? "");
+  436:                 const pf: any = (prefilterThread as any)(
+  437:                     fullThread,
+  438:                     { turnPrefixMode: true, autoPrefixMode: true, defaultWho: "S" }
+  439:                 );
+  440: 
+  441:                 if (pf) {
+  442:                     // softRef 보충
+  443:                     const soft1 = Number(pf.thresholdSoft);
+  444:                     if (softRef == null && Number.isFinite(soft1)) softRef = soft1;
+  445: 
+  446:                     // fallback도 “BN 오탐 방지” 기준으로 판정
+  447:                     if (typeof pf.triggered === "boolean") gotTrig = pf.triggered;
+  448:                     else if (typeof pf.isTriggered === "boolean") gotTrig = pf.isTriggered;
+  449:                     else {
+  450:                         const shouldA = Array.isArray(pf.should_trigger) ? pf.should_trigger : null;
+  451:                         const shouldB = Array.isArray(pf.shouldTrigger) ? pf.shouldTrigger : null;
+  452: 
+  453:                         if ((shouldA && shouldA.length) || (shouldB && shouldB.length)) {
+  454:                             gotTrig = true;
+  455:                         } else {
+  456:                             const action = String(pf.action ?? "").toLowerCase().trim();
+  457:                             if (action && action !== "none") {
+  458:                                 gotTrig = true;
+  459:                             } else {
+  460:                                 const score = Number(pf.score);
+  461:                                 const soft = Number(pf.thresholdSoft);
+  462:                                 const auto = Number(pf.thresholdAuto);
+  463: 
+  464:                                 if (Number.isFinite(score) && Number.isFinite(soft) && score >= soft) gotTrig = true;
+  465:                                 else if (Number.isFinite(score) && !Number.isFinite(soft) && Number.isFinite(auto) && score >= auto) gotTrig = true;
+  466:                                 else if (!Number.isFinite(score)) {
+  467:                                     if (Array.isArray(pf.triggers) && pf.triggers.length) gotTrig = true;
+  468:                                     else if (Array.isArray(pf.hitRules) && pf.hitRules.length) gotTrig = true;
+  469:                                     else if (typeof pf.gatePass === "boolean") gotTrig = pf.gatePass;
+  470:                                 }

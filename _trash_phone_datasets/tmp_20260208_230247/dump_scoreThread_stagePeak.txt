@@ -1,0 +1,71 @@
+﻿ 1425:     });
+ 1426:   }
+ 1427:   if (call?.urgentPressured) {
+ 1428:     hits.push({
+ 1429:       ruleId: "call_urgent",
+ 1430:       label: "통화: 긴급/압박",
+ 1431:       stage: "info",
+ 1432:       weight: weights.callUrgent,
+ 1433:       matched: ["(call) urgent pressured"],
+ 1434:       sample: "통화 맥락 체크박스",
+ 1435:     });
+ 1436:   }
+ 1437:   if (call?.firstContact) {
+ 1438:     hits.push({
+ 1439:       ruleId: "call_first_contact",
+ 1440:       label: "통화: 처음 연락(미등록 발신)",
+ 1441:       stage: "info",
+ 1442:       weight: W_FIRST_CONTACT,
+ 1443:       matched: ["(call) first contact"],
+ 1444:       sample: "번호 기반 자동 판정",
+ 1445:     });
+ 1446:   }
+ 1447: 
+ 1448:   // ✅ 스레드 합산: 누진(반복 ruleId 폭주 방지)
+ 1449:   const diminishedHits: Hit[] = applyDiminishingByRuleId(hits);
+ 1450:   const sortedHits: Hit[] = [...diminishedHits].sort((a: Hit, b: Hit) => b.weight - a.weight);
+ 1451:   const scoreTotal = Math.min(100, sortedHits.reduce((sum: number, h: Hit) => sum + h.weight, 0));
+ 1452: 
+ 1453:   // stagePeak은 “Threat에 포함된 메시지들” 기준으로 한번 더 산정 (R/comply 영향 제거)
+ 1454:   const rawThread = selected.map((x) => x.text).join("\n");
+ 1455: 
+ 1456:   const threatThread = messageSummaries
+ 1457:     .filter((m) => m.includeInThreat)
+ 1458:     .map((m) => String(m.content || m.text || ""))
+ 1459:     .filter(Boolean)
+ 1460:     .join("\n");
+ 1461: 
+ 1462:   const stageText = threatThread || rawThread;
+ 1463:   const { stage: stagePeak, triggers: stageTriggers } = stageFromHitsV2(stageText, sortedHits);
+ 1464: 
+ 1465:   const riskHits = hits; // risk 판단은 '전체 hits' 기준(가중치 0 hit 포함)
+ 1466: 
+ 1467:   const hasRemote = riskHits.some((h) => h.ruleId === "remote" || h.ruleId === "call_remote");
+ 1468:   const hasOtp = riskHits.some((h) => h.ruleId === "otp" || h.ruleId === "call_otp" || h.ruleId === "ctx_otp_relay");
+ 1469:   const hasFirst = riskHits.some((h) => h.ruleId === "call_first_contact");
+ 1470:   const hasApk = riskHits.some((h) => h.ruleId === "apk" || h.ruleId === "url_download_ext" || h.ruleId === "install_app");
+ 1471:   const hasLink = riskHits.some(
+ 1472:     (h) =>
+ 1473:       h.ruleId === "link" ||
+ 1474:       h.ruleId === "shortener" ||
+ 1475:       h.ruleId === "link_mention" ||
+ 1476:       h.ruleId === "ctx_profile_link_mention"
+ 1477:   );
+ 1478:   const hasThreat = riskHits.some((h) => h.ruleId === "threat");
+ 1479:   const hasAuthority = riskHits.some((h) => h.ruleId === "authority");
+ 1480:   const hasTxnAlert = riskHits.some((h) => h.ruleId === "txn_alert");
+ 1481:   const hasUrgentHit = riskHits.some((h) => h.ruleId === "urgent" || h.ruleId === "call_urgent");
+ 1482: 
+ 1483:   const hasJobScam = riskHits.some((h) => h.ruleId === "ctx_job_scam");
+ 1484:   const hasInvest = riskHits.some((h) => h.ruleId === "ctx_investment_link");
+ 1485:   const hasInstallMention = riskHits.some((h) => h.ruleId === "ctx_install_mention");
+ 1486:   const hasFamily = riskHits.some((h) => h.ruleId === "ctx_family_scam");
+ 1487: 
+ 1488:   const hasDemand = riskHits.some(
+ 1489:     (h) => h.ruleId === "ctx_demand" || h.ruleId === "ctx_comply_after_demand" || h.ruleId === "ctx_otp_relay"
+ 1490:   );
+ 1491: 
+ 1492:   const hasOtpFinance = riskHits.some(
+ 1493:     (h) => h.ruleId === "ctx_otp_finance" || h.ruleId === "ctx_otp_proxy" || h.ruleId === "ctx_denial_after_otp"
+ 1494:   );
+ 1495: 

@@ -1,0 +1,69 @@
+﻿== category ==
+
+Count Name                  
+----- ----                  
+   11 loan_fee              
+    6 delivery_link         
+    6 fine_refund_link      
+    5 family_urgent_transfer
+    4 cash_pickup           
+    4 pii_collection        
+    3 go_bank_atm           
+    3 job_travel            
+    3 bank_install          
+    2 account_takeover_cred 
+    2 blackmail_sexvisit    
+    1 bank_otp              
+
+
+
+
+== notes tags ==
+
+Count Name         
+----- ----         
+   30 press_urgent 
+   14 press_secrecy
+    6 imp_bank     
+    4 imp_delivery 
+    3 imp_court    
+    2 press_threat 
+    2 imp_gov      
+
+
+
+
+== eff_anchors ==
+
+Count Name         
+----- ----         
+   18 A_TRANSFER   
+   12 A_LINK       
+   12 A_CRED       
+   12 A_GO_BANK    
+    7 A_CASH_PICKUP
+    4 A_PII        
+    3 A_INSTALL    
+    3 A_TRAVEL     
+    1 A_OTP        
+
+
+
+
+== eff_anchor combos ==
+
+Count Name                          
+----- ----                          
+    9 A_GO_BANK,A_TRANSFER          
+    7 A_CRED,A_LINK                 
+    4 A_CASH_PICKUP                 
+    4 A_TRANSFER                    
+    4 A_CRED,A_LINK,A_PII,A_TRANSFER
+    3 A_INSTALL                     
+    3 A_CASH_PICKUP,A_GO_BANK       
+    3 A_TRAVEL                      
+    1 A_OTP                         
+    1 A_CRED,A_LINK,A_TRANSFER      
+
+
+

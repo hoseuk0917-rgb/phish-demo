@@ -1,0 +1,6 @@
+key	subkey	count
+meta	dataset	datasets\ko_scam\generated_seed_1234_snapshot.jsonl
+meta	sim	OFF
+meta	cases	500
+meta	pass	500
+meta	fail	0

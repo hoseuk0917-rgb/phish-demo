@@ -1,0 +1,12 @@
+﻿    1: import type { RiskLevel } from "../../types/analysis";
+    2: import { THRESHOLDS } from "../rules/weights";
+    3: 
+    4: export function toRiskLevel(scoreTotal: number, hardHigh: boolean): RiskLevel {
+    5:   // hardHigh는 최우선(강한 행동요구/상황)
+    6:   if (hardHigh) return "high";
+    7: 
+    8:   // 점수 임계(정책: m=THRESHOLDS.medium, h=THRESHOLDS.high)
+    9:   if (scoreTotal >= THRESHOLDS.high) return "high";
+   10:   if (scoreTotal >= THRESHOLDS.medium) return "medium";
+   11:   return "low";
+   12: }

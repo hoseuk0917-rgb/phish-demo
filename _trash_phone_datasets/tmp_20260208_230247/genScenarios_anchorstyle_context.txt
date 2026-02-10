@@ -1,0 +1,181 @@
+﻿  460:     return out;
+  461: }
+  462: 
+  463: function varyEnding(rng: () => number, base: string, tone: KoTone): string {
+  464:     // base는 “~합니다.” 형태를 권장. tone에 따라 가볍게 변환.
+  465:     if (!base.endsWith(".")) base = base + ".";
+  466:     if (tone === "formal") return base;
+  467: 
+  468:     const variantsPolite: Array<(s: string) => string> = [
+  469:         (s) => s.replace(/합니다\./g, "해 주세요."),
+  470:         (s) => s.replace(/합니다\./g, "부탁드립니다."),
+  471:         (s) => s.replace(/필요합니다\./g, "필요해요."),
+  472:         (s) => s.replace(/입니다\./g, "이에요."),
+  473:     ];
+  474:     const variantsCasual: Array<(s: string) => string> = [
+  475:         (s) => s.replace(/합니다\./g, "해요."),
+  476:         (s) => s.replace(/필요합니다\./g, "필요해요."),
+  477:         (s) => s.replace(/입니다\./g, "임."),
+  478:         (s) => s.replace(/부탁드립니다\./g, "부탁해요."),
+  479:     ];
+  480: 
+  481:     const fns = tone === "polite" ? variantsPolite : variantsCasual;
+  482:     return pick(rng, fns)(base);
+  483: }
+  484: 
+  485: function pickSyn(rng: () => number, xs: string[]) {
+  486:     return pick(rng, xs);
+  487: }
+  488: 
+  489: function renderAnchorLineSafe(
+  490:     rng: () => number,
+  491:     a: Anchor,
+  492:     tone: KoTone,
+  493:     urlStr?: string,
+  494:     vector?: Vector,
+  495:     urlKind?: UrlKind,
+  496: ): string {
+  497:     const hasUrl = (s: string) => /https?:\/\/\S+/i.test(s);
+  498: 
+  499:     const addUrlHint = (s: string) => {
+  500:         if ((vector === "url" || vector === "qr") && (a === "A_LINK" || a === "A_QR") && urlKind) {
+  501:             if (urlKind === "short") s += ` (단축주소 short)`;
+  502:             if (urlKind === "typo") s += ` (오타/유사문자 typo)`;
+  503:             if (urlKind === "homoglyph") s += ` (유사치환 homoglyph)`;
+  504:         }
+  505:         if (hasUrl(s)) return s; // URL 포함 문장은 '.' 안 붙임
+  506:         return s.endsWith(".") ? s : s + ".";
+  507:     };
+  508: 
+  509:     const dummyBank = () => pick(rng, ["OO은행", "OO저축은행", "OO카드"] as const);
+  510:     const dummyName = () => pick(rng, ["홍길동", "김민수", "이서연", "박지훈"] as const);
+  511:     const dummyAcct = () => {
+  512:         const a = Math.floor(rng() * 900 + 100);
+  513:         const b = Math.floor(rng() * 90 + 10);
+  514:         const c = Math.floor(rng() * 900000 + 100000);
+  515:         return `${a}-${b}-${c}`;
+  516:     };
+  517: 
+  518:     if (ANCHOR_STYLE === "meta") {
+  519:         let base = "";
+  520:         if (a === "A_LINK") base = `링크 확인 유도가 포함됩니다: ${urlStr || "https://example.invalid/"}`;
+  521:         if (a === "A_QR") base = `QR 스캔 유도가 포함됩니다(랜딩): ${urlStr || "https://example.invalid/"}`;
+  522:         if (a === "A_OTP") base = `OTP(인증번호) 공유/전달을 요구하는 내용이 포함됩니다`;
+  523:         if (a === "A_INSTALL") base = `원격지원/지원앱 설치 유도가 포함됩니다 (remote / AnyDesk / TeamViewer)`;
+  524:         if (a === "A_TRANSFER")
+  525:             base = `송금/이체 유도가 포함됩니다: ${dummyBank()} 계좌번호 ${dummyAcct()} (예금주:${dummyName()})로 입금/송금(remit/wire)`;
+  526:         if (a === "A_GO_BANK") base = `은행/ATM 방문 및 현금 인출(withdraw/cash) 유도가 포함됩니다 (ATM)`;
+  527:         if (a === "A_CASH_PICKUP") base = `현금/퀵/대면 전달(cash pickup) 유도가 포함됩니다`;
+  528:         if (a === "A_TRAVEL") base = `이동/출국 유도가 포함됩니다`;
+  529:         if (a === "A_CRED") base = `로그인 정보 입력 유도가 포함됩니다${urlStr && vector === "url" ? `: ${urlStr}` : ""}`;
+  530:         if (a === "A_PII") base = `개인정보 제공 유도가 포함됩니다${urlStr && vector === "url" ? `: ${urlStr}` : ""}`;
+  531:         return varyEnding(rng, addUrlHint(base), tone);
+  532:     }
+  533: 
+  534:     let out = "";
+  535:     if (a === "A_LINK") out = `아래 링크 확인해 주세요: ${urlStr || "https://example.invalid/"}`;
+  536:     if (a === "A_QR") out = `QR 찍고 접속해 주세요: ${urlStr || "https://example.invalid/"}`;
+  537: 
+  538:     // ✅ "번호 주세요"는 demand(알려/입력/전달) 정규식에 안 걸릴 수 있어, 엔진/라벨 정합을 위해 표현을 고정
+  539:     if (a === "A_OTP") out = `OTP(인증번호) 알려주세요`;
+  540: 
+  541:     if (a === "A_INSTALL") out = `원격지원 앱(TeamViewer/AnyDesk) 설치해 주세요 (remote)`;
+  542:     if (a === "A_TRANSFER")
+  543:         out = `${dummyBank()} 계좌번호 ${dummyAcct()} (예금주:${dummyName()})로 지금 입금/송금(remit/wire)해 주세요`;
+  544:     if (a === "A_GO_BANK") out = `지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM)`;
+  545:     if (a === "A_CASH_PICKUP") out = `현금 봉투 준비해서 퀵/대면(cash pickup)으로 전달해 주세요`;
+  546:     if (a === "A_TRAVEL") out = `출국 가능하시면 공항 쪽으로 이동해 주세요`;
+  547:     if (a === "A_CRED") out = `아이디/비밀번호 입력해 주세요${urlStr && vector === "url" ? `: ${urlStr}` : ""}`;
+  548:     if (a === "A_PII") out = `개인정보(신분증/계좌) 보내 주세요${urlStr && vector === "url" ? `: ${urlStr}` : ""}`;
+  549: 
+  550:     return addUrlHint(out);
+  551: }
+  552: 
+  553: // ---------- 스텁 기반 “핵심수법/유도방식” 추출(비중용이 아니라 생성 파라미터/문구 선택용) ----------
+  554: type StubFeatures = {
+  555:     hasOtp: boolean;
+  556:     hasRemote: boolean;
+  557:     hasTransfer: boolean;
+  558:     hasCash: boolean;
+  559:     hasTravel: boolean;
+  560:     hasBlackmail: boolean;
+  561:     hasPII: boolean;
+  562:     hasCred: boolean;
+  563:     hasUrl: boolean;
+  564:     hasQr: boolean;
+  565:     hasGoBank: boolean;       // ✅ 추가
+  566:     mentionsTypo: boolean;
+  567:     mentionsShort: boolean;
+  568: };
+  569: 
+  570: function deriveStubFeatures(stub: AnyObj): StubFeatures {
+  571:     const raw = `${stub.title || ""} ${stub.subject || ""} ${Array.isArray(stub.context_blocks) ? stub.context_blocks.join(" ") : ""} ${stub.body || ""}`.slice(0, 8000);
+  572:     const has = (re: RegExp) => re.test(raw);
+  573: 
+  574:     return {
+  575:         hasOtp: has(/인증번호|OTP|보안코드/i),
+  576:         hasRemote: has(/원격|teamviewer|팀뷰|anydesk|애니데스크|지원앱|앱\s*설치|설치/i),
+  577:         hasTransfer: has(/이체|송금|입금|계좌/i),
+  578:         hasCash: has(/현금|봉투|퀵|대면/i),
+  579:         hasTravel: has(/출국|항공|비행기|공항|여권|동남아|현지|취업/i),
+  580:         hasBlackmail: has(/유흥|업소|성매매|유포|협박|영상|폭로/i),
+  581:         hasPII: has(/주민|신분증|계좌번호|카드번호|개인정보/i),
+  582:         hasCred: has(/비밀번호|로그인|아이디/i),
+  583:         hasUrl: has(/https?:\/\/|www\./i),
+  584:         hasQr: has(/QR|큐알|큐싱/i),
+  585: 
+  586:         // ✅ 은행/ATM/창구 유도 힌트
+  587:         hasGoBank: has(/atm|은행\/?atm|현금인출|창구|은행으로|은행\s*가|방문/i),
+  588: 
+  589:         mentionsTypo: has(/타이포|오타|유사문자|비슷한\s*주소|도메인/i),
+  590:         mentionsShort: has(/단축|short|t\.|bit\.|tiny/i),
+  591:     };
+  592: }
+  593: 
+  594: function featuresToKeywords(f: StubFeatures): string[] {
+  595:     const out: string[] = [];
+  596:     if (f.hasOtp) out.push("otp");
+  597:     if (f.hasRemote) out.push("remote");
+  598:     if (f.hasTransfer) out.push("transfer");
+  599:     if (f.hasCash) out.push("cash");
+  600:     if (f.hasTravel) out.push("travel");
+  601:     if (f.hasBlackmail) out.push("blackmail");
+  602:     if (f.hasPII) out.push("pii");
+  603:     if (f.hasCred) out.push("cred");
+  604:     if (f.hasUrl) out.push("url");
+  605:     if (f.hasQr) out.push("qr");
+  606:     if (f.hasGoBank) out.push("go_bank");   // ✅ 추가
+  607:     if (f.mentionsTypo) out.push("typo");
+  608:     if (f.mentionsShort) out.push("short");
+  609:     return out;
+  610: }
+  611: 
+  612: function chooseUrlKindFromFeatures(rng: () => number, f: StubFeatures): UrlKind {
+  613:     if (f.mentionsShort) return "short";
+  614:     if (f.mentionsTypo) return chance(rng, 0.6) ? "typo" : "homoglyph";
+  615: 
+  616:     // ✅ 악성은 '공식' 비중을 낮추고 typo/homoglyph/short 중심으로
+  617:     const r = rng();
+  618:     if (r < 0.20) return "official";
+  619:     if (r < 0.55) return "typo";
+  620:     if (r < 0.80) return "homoglyph";
+  621:     return "short";
+  622: }
+  623: 
+  624: // ---------- 케이스 타입 결정(스텁 기반) ----------
+  625: function inferCaseTypeFromStub(rng: () => number, stub: AnyObj): CaseType {
+  626:     const text = `${stub.title || ""} ${stub.subject || ""} ${Array.isArray(stub.context_blocks) ? stub.context_blocks.join(" ") : ""} ${stub.body || ""}`
+  627:         .toLowerCase()
+  628:         .slice(0, 4000);
+  629: 
+  630:     const has = (re: RegExp) => re.test(text);
+  631: 
+  632:     if (has(/유흥|유포|협박|영상|폭로|불륜|성매매|업소/)) return "blackmail_sexvisit";
+  633:     if (has(/출국|항공|비행기|여권|현지|취업|동남아|캄보|라오|태국/)) return "job_travel";
+  634:     if (has(/택배|배송|운송장|부재|보관/)) return "delivery_link";
+  635:     if (has(/과태료|범칙금|미납|납부|환급/)) return "fine_refund_link";
+  636:     if (has(/원격|앱설치|설치|팀뷰|애니데|anydesk|지원앱/)) return "bank_install";
+  637:     if (has(/인증번호|otp|보안코드/)) return "bank_otp";
+  638:     if (has(/비밀번호|로그인|계정|인증\s*실패|잠금/)) return "account_takeover_cred";
+  639:     if (has(/주민|계좌|카드번호|신분증|개인정보/)) return "pii_collection";
+  640:     if (has(/대출|수수료|보증금|선입금/)) return "loan_fee";

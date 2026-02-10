@@ -1,0 +1,161 @@
+ 1280:         ]);
+ 1281: 
+ 1282:       const bizDocLink =
+ 1283:         urls.length > 0 &&
+ 1284:         /(거래처|세금계산서|계산서|견적서|발주서|계약서|회계|정산|invoice|tax\s*invoice|bill|청구서)/i.test(content);
+ 1285:       if (bizDocLink) addCtxHit(ctxHits, "ctx_biz_doc_link", "맥락: 업무/회계 문서 + 링크", "verify", 14, content, ["bizdoc+link"]);
+ 1286: 
+ 1287:       const bizViewerInstall =
+ 1288:         bizDocLink && /(뷰어|viewer|문서\s*뷰어|플러그인|plugin)/i.test(content) && /(설치|다운로드|받아|깔아)/i.test(content);
+ 1289:       if (bizViewerInstall) addCtxHit(ctxHits, "ctx_biz_doc_install", "맥락: 업무 문서 열람을 위한 뷰어 설치 유도", "install", 12, content, ["bizdoc+install"]);
+ 1290:     }
+ 1291: 
+ 1292:     const msgHitsRaw = includeInThreat ? [...baseHits, ...urlHits, ...ctxHits].sort((a, b) => b.weight - a.weight) : [];
+ 1293:     const msgScore = includeInThreat ? Math.min(100, msgHitsRaw.reduce((s, h) => s + h.weight, 0)) : 0;
+ 1294: 
+ 1295:     const { stage, triggers, normalized } = stageFromHitsV2(content, msgHitsRaw);
+ 1296: 
+ 1297:     messageSummaries.push({
+ 1298:       index: originalIndex + 1,
+ 1299:       text: rawBlock,
+ 1300:       header: parsed.header || undefined,
+ 1301:       speakerLabel: parsed.speakerLabel || undefined,
+ 1302:       content,
+ 1303:       actorHint,
+ 1304:       role,
+ 1305:       preview: content.length > 220 ? content.slice(0, 220) + "…" : content,
+ 1306:       score: msgScore,
+ 1307:       urls,
+ 1308:       stage,
+ 1309:       stageTriggers: triggers,
+ 1310:       topRules: normalized.slice(0, 3).map((h) => ({ label: h.label, stage: h.stage, weight: h.weight })),
+ 1311:       includeInThreat,
+ 1312:     });
+ 1313: 
+ 1314:     if (includeInThreat) hits.push(...normalized);
+ 1315:   }
+ 1316: 
+ 1317:   // (라벨 없을 때만) demand→comply 연쇄 등의 맥락 히트 유지
+ 1318:   if (!hasExplicitRole) {
+ 1319:     for (let i = 0; i < messageSummaries.length; i++) {
+ 1320:       const a = messageSummaries[i];
+ 1321:       if (a.actorHint !== "demand") continue;
+ 1322: 
+ 1323:       for (let j = i + 1; j <= Math.min(i + 2, messageSummaries.length - 1); j++) {
+ 1324:         const b = messageSummaries[j];
+ 1325:         if (b.actorHint !== "comply") continue;
+ 1326: 
+ 1327:         const speakerDiff = a.speakerLabel && b.speakerLabel ? String(a.speakerLabel) !== String(b.speakerLabel) : false;
+ 1328:         const stage = maxStage(a.stage, b.stage);
+ 1329:         const w = speakerDiff ? 12 : 8;
+ 1330: 
+ 1331:         hits.push({
+ 1332:           ruleId: "ctx_comply_after_demand",
+ 1333:           label: "맥락: 요구 직후 동의/수락(연쇄 위험)",
+ 1334:           stage: stage === "info" ? "verify" : stage,
+ 1335:           weight: w,
+ 1336:           matched: [`BLK ${a.index} → BLK ${b.index}`],
+ 1337:           sample: `${a.preview} / ${b.preview}`.slice(0, 180),
+ 1338:         });
+ 1339: 
+ 1340:         break;
+ 1341:       }
+ 1342:     }
+ 1343: 
+ 1344:     for (let i = 0; i < messageSummaries.length; i++) {
+ 1345:       const a = messageSummaries[i];
+ 1346:       if (!a.urls || a.urls.length === 0) continue;
+ 1347: 
+ 1348:       for (let j = i + 1; j <= Math.min(i + 2, messageSummaries.length - 1); j++) {
+ 1349:         const b = messageSummaries[j];
+ 1350:         const denial =
+ 1351:           /(신청\s*안\s*했|신청\s*한\s*적\s*없|한\s*적\s*없|누른\s*적\s*없|기억\s*없|모르겠|아닌데요|제가\s*아닌데|저\s*아닌데|왜\s*오죠)/i.test(
+ 1352:             String(b.content || b.preview || "")
+ 1353:           );
+ 1354:         if (!denial) continue;
+ 1355: 
+ 1356:         const speakerDiff = a.speakerLabel && b.speakerLabel ? String(a.speakerLabel) !== String(b.speakerLabel) : false;
+ 1357:         const w = speakerDiff ? 14 : 10;
+ 1358: 
+ 1359:         hits.push({
+ 1360:           ruleId: "ctx_denial_after_link",
+ 1361:           label: "맥락: 링크 제시 직후 본인 부인/미신청",
+ 1362:           stage: "verify",
+ 1363:           weight: w,
+ 1364:           matched: [`BLK ${a.index} → BLK ${b.index}`],
+ 1365:           sample: `${a.preview} / ${b.preview}`.slice(0, 180),
+ 1366:         });
+ 1367: 
+ 1368:         break;
+ 1369:       }
+ 1370:     }
+ 1371: 
+ 1372:     for (let i = 0; i < messageSummaries.length; i++) {
+ 1373:       const a = messageSummaries[i];
+ 1374:       const aText = String(a.content || "");
+ 1375:       const aOtpDemand =
+ 1376:         /(인증번호|otp|오티피|확인\s*코드|보안\s*코드|6\s*자리|6자리|ars|2\s*단계\s*인증)/i.test(aText) &&
+ 1377:         /(보내|알려|전달|말해|읽어|불러|캡처|말씀)/i.test(aText);
+ 1378: 
+ 1379:       if (!aOtpDemand) continue;
+ 1380: 
+ 1381:       for (let j = i + 1; j <= Math.min(i + 2, messageSummaries.length - 1); j++) {
+ 1382:         const b = messageSummaries[j];
+ 1383:         const denial =
+ 1384:           /(신청\s*안\s*했|신청\s*한\s*적\s*없|한\s*적\s*없|누른\s*적\s*없|기억\s*없|모르겠|아닌데요|제가\s*아닌데|저\s*아닌데|왜\s*오죠|분실\s*신고\s*안|분실\s*접수\s*안|내가\s*아닌|제가\s*아닌)/i.test(
+ 1385:             String(b.content || b.preview || "")
+ 1386:           );
+ 1387:         if (!denial) continue;
+ 1388: 
+ 1389:         hits.push({
+ 1390:           ruleId: "ctx_denial_after_otp",
+ 1391:           label: "맥락: 인증번호 요구 직후 본인 부인/미신청",
+ 1392:           stage: "verify",
+ 1393:           weight: 14,
+ 1394:           matched: [`BLK ${a.index} → BLK ${b.index}`],
+ 1395:           sample: `${a.preview} / ${b.preview}`.slice(0, 180),
+ 1396:         });
+ 1397: 
+ 1398:         break;
+ 1399:       }
+ 1400:     }
+ 1401:   }
+ 1402: 
+ 1403:   const W_FIRST_CONTACT = 10;
+ 1404: 
+ 1405:   if (call?.otpAsked) {
+ 1406:     hits.push({
+ 1407:       ruleId: "call_otp",
+ 1408:       label: "통화: 인증번호/OTP 요구",
+ 1409:       stage: "verify",
+ 1410:       weight: weights.callOtp,
+ 1411:       matched: ["(call) otp asked"],
+ 1412:       sample: "통화 맥락 체크박스",
+ 1413:     });
+ 1414:   }
+ 1415:   if (call?.remoteAsked) {
+ 1416:     hits.push({
+ 1417:       ruleId: "call_remote",
+ 1418:       label: "통화: 원격/앱 설치 유도",
+ 1419:       stage: "install",
+ 1420:       weight: weights.callRemote,
+ 1421:       matched: ["(call) remote asked"],
+ 1422:       sample: "통화 맥락 체크박스",
+ 1423:     });
+ 1424:   }
+ 1425:   if (call?.urgentPressured) {
+ 1426:     hits.push({
+ 1427:       ruleId: "call_urgent",
+ 1428:       label: "통화: 긴급/압박",
+ 1429:       stage: "info",
+ 1430:       weight: weights.callUrgent,
+ 1431:       matched: ["(call) urgent pressured"],
+ 1432:       sample: "통화 맥락 체크박스",
+ 1433:     });
+ 1434:   }
+ 1435:   if (call?.firstContact) {
+ 1436:     hits.push({
+ 1437:       ruleId: "call_first_contact",
+ 1438:       label: "통화: 처음 연락(미등록 발신)",
+ 1439:       stage: "info",
+ 1440:       weight: W_FIRST_CONTACT,

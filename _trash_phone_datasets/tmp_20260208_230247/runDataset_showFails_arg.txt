@@ -1,0 +1,81 @@
+﻿   64: 
+   65:     notes?: any;
+   66:     meta?: any;
+   67:     should_trigger?: any;
+   68: };
+   69: 
+   70: const STAGE_RANK: Record<StageId, number> = { info: 0, verify: 1, install: 2, payment: 3 };
+   71: 
+   72: function clamp01(n: number) {
+   73:     if (!Number.isFinite(n)) return 0;
+   74:     return Math.max(0, Math.min(1, n));
+   75: }
+   76: 
+   77: function absPath(p: string) {
+   78:     return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+   79: }
+   80: 
+   81: function ensureDirForFile(filePath: string) {
+   82:     const dir = path.dirname(filePath);
+   83:     fs.mkdirSync(dir, { recursive: true });
+   84: }
+   85: 
+   86: function writeJsonl(filePath: string, rows: any[]) {
+   87:     const abs = absPath(filePath);
+   88:     ensureDirForFile(abs);
+   89:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+   90:     fs.writeFileSync(abs, body, "utf-8");
+   91: }
+   92: 
+   93: function writeText(filePath: string, text: string) {
+   94:     const abs = absPath(filePath);
+   95:     ensureDirForFile(abs);
+   96:     fs.writeFileSync(abs, text, "utf-8");
+   97: }
+   98: 
+   99: function parseArgs(argv: string[]) {
+  100:     const out = {
+  101:         path: "datasets/ko_scam/scenarios_ko_v1.jsonl",
+  102:         limit: 0,
+  103:         onlyFail: false,
+  104:         showFails: 3,
+  105: 
+  106:         dumpFails: "",
+  107:         dumpSummary: "",
+  108: 
+  109:         // ✅ risk source mode
+  110:         // - "threat": gotRisk는 riskLevel만 사용(정책 기준)
+  111:         // - "ui": gotRisk는 uiRiskLevel 우선(UI 표시용 비교)
+  112:         riskMode: "threat" as "ui" | "threat",
+  113: 
+  114:         simEnabled: false,
+  115:         simIndexPath: "public/simindex_ko_v2.json",
+  116:         simTopK: 10,
+  117:         simGate: 0.9, // gate for boost (engine uses it as simMinSim)
+  118:     };
+  119: 
+  120:     const has = (k: string) => argv.includes(k);
+  121: 
+  122:     const get = (k: string) => {
+  123:         const i = argv.findIndex((x) => x === k);
+  124:         return i >= 0 ? (argv[i + 1] ?? "") : "";
+  125:     };
+  126: 
+  127:     const p = get("--path");
+  128:     if (p) out.path = p;
+  129: 
+  130:     const lim = get("--limit");
+  131:     if (lim && Number.isFinite(Number(lim))) out.limit = Math.max(0, Math.floor(Number(lim)));
+  132: 
+  133:     if (has("--only-fail")) out.onlyFail = true;
+  134: 
+  135:     const sf = get("--show-fails");
+  136:     if (sf && Number.isFinite(Number(sf))) out.showFails = Math.max(0, Math.floor(Number(sf)));
+  137: 
+  138:     // ✅ dumps
+  139:     const df = get("--dump-fails");
+  140:     if (df) out.dumpFails = df;
+  141:     else if (has("--dump-fails")) throw new Error("Missing value: --dump-fails <path>");
+  142: 
+  143:     const ds = get("--dump-summary");
+  144:     if (ds) out.dumpSummary = ds;

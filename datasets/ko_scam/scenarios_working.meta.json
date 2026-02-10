@@ -1,0 +1,7 @@
+﻿{
+    "dst":  ".\\datasets\\ko_scam\\scenarios_working.jsonl",
+    "sha256":  "299666322AE529F58AF8F8B00CDC0F03ECA02F1723DD9CF877EFBDB4B6AD3C79",
+    "frozen_at":  "2026-02-08 10:20:59",
+    "lines":  510,
+    "src":  ".\\datasets\\ko_scam\\scenarios_ko_v4_eval_engineAligned_variants_e3_mutateR_urlfixed.policyRelabeled_2026-02-08.jsonl"
+}

@@ -1,0 +1,65 @@
+Folder PATH listing
+Volume serial number is 0209-2ED1
+C:.
+|   folder-tree.txt
+|   index.html
+|   package.json
+|   tsconfig.json
+|   vite.config.ts
+|   
++---public
+|       favicon.svg
+|       
+\---src
+    |   main.tsx
+    |   
+    +---app
+    |       App.tsx
+    |       routes.ts
+    |       styles.css
+    |       
+    +---components
+    |       ActionButtons.tsx
+    |       CopyBox.tsx
+    |       EvidenceList.tsx
+    |       ExamplePicker.tsx
+    |       RiskBadge.tsx
+    |       TextArea.tsx
+    |       ToggleRow.tsx
+    |       
+    +---data
+    |       actions.ts
+    |       examples.ts
+    |       
+    +---engine
+    |   |   index.ts
+    |   |   
+    |   +---extract
+    |   |       normalize.ts
+    |   |       splitThread.ts
+    |   |       
+    |   +---report
+    |   |       buildEvidence.ts
+    |   |       buildPackage.ts
+    |   |       
+    |   +---rules
+    |   |       keywords.ts
+    |   |       patterns.ts
+    |   |       weights.ts
+    |   |       
+    |   \---scoring
+    |           escalation.ts
+    |           scoreMessage.ts
+    |           scoreThread.ts
+    |           
+    +---pages
+    |       AnalyzePage.tsx
+    |       ResultPage.tsx
+    |       
+    +---types
+    |       analysis.ts
+    |       
+    \---utils
+            clipboard.ts
+            time.ts
+            

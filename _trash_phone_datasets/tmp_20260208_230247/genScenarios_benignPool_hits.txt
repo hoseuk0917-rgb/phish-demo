@@ -1,0 +1,1 @@
+﻿@{LineNumber=1550; Line=        const benignCasePool = ["delivery_link", "fine_refund_link", "loan_fee"] as const;}

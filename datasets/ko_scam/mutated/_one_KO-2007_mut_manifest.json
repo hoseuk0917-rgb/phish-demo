@@ -1,0 +1,29 @@
+{
+  "schema_version": "mutated_manifest.v1",
+  "created_at": "2026-02-01T07:16:10.439Z",
+  "input": "datasets/ko_scam/mutated/_one_KO-2007.jsonl",
+  "output": "datasets/ko_scam/mutated/_one_KO-2007_mut.jsonl",
+  "stats": {
+    "parents_in": 1,
+    "n_per_parent": 60,
+    "kept": 20,
+    "dropped": 0,
+    "drop_reasons": []
+  },
+  "config_digest": "sha256:4f26168d4d11c6d8b526821c909312a176a7c03b5095c5079232e286019ffd3d",
+  "models": {
+    "mlm": "Xenova/bert-base-multilingual-cased",
+    "embed": "Xenova/bert-base-multilingual-cased"
+  },
+  "options": {
+    "preset": "fast200_v4",
+    "mode": "anchor_shake",
+    "mask_scope": "any",
+    "engine_gate": true,
+    "target_kept": 20
+  },
+  "known_presets": [
+    "fast200_v2",
+    "fast200_v4"
+  ]
+}

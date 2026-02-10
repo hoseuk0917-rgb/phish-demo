@@ -1,0 +1,261 @@
+﻿  221: 
+  222:     const hasPii =
+  223:         /(주민등록|신분증|여권|계좌\s*사본|카드번호|개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+  224:         /(주민등록|신분증|여권|계좌사본|카드번호|개인정보|사진업로드|업로드|제출)/i.test(t2);
+  225: 
+  226:     const keep: Anchor[] = [];
+  227:     for (const a of anchors) {
+  228:         if (a === "A_LINK" && !hasUrl) continue;
+  229:         if (a === "A_QR" && !hasQr) continue;
+  230: 
+  231:         if (a === "A_OTP" && !hasOtp) continue;
+  232:         if (a === "A_INSTALL" && !hasInstall) continue;
+  233: 
+  234:         if (a === "A_TRANSFER" && !hasTransfer) continue;
+  235:         if (a === "A_CASH_PICKUP" && !hasCash) continue;
+  236:         if (a === "A_GO_BANK" && !hasGoBank) continue;
+  237: 
+  238:         if (a === "A_TRAVEL" && !hasTravel) continue;
+  239: 
+  240:         if (a === "A_CRED" && !hasCred) continue;
+  241:         if (a === "A_PII" && !hasPii) continue;
+  242: 
+  243:         keep.push(a);
+  244:     }
+  245: 
+  246:     return uniqAnchors(keep);
+  247: }
+  248: 
+  249: function safeId(prefix: string, i: number) {
+  250:     return `${prefix}${String(i).padStart(5, "0")}`;
+  251: }
+  252: 
+  253: // ---------- DEMO 전화번호 레지스트리(가상, 충돌 회피) ----------
+  254: type CallerRegistryEntry = {
+  255:     caller_id: string;
+  256:     caller_display: string;
+  257:     caller_class: CallerClass;
+  258:     is_whitelisted: boolean;
+  259: };
+  260: 
+  261: function buildCallerRegistry(): CallerRegistryEntry[] {
+  262:     // 공식: 은행/카드=15xx, 법원/검경/정부=유선
+  263:     // 악성: 010/070/050은 "정상 자릿수"로 고정 (정규식/파서 통과 보장)
+  264:     return [
+  265:         { caller_id: "OFFICIAL_BANK_MAIN", caller_display: "1588-0000", caller_class: "official_landline", is_whitelisted: true },
+  266:         { caller_id: "OFFICIAL_CARD_MAIN", caller_display: "1577-0000", caller_class: "official_landline", is_whitelisted: true },
+  267:         { caller_id: "OFFICIAL_COURT_MAIN", caller_display: "02-0000-0000", caller_class: "official_landline", is_whitelisted: true },
+  268:         { caller_id: "OFFICIAL_POLICE_MAIN", caller_display: "02-0000-1000", caller_class: "official_landline", is_whitelisted: true },
+  269:         { caller_id: "OFFICIAL_PROSECUTOR_MAIN", caller_display: "02-0000-2000", caller_class: "official_landline", is_whitelisted: true },
+  270:         { caller_id: "OFFICIAL_GOV_MAIN", caller_display: "044-000-0000", caller_class: "official_landline", is_whitelisted: true },
+  271: 
+  272:         // ✅ 스캠용: 자릿수 정상(끝 4자리)
+  273:         { caller_id: "SCAM_MOBILE_01", caller_display: "010-0000-0101", caller_class: "mobile", is_whitelisted: false },
+  274:         { caller_id: "SCAM_MOBILE_02", caller_display: "010-0000-0102", caller_class: "mobile", is_whitelisted: false },
+  275:         { caller_id: "SCAM_070_01", caller_display: "070-0000-0201", caller_class: "voip070", is_whitelisted: false },
+  276:         { caller_id: "SCAM_070_02", caller_display: "070-0000-0202", caller_class: "voip070", is_whitelisted: false },
+  277:         { caller_id: "SCAM_050_01", caller_display: "050-0000-0301", caller_class: "voip070", is_whitelisted: false },
+  278:         { caller_id: "SCAM_UNKNOWN_01", caller_display: "발신번호표시제한", caller_class: "unknown", is_whitelisted: false },
+  279:     ];
+  280: }
+  281: 
+  282: function randDigits(rng: () => number, n: number) {
+  283:     let out = "";
+  284:     for (let i = 0; i < n; i++) out += String(Math.floor(rng() * 10));
+  285:     return out;
+  286: }
+  287: function make010(rng: () => number) {
+  288:     return `010-${randDigits(rng, 4)}-${randDigits(rng, 4)}`;
+  289: }
+  290: function make070(rng: () => number) {
+  291:     return `070-${randDigits(rng, 4)}-${randDigits(rng, 4)}`;
+  292: }
+  293: function normalizeCallerDisplay(
+  294:     rng: () => number,
+  295:     c: CallerRegistryEntry,
+  296: ): CallerRegistryEntry {
+  297:     if (c.caller_class === "mobile") return { ...c, caller_display: make010(rng) };
+  298:     if (c.caller_class === "voip070") return { ...c, caller_display: make070(rng) };
+  299:     if (c.caller_class === "unknown") return { ...c, caller_display: `발신번호표시제한(${make010(rng)})` };
+  300:     return c; // official_landline 등은 그대로
+  301: }
+  302: 
+  303: function chooseCaller(rng: () => number, caseType: CaseType, isBenign: boolean): ScenarioInternal["caller"] {
+  304:     const reg = buildCallerRegistry();
+  305: 
+  306:     const spoofedOfficial = (caller_id: string): ScenarioInternal["caller"] => {
+  307:         const found = reg.find((x) => x.caller_id === caller_id) || reg[0];
+  308:         return {
+  309:             caller_id: found.caller_id,
+  310:             caller_display: found.caller_display,
+  311:             caller_class: "spoofed",
+  312:             is_whitelisted: true,
+  313:             is_first_seen: false,
+  314:         };
+  315:     };
+  316: 
+  317:     if (isBenign) {
+  318:         const c0 = pick(rng, reg.filter((x) => x.is_whitelisted));
+  319:         const c = normalizeCallerDisplay(rng, c0);
+  320:         return { ...c, is_first_seen: false };
+  321:     }
+  322: 
+  323:     if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") {
+  324:         if (chance(rng, 0.25)) return spoofedOfficial("OFFICIAL_BANK_MAIN");
+  325:         const pool0 = reg.filter((x) => !x.is_whitelisted && (x.caller_class === "voip070" || x.caller_class === "mobile" || x.caller_class === "unknown"));
+  326:         const c = normalizeCallerDisplay(rng, pick(rng, pool0));
+  327:         return { ...c, is_first_seen: true };
+  328:     }
+  329: 
+  330:     if (caseType === "go_bank_atm") {
+  331:         if (chance(rng, 0.3)) return spoofedOfficial("OFFICIAL_COURT_MAIN");
+  332:         const pool0 = reg.filter((x) => !x.is_whitelisted);
+  333:         const c = normalizeCallerDisplay(rng, pick(rng, pool0));
+  334:         return { ...c, is_first_seen: true };
+  335:     }
+  336: 
+  337:     const pool0 = reg.filter((x) => !x.is_whitelisted);
+  338:     const c = normalizeCallerDisplay(rng, pick(rng, pool0));
+  339:     return { ...c, is_first_seen: true };
+  340: }
+  341: 
+  342: // ---------- URL/QR (DEMO: 가상 "공식 URL 레지스트리" 기반) ----------
+  343: type UrlOwner = "bank" | "card" | "court" | "police" | "prosecutor" | "gov" | "delivery";
+  344: 
+  345: type UrlRegistryEntry = {
+  346:     url_id: string;
+  347:     owner: UrlOwner;
+  348:     url: string;
+  349:     host: string;
+  350:     label: string;
+  351: };
+  352: 
+  353: function buildUrlRegistry(): UrlRegistryEntry[] {
+  354:     return [
+  355:         { url_id: "OFFICIAL_BANK_LOGIN", owner: "bank", url: "https://portal-bank.invalid/secure/login", host: "portal-bank.invalid", label: "은행 포털 로그인" },
+  356:         { url_id: "OFFICIAL_BANK_VERIFY", owner: "bank", url: "https://portal-bank.invalid/secure/verify", host: "portal-bank.invalid", label: "은행 보안 확인" },
+  357:         { url_id: "OFFICIAL_CARD_AUTH", owner: "card", url: "https://card-center.invalid/auth/confirm", host: "card-center.invalid", label: "카드 본인확인" },
+  358: 
+  359:         { url_id: "OFFICIAL_COURT_NOTICE", owner: "court", url: "https://court-notice.invalid/case/view", host: "court-notice.invalid", label: "법원 사건 조회" },
+  360:         { url_id: "OFFICIAL_POLICE_HELP", owner: "police", url: "https://police-help.invalid/verify", host: "police-help.invalid", label: "경찰 확인 안내" },
+  361:         { url_id: "OFFICIAL_PROSECUTOR_HELP", owner: "prosecutor", url: "https://prosecutor-help.invalid/verify", host: "prosecutor-help.invalid", label: "검찰 확인 안내" },
+  362:         { url_id: "OFFICIAL_GOV_PAY", owner: "gov", url: "https://tax-refund.invalid/pay/check", host: "tax-refund.invalid", label: "납부/환급 확인" },
+  363: 
+  364:         { url_id: "OFFICIAL_DELIVERY_ADDR", owner: "delivery", url: "https://track-parcel.invalid/addr/confirm", host: "track-parcel.invalid", label: "배송지 확인" },
+  365:         { url_id: "OFFICIAL_DELIVERY_PICKUP", owner: "delivery", url: "https://track-parcel.invalid/pickup/check", host: "track-parcel.invalid", label: "보관/수령 확인" },
+  366:     ];
+  367: }
+  368: 
+  369: function ownersFromImpersonation(imp?: string): UrlOwner[] {
+  370:     switch (imp) {
+  371:         case "imp_bank": return ["bank", "card"];
+  372:         case "imp_court": return ["court"];
+  373:         case "imp_police": return ["police"];
+  374:         case "imp_gov": return ["gov"];
+  375:         case "imp_delivery": return ["delivery"];
+  376:         default: return ["bank", "card", "court", "police", "gov", "delivery"];
+  377:     }
+  378: }
+  379: 
+  380: function pickOfficialUrlEntry(rng: () => number, ownerChoices: UrlOwner[]): UrlRegistryEntry {
+  381:     const reg = buildUrlRegistry().filter(r => ownerChoices.includes(r.owner));
+  382:     return pick(rng, reg.length ? reg : buildUrlRegistry());
+  383: }
+  384: 
+  385: function typoHost(host: string, rng: () => number) {
+  386:     if (host.length < 8) return host;
+  387:     const mode = pick(rng, ["swap", "drop", "dup"] as const);
+  388:     const i = Math.floor(rng() * (host.length - 3)) + 1;
+  389:     if (mode === "swap") return host.slice(0, i) + host[i + 1] + host[i] + host.slice(i + 2);
+  390:     if (mode === "drop") return host.slice(0, i) + host.slice(i + 1);
+  391:     return host.slice(0, i) + host[i] + host.slice(i);
+  392: }
+  393: 
+  394: function homoglyphLiteHost(host: string, rng: () => number) {
+  395:     const rules: Array<[RegExp, string]> = [
+  396:         [/o/g, "0"],
+  397:         [/l/g, "1"],
+  398:         [/rn/g, "m"],
+  399:         [/vv/g, "w"],
+  400:     ];
+  401:     const [re, rep] = pick(rng, rules);
+  402:     if (!re.test(host)) return typoHost(host, rng);
+  403:     return host.replace(re, rep);
+  404: }
+  405: 
+  406: function makeVariantUrlFromOfficial(rng: () => number, official: UrlRegistryEntry, kind: UrlKind): string {
+  407:     if (kind === "official") return official.url;
+  408: 
+  409:     if (kind === "short") {
+  410:         const code = Math.floor(rng() * 90000 + 10000).toString(36).slice(0, 5);
+  411:         return `https://t.invalid/${code}`;
+  412:     }
+  413: 
+  414:     const u = new URL(official.url);
+  415:     if (kind === "typo") u.hostname = typoHost(u.hostname, rng);
+  416:     else if (kind === "homoglyph") u.hostname = homoglyphLiteHost(u.hostname, rng);
+  417:     return u.toString();
+  418: }
+  419: 
+  420: function hostOf(url: string) {
+  421:     try { return new URL(url).hostname; } catch { return ""; }
+  422: }
+  423: function urlMatchesRegistry(url: string, allowedHosts: string[]) {
+  424:     const h = hostOf(url);
+  425:     return !!h && allowedHosts.includes(h);
+  426: }
+  427: 
+  428: function makeQrLandingUrl(rng: () => number, kind: UrlKind, officialOwnerChoices: UrlOwner[]) {
+  429:     const official = pickOfficialUrlEntry(rng, officialOwnerChoices);
+  430:     const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => officialOwnerChoices.includes(r.owner)).map(r => r.host)));
+  431:     const qr_url = makeVariantUrlFromOfficial(rng, official, kind);
+  432:     const match = urlMatchesRegistry(qr_url, allowedHosts);
+  433:     return { qr_url, match, allowedHosts, official_id: official.url_id };
+  434: }
+  435: 
+  436: // ---------- 텍스트 노이즈/어미 변형/동의어 ----------
+  437: type KoTone = "formal" | "polite" | "casual";
+  438: 
+  439: function pickTone(rng: () => number): KoTone {
+  440:     const r = rng();
+  441:     if (r < 0.4) return "polite";
+  442:     if (r < 0.8) return "formal";
+  443:     return "casual";
+  444: }
+  445: 
+  446: function applyNoiseKo(rng: () => number, s: string, level: "none" | "low" | "mid" | "high") {
+  447:     if (level === "none") return s;
+  448:     const p = level === "low" ? 0.12 : level === "mid" ? 0.2 : 0.32;
+  449:     let out = s;
+  450: 
+  451:     if (chance(rng, p)) out = out.replace(/해주세요/g, chance(rng, 0.5) ? "해 주세요" : "해주세 요");
+  452:     if (chance(rng, p * 0.8)) out = out.replace(/바로/g, chance(rng, 0.5) ? "바 로" : "바로 ");
+  453: 
+  454:     if (chance(rng, p)) out = out.replace(/입니다\./g, chance(rng, 0.5) ? "입니다요." : "입니다.");
+  455:     if (chance(rng, p)) out = out.replace(/하세요\./g, chance(rng, 0.5) ? "하세여." : "하세요.");
+  456: 
+  457:     if (chance(rng, p * 0.7)) out = out.replace(/확인/g, chance(rng, 0.5) ? "확닌" : "확잉");
+  458:     if (chance(rng, p * 0.6)) out = out.replace(/입금/g, chance(rng, 0.5) ? "입금요" : "입끔");
+  459: 
+  460:     return out;
+  461: }
+  462: 
+  463: function varyEnding(rng: () => number, base: string, tone: KoTone): string {
+  464:     // base는 “~합니다.” 형태를 권장. tone에 따라 가볍게 변환.
+  465:     if (!base.endsWith(".")) base = base + ".";
+  466:     if (tone === "formal") return base;
+  467: 
+  468:     const variantsPolite: Array<(s: string) => string> = [
+  469:         (s) => s.replace(/합니다\./g, "해 주세요."),
+  470:         (s) => s.replace(/합니다\./g, "부탁드립니다."),
+  471:         (s) => s.replace(/필요합니다\./g, "필요해요."),
+  472:         (s) => s.replace(/입니다\./g, "이에요."),
+  473:     ];
+  474:     const variantsCasual: Array<(s: string) => string> = [
+  475:         (s) => s.replace(/합니다\./g, "해요."),
+  476:         (s) => s.replace(/필요합니다\./g, "필요해요."),
+  477:         (s) => s.replace(/입니다\./g, "임."),
+  478:         (s) => s.replace(/부탁드립니다\./g, "부탁해요."),
+  479:     ];
+  480: 
+  481:     const fns = tone === "polite" ? variantsPolite : variantsCasual;

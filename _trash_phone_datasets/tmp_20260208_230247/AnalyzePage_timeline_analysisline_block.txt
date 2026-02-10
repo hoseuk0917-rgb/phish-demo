@@ -1,0 +1,51 @@
+﻿ 1921:                                 Math.max(0, Math.min(100, Number((preview as any)?.uiScoreTotal ?? (preview as any)?.scoreTotal ?? 0)))
+ 1922:                             );
+ 1923:                             const stagePeak = String((preview as any)?.stagePeak || (preview as any)?.stage || "n/a");
+ 1924: 
+ 1925:                             const riskLevelRaw = String((preview as any)?.riskLevel || "").toLowerCase().trim();
+ 1926:                             const uiRiskLevelRaw = String((preview as any)?.uiRiskLevel || "").toLowerCase().trim();
+ 1927: 
+ 1928:                             const riskLevel = riskLevelRaw || "n/a";
+ 1929:                             const uiRiskLevel = uiRiskLevelRaw || (riskLevelRaw || "n/a");
+ 1930: 
+ 1931:                             const simArr: any[] = Array.isArray((preview as any)?.similarityTop) ? ((preview as any).similarityTop as any[]) : [];
+ 1932:                             const simTop = simArr?.[0] || null;
+ 1933:                             const simPct = simTop ? Math.round(Math.max(0, Math.min(1, Number(simTop?.similarity || 0))) * 100) : null;
+ 1934: 
+ 1935:                             const emb: any = embedSignals as any;
+ 1936:                             const embLabel = String(emb?.top?.[0]?.label || "n/a");
+ 1937:                             const embPct = Math.round(Math.max(0, Math.min(1, Number(emb?.maxSim || 0))) * 100);
+ 1938: 
+ 1939:                             const lines: Array<{ k: string; v: string; tone?: "good" | "warn" | "bad" }> = [
+ 1940:                                 {
+ 1941:                                     k: "t",
+ 1942:                                     v: (demoRunning || demoIndex > 0) ? `T+${tSec.toFixed(1)}s · DEMO ${demoIndex}/${demoTurns.length}` : `${now.toLocaleTimeString()} · LIVE`,
+ 1943:                                 },
+ 1944:                                 { k: "prefilter", v: `${pf}/${triggerThreshold} · ${pfOk ? "pass" : "wait"}`, tone: pfOk ? "good" : "warn" },
+ 1945:                                 { k: "gate", v: `Gate: ${gateMode}`, tone: gateMode === "TRIGGERED" ? "good" : gateMode === "IDLE" ? "warn" : undefined },
+ 1946:                                 { k: "analysis", v: preview ? `score ${scoreTotal} · THREAT ${String(riskLevel).toUpperCase()} · UI ${String(uiRiskLevel).toUpperCase()} · ${stagePeak}` : "no full analysis", tone: preview ? (String(uiRiskLevel) === "high" ? "bad" : String(uiRiskLevel) === "medium" ? "warn" : "good") : undefined },
+ 1947:                                 { k: "emb", v: deepEnabled ? `EMB ${embLabel} · ${embPct}%${emb?.triggered ? " · TRIGGER" : ""}` : "EMB OFF" },
+ 1948:                                 { k: "sim", v: deepEnabled ? (simPct == null ? `SIM n/a · gate ${simMinSim}` : `SIM ${simPct}% · gate ${simMinSim}`) : "SIM OFF" },
+ 1949:                                 { k: "reasons", v: (Array.isArray(prefilterReasons) && prefilterReasons.length) ? `reasons: ${prefilterReasons.slice(0, 4).join(" · ")}` : "reasons: n/a" },
+ 1950:                             ];
+ 1951: 
+ 1952:                             const dot = (tone?: "good" | "warn" | "bad") => {
+ 1953:                                 const bg =
+ 1954:                                     tone === "bad" ? "rgba(255,70,70,0.80)" :
+ 1955:                                         tone === "warn" ? "rgba(255,200,60,0.80)" :
+ 1956:                                             tone === "good" ? "rgba(90,220,120,0.80)" :
+ 1957:                                                 "rgba(255,255,255,0.35)";
+ 1958:                                 return <span style={{ width: 8, height: 8, borderRadius: 999, background: bg, display: "inline-block" }} />;
+ 1959:                             };
+ 1960: 
+ 1961:                             const toneOfEvent = (type: string) => {
+ 1962:                                 const t = String(type || "").toLowerCase();
+ 1963:                                 if (t.includes("err")) return "bad" as const;
+ 1964:                                 if (t.includes("wait")) return "warn" as const;
+ 1965:                                 if (t.includes("blocked")) return "warn" as const;
+ 1966:                                 if (t.includes("run")) return "good" as const;
+ 1967:                                 if (t.includes("schedule")) return "good" as const;
+ 1968:                                 return undefined;
+ 1969:                             };
+ 1970: 
+ 1971:                             const tlRoot: any = (globalThis as any).__phishTimeline;

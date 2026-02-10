@@ -1,0 +1,6 @@
+﻿@{LineNumber=345; Line=        expDist[row.expected.riskLevel] = (expDist[row.expected.riskLevel] ?? 0) + 1;}
+@{LineNumber=487; Line=        if (gotRisk === row.expected.riskLevel) riskOk++;}
+@{LineNumber=488; Line=        else why.push(`risk mismatch: expected=${row.expected.riskLevel} got=${gotRisk}`);}
+@{LineNumber=515; Line=            const expRisk = String(row.expected.riskLevel ?? "").toLowerCase().trim();}
+@{LineNumber=600; Line=            const rp = `${f.expected.riskLevel}->${f.got.riskLevel}`;}
+@{LineNumber=636; Line=                `  expected: risk=${f.expected.riskLevel}` +}

@@ -1,0 +1,7 @@
+﻿{
+    "dst":  ".\\datasets\\ko_scam\\regression_fixed.jsonl",
+    "sha256":  "149F756034F88BEE22469D671EA01EF0FB33AFCBD609F3F0960B182D76A33FCA",
+    "frozen_at":  "2026-02-08 10:16:22",
+    "lines":  510,
+    "src":  ".\\datasets\\ko_scam\\scenarios_ko_v4_eval_engineAligned_variants_e3_mutateR_urlfixed.jsonl"
+}

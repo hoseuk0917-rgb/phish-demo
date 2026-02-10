@@ -1,0 +1,98 @@
+﻿ 1715: 
+ 1716:                 const hasTransferCue =
+ 1717:                     anchorsEff.includes("A_TRANSFER") ||
+ 1718:                     /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire)/i.test(senderText);
+ 1719: 
+ 1720:                 const hasCashCue =
+ 1721:                     anchorsEff.includes("A_CASH_PICKUP") ||
+ 1722:                     anchorsEff.includes("A_GO_BANK") ||
+ 1723:                     /(현금|인출|withdraw|cash|퀵|대면\s*전달|봉투|픽업|atm)/i.test(senderText);
+ 1724: 
+ 1725:                 // payment인데 실제 "송금/현금" 근거가 없으면 verify로 방어
+ 1726:                 if (stagePeak === "payment" && !(hasTransferCue || hasCashCue)) {
+ 1727:                     stagePeak = "verify";
+ 1728:                 }
+ 1729: 
+ 1730:                 // install인데 실제 설치 근거가 없으면 verify로 방어
+ 1731:                 if (stagePeak === "install" && !(hasInstallCue || anchorsEff.includes("A_INSTALL"))) {
+ 1732:                     stagePeak = "verify";
+ 1733:                 }
+ 1734: 
+ 1735:                 // 링크/QR 방어:
+ 1736:                 const hasUrlInText = /https?:\/\/\S+/i.test(senderText);
+ 1737:                 const hasQrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(senderText);
+ 1738: 
+ 1739:                 if (vector === "url" && !hasUrlInText) stagePeak = "info";
+ 1740:                 if (vector === "qr" && !(hasQrCue || hasUrlInText)) stagePeak = "info";
+ 1741:             }
+ 1742: 
+ 1743:             const risk: Risk = isBenign
+ 1744:                 ? "low"
+ 1745:                 : riskFromSignals(anchorsEff, pressuresEff, impersonation, vector, urlKind, urlMatch, senderText);
+ 1746: 
+ 1747:             const triggers = triggersFrom(caseType, anchorsEff, pressuresEff, impersonation, vector, urlKind);
+ 1748: 
+ 1749:             const s: ScenarioInternal = {
+ 1750:                 id: safeId(isBenign ? (isHardNeg ? "HN" : "BN") : "SC", i + 1),
+ 1751:                 caseType,
+ 1752:                 channel: pick(rng, ["sms", "call", "chat"] as Channel[]),
+ 1753:                 caller,
+ 1754:                 vector,
+ 1755:                 url: urlObj,
+ 1756:                 qr: qrObj,
+ 1757: 
+ 1758:                 // ✅ 출력/검증은 eff anchors 기준(텍스트 기반)
+ 1759:                 anchors: anchorsEff,
+ 1760: 
+ 1761:                 // ✅ "실제 텍스트에 존재" 기준으로 저장(출력 notes/toScenarioOutput도 이 값을 씀)
+ 1762:                 pressures: pressuresEff,
+ 1763: 
+ 1764:                 impersonation,
+ 1765:                 turns,
+ 1766:                 expected: { risk, stagePeak, triggers },
+ 1767:                 meta: {
+ 1768:                     stub_hint: String(stub.normalized_ref || stub.id || stub.url || stub.title || "").slice(0, 180),
+ 1769:                     stub_features: stubFeat,
+ 1770:                     stub_keywords: stubKeywords,
+ 1771:                     augmented_vector: augmentedVector,
+ 1772:                     noiseLevel,
+ 1773:                     attempt,
+ 1774: 
+ 1775:                     // (디버그용) 원본/유효 pressures 같이 보관
+ 1776:                     pressures_raw: pressures,
+ 1777:                     pressures_eff: pressuresEff,
+ 1778: 
+ 1779:                     // (디버그용) planned vs eff anchors 같이 보관
+ 1780:                     anchors_planned: anchorsPlanned,
+ 1781:                     anchors_eff: anchorsEff,
+ 1782:                 },
+ 1783:             };
+ 1784: 
+ 1785:             const errs = validateScenario(s, isBenign);
+ 1786:             if (errs.length === 0) {
+ 1787:                 outRows.push(toScenarioOutput(s));
+ 1788:                 produced++;
+ 1789:                 break;
+ 1790:             } else {
+ 1791:                 bestErrs = errs;
+ 1792:             }
+ 1793:         }
+ 1794: 
+ 1795:         if (attempt >= args.max_retries) {
+ 1796:             outRows.push({
+ 1797:                 id: safeId("FAIL", i + 1),
+ 1798:                 error: "generator_failed_constraints",
+ 1799:                 errors: bestErrs,
+ 1800:             });
+ 1801:         }
+ 1802:     }
+ 1803: 
+ 1804:     await writeJsonl(args.out, outRows);
+ 1805:     console.log(`[genScenariosFromStubs] wrote=${outRows.length} produced=${produced} out=${args.out}`);
+ 1806:     if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);
+ 1807: }
+ 1808: 
+ 1809: main().catch((e) => {
+ 1810:     console.error(e);
+ 1811:     process.exit(1);
+ 1812: });

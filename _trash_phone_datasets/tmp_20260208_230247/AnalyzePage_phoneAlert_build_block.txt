@@ -1,0 +1,220 @@
+﻿    1: import React, { useEffect, useMemo, useRef, useState } from "react";
+    2: import type { AnalysisInput, AnalysisResult, StageId } from "../types/analysis";
+    3: import { analyzeThread } from "../engine";
+    4: import { splitThreadWithRanges } from "../engine/extract/splitThread";
+    5: // (removed) prefilterThread: UI에서 직접 실행하지 않음 (엔진 preview.prefilter 사용)
+    6: import { TextArea } from "../components/TextArea";
+    7: import { ToggleRow } from "../components/ToggleRow";
+    8: import { ExamplePicker } from "../components/ExamplePicker";
+    9: import { ActionButtons } from "../components/ActionButtons";
+   10: import { EXAMPLES } from "../data/examples";
+   11: import { copyText } from "../utils/clipboard";
+   12: 
+   13: import type { SimIndexItem } from "../engine/similarity/simIndex";
+   14: import { loadSimIndexOnce } from "../engine/similarity/clientSimIndex";
+   15: 
+   16: type Props = {
+   17:     initial: AnalysisInput;
+   18:     onAnalyze: (input: AnalysisInput, result: AnalysisResult) => void;
+   19: };
+   20: 
+   21: function scoreCls(score: number): "good" | "warn" | "bad" {
+   22:     if (score >= 65) return "bad";
+   23:     if (score >= 35) return "warn";
+   24:     return "good";
+   25: }
+   26: 
+   27: function stageBadge(stage: StageId): { cls: "good" | "warn" | "bad"; label: string } {
+   28:     if (stage === "payment") return { cls: "bad", label: "PAYMENT" };
+   29:     if (stage === "install") return { cls: "warn", label: "INSTALL" };
+   30:     if (stage === "verify") return { cls: "warn", label: "VERIFY" };
+   31:     return { cls: "good", label: "INFO" };
+   32: }
+   33: 
+   34: function jumpByRange(textarea: HTMLTextAreaElement, start: number, end: number) {
+   35:     const hay = (textarea.value || "").replace(/\r\n/g, "\n");
+   36:     const s = Math.max(0, Math.min(start, hay.length));
+   37:     const e = Math.max(s, Math.min(end, hay.length));
+   38: 
+   39:     textarea.focus();
+   40:     textarea.setSelectionRange(s, e);
+   41: 
+   42:     const before = hay.slice(0, s);
+   43:     const line = before.split("\n").length - 1;
+   44:     const lh = parseFloat(getComputedStyle(textarea).lineHeight || "20") || 20;
+   45:     const target = Math.max(0, line * lh - textarea.clientHeight / 3);
+   46:     textarea.scrollTop = target;
+   47: }
+   48: 
+   49: // 턴 프리픽스/자동부착은 입력 텍스트를 변경하지 않고,
+   50: // splitThreadWithRanges / analyzeThread 옵션으로만 반영한다.
+   51: 
+   52: function getPrefilterScore(pf: any): number {
+   53:     const n =
+   54:         pf?.score ??
+   55:         pf?.prefilter?.score ??
+   56:         pf?.scoreTotal ??
+   57:         pf?.total ??
+   58:         pf?.riskScore ??
+   59:         pf?.prefilterScore ??
+   60:         0;
+   61:     const x = Number(n);
+   62:     return Number.isFinite(x) ? x : 0;
+   63: }
+   64: 
+   65: function pickPrefilterReasons(pf: any): string[] {
+   66:     const p = pf?.prefilter ? pf.prefilter : pf;
+   67: 
+   68:     const sigs = Array.isArray(p?.signals) ? p.signals : [];
+   69:     const combos = Array.isArray(p?.combos) ? p.combos : [];
+   70: 
+   71:     const all = [...sigs, ...combos]
+   72:         .filter(Boolean)
+   73:         .sort((a: any, b: any) => (Number(b?.points || 0) - Number(a?.points || 0)));
+   74: 
+   75:     const out: string[] = [];
+   76: 
+   77:     const clamp = (v: any, n: number) => {
+   78:         const s = String(v ?? "").trim();
+   79:         if (!s) return "";
+   80:         return s.length <= n ? s : s.slice(0, n - 1).trimEnd() + "…";
+   81:     };
+   82: 
+   83:     for (const it of all) {
+   84:         if (!it) continue;
+   85: 
+   86:         const label = it.label ?? it.id ?? it.reason ?? it.ruleId;
+   87:         if (!label) continue;
+   88: 
+   89:         const pts = Number(it.points || 0);
+   90: 
+   91:         const rawMatches = Array.isArray(it.matches) ? it.matches : [];
+   92:         const ms = rawMatches
+   93:             .filter(Boolean)
+   94:             .map((x: any) => clamp(x, 72))
+   95:             .filter(Boolean)
+   96:             .slice(0, 2);
+   97: 
+   98:         const extra = ms.length ? ` · ${ms.join(" | ")}` : "";
+   99:         const line = pts ? `${String(label)}(+${pts})${extra}` : `${String(label)}${extra}`;
+  100: 
+  101:         if (!out.includes(line)) out.push(line);
+  102:         if (out.length >= 6) break;
+  103:     }
+  104: 
+  105:     return out.slice(0, 6);
+  106: }
+  107: 
+  108: export function AnalyzePage({ initial, onAnalyze }: Props) {
+  109:     const taRef = useRef<HTMLTextAreaElement | null>(null);
+  110: 
+  111:     const KNOWN_NUMBERS_KEY = "phish_demo_known_numbers_v1";
+  112:     const normalizePhone = (s: string) => (s || "").trim().replace(/[^\d]/g, "").slice(0, 32);
+  113: 
+  114:     const loadKnownNumbers = (): string[] => {
+  115:         try {
+  116:             if (typeof window === "undefined") return [];
+  117:             const raw = window.localStorage.getItem(KNOWN_NUMBERS_KEY) || "[]";
+  118:             const arr = JSON.parse(raw);
+  119:             return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+  120:         } catch {
+  121:             return [];
+  122:         }
+  123:     };
+  124: 
+  125:     const [threadText, setThreadText] = useState(initial.threadText || "");
+  126:     const [displayText, setDisplayText] = useState(initial.threadText || "");
+  127: 
+  128:     // Phone UI는 페이지 기본 레이아웃으로 항상 켜두고(필요하면 버튼으로만 토글)
+  129:     const [phoneUxEnabled, setPhoneUxEnabled] = useState(true);
+  130: 
+  131:     type PhoneTurn = { who: "S" | "R"; text: string };
+  132: 
+  133:     const extractInlineUrls = (s: string): string[] => {
+  134:         const t = String(s || "");
+  135:         const re = /\bhttps?:\/\/[^\s<>"')]+/gi;
+  136:         const m = t.match(re) || [];
+  137:         const out: string[] = [];
+  138: 
+  139:         for (const u of m) {
+  140:             const x = String(u || "").trim();
+  141:             if (!x) continue;
+  142:             if (!out.includes(x)) out.push(x);
+  143:             if (out.length >= 12) break;
+  144:         }
+  145:         return out;
+  146:     };
+  147: 
+  148:     const isInstallUrl = (u: string) => /(\.apk|\.ipa|\.exe|\.msi|\.pkg|\/download\b|install\b)/i.test(String(u || ""));
+  149: 
+  150:     const parsePhoneTurns = (t: string): PhoneTurn[] => {
+  151:         const raw = String(t || "").replace(/\r\n/g, "\n");
+  152:         const lines = raw.split("\n");
+  153: 
+  154:         const out: PhoneTurn[] = [];
+  155:         let cur: PhoneTurn | null = null;
+  156: 
+  157:         const pushCur = () => {
+  158:             if (!cur) return;
+  159:             const text = String(cur.text || "").trim();
+  160:             if (!text) {
+  161:                 cur = null;
+  162:                 return;
+  163:             }
+  164:             out.push({ who: cur.who, text });
+  165:             cur = null;
+  166:         };
+  167: 
+  168:         for (const lineRaw of lines) {
+  169:             const line = String(lineRaw || "").trimEnd();
+  170:             if (!line.trim()) continue;
+  171: 
+  172:             const m = /^\s*([sSrR])\s*:\s*(.*)$/.exec(line);
+  173:             if (m) {
+  174:                 pushCur();
+  175:                 const who = String(m[1] || "S").toUpperCase() as "S" | "R";
+  176:                 const body = String(m[2] || "");
+  177:                 cur = { who, text: body };
+  178:                 continue;
+  179:             }
+  180: 
+  181:             if (!cur) cur = { who: "S", text: line.trim() };
+  182:             else cur.text += `\n${line.trim()}`;
+  183:         }
+  184: 
+  185:         pushCur();
+  186:         return out.slice(0, 300);
+  187:     };
+  188: 
+  189:     const turnsToText = (turns: PhoneTurn[], n: number) =>
+  190:         turns
+  191:             .slice(0, Math.max(0, Math.min(n, turns.length)))
+  192:             .map((x) => `${x.who}: ${x.text}`)
+  193:             .join("\n");
+  194: 
+  195:     const [demoRunning, setDemoRunning] = useState(false);
+  196:     const [demoTurns, setDemoTurns] = useState<PhoneTurn[]>([]);
+  197:     const [demoFullText, setDemoFullText] = useState("");
+  198:     const [demoIndex, setDemoIndex] = useState(0);
+  199:     const [demoSpeedMs, setDemoSpeedMs] = useState(360);
+  200: 
+  201:     const startDemo = (t: string) => {
+  202:         const full = String(t || "").replace(/\r\n/g, "\n");
+  203:         const turns0 = parsePhoneTurns(full);
+  204: 
+  205:         // parse 실패(=turns가 비어있음)하면, 라인 단위로라도 폰 화면/분석에 들어가게 폴백
+  206:         const fallbackTurns: PhoneTurn[] = full
+  207:             .split("\n")
+  208:             .map((s) => String(s || "").trimEnd())
+  209:             .filter((s) => s.trim().length > 0)
+  210:             .map((text) => ({ who: "S", text }));
+  211: 
+  212:         const turns = turns0.length ? turns0 : fallbackTurns;
+  213: 
+  214:         setDemoFullText(full);
+  215:         setDemoTurns(turns);
+  216:         setDemoIndex(0);
+  217: 
+  218:         // 실제로 “한 턴씩 흘러가는” 데모가 가능할 때만 displayText를 비우고 애니메이션
+  219:         if (turns0.length) {
+  220:             setDemoRunning(true);

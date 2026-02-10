@@ -1,0 +1,141 @@
+﻿    1: // tools/analysis/relabelDatasetFromEngine.ts — SWAP-IN (policy-aligned)
+    2: import fs from "node:fs";
+    3: import path from "node:path";
+    4: 
+    5: import { analyzeThread } from "../../src/engine";
+    6: import type { AnalysisInput, AnalysisResult, StageId, RiskLevel } from "../../src/types/analysis";
+    7: 
+    8: type AnyObj = Record<string, any>;
+    9: 
+   10: function usage(): never {
+   11:     console.log(
+   12:         "Usage: --in <path> --out <path> [--margin N] [--limit N]\n" +
+   13:         "  --margin: score_min = max(0, round(threshold(riskLevel) - margin)) (default 5)\n" +
+   14:         "           threshold: low=0, medium=35, high=65\n" +
+   15:         "  policy: high is allowed ONLY when hardHigh=true\n"
+   16:     );
+   17:     process.exit(1);
+   18: }
+   19: 
+   20: function parseArgs(argv: string[]) {
+   21:     const args: AnyObj = { margin: 5 };
+   22:     for (let i = 0; i < argv.length; i++) {
+   23:         const a = argv[i];
+   24:         const next = () => argv[++i];
+   25:         if (a === "--in") args.in = next();
+   26:         else if (a === "--out") args.out = next();
+   27:         else if (a === "--margin") args.margin = Number(next());
+   28:         else if (a === "--limit") args.limit = Number(next());
+   29:         else if (a === "--help" || a === "-h") usage();
+   30:     }
+   31:     if (!args.in || !args.out) usage();
+   32:     if (!Number.isFinite(args.margin)) args.margin = 5;
+   33:     if (args.limit != null && !Number.isFinite(args.limit)) delete args.limit;
+   34:     return args as { in: string; out: string; margin: number; limit?: number };
+   35: }
+   36: 
+   37: function readJsonl(p: string): AnyObj[] {
+   38:     const txt = fs.readFileSync(p, "utf8");
+   39:     return txt
+   40:         .split(/\r?\n/g)
+   41:         .map((s) => s.trim())
+   42:         .filter(Boolean)
+   43:         .map((line, idx) => {
+   44:             try {
+   45:                 return JSON.parse(line);
+   46:             } catch (e) {
+   47:                 throw new Error(`JSON parse failed at line ${idx + 1}: ${(e as Error).message}`);
+   48:             }
+   49:         });
+   50: }
+   51: 
+   52: function writeJsonl(p: string, rows: AnyObj[]) {
+   53:     const out = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+   54:     fs.mkdirSync(path.dirname(p), { recursive: true });
+   55:     fs.writeFileSync(p, out, "utf8");
+   56: }
+   57: 
+   58: const STAGE_RANK: Record<StageId, number> = { info: 0, verify: 1, install: 2, payment: 3 };
+   59: 
+   60: function stagePeakFromResult(r: AnalysisResult): StageId {
+   61:     const rr: any = r as any;
+   62:     let best: StageId = "info";
+   63: 
+   64:     const ms = Array.isArray(rr.messageSummaries) ? rr.messageSummaries : [];
+   65:     for (const m of ms) {
+   66:         const s = m?.stage as StageId;
+   67:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+   68:     }
+   69: 
+   70:     const tl = Array.isArray(rr.stageTimeline) ? rr.stageTimeline : [];
+   71:     for (const e of tl) {
+   72:         const s = e?.stage as StageId;
+   73:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+   74:     }
+   75: 
+   76:     const ht = Array.isArray(rr.hitsTop) ? rr.hitsTop : [];
+   77:     for (const h of ht) {
+   78:         const s = h?.stage as StageId;
+   79:         if (s && STAGE_RANK[s] > STAGE_RANK[best]) best = s;
+   80:     }
+   81: 
+   82:     return best;
+   83: }
+   84: 
+   85: function pickThreadText(row: any): string {
+   86:     const t =
+   87:         row?.threadText ??
+   88:         row?.thread ??
+   89:         row?.rawThreadText ??
+   90:         row?.rawThread ??
+   91:         row?.text ??
+   92:         row?.input ??
+   93:         "";
+   94:     return String(t ?? "");
+   95: }
+   96: 
+   97: function pickRisk(v: any): RiskLevel | "" {
+   98:     const s = String(v ?? "").toLowerCase().trim();
+   99:     if (s === "low" || s === "medium" || s === "high") return s as RiskLevel;
+  100:     return "";
+  101: }
+  102: 
+  103: // ✅ runDataset의 hardHigh 탐색과 동일 계열로 맞춤
+  104: function hardHighFromResult(res: any): boolean {
+  105:     return Boolean(
+  106:         res?.hardHigh ??
+  107:         res?.flags?.hardHigh ??
+  108:         res?.meta?.hardHigh ??
+  109:         res?.escalation?.hardHigh
+  110:     );
+  111: }
+  112: 
+  113: // ✅ 정책: high는 hardHigh에서만 허용
+  114: function policyRiskFromResult(res: any, scoreTotal: number): RiskLevel {
+  115:     const hardHigh = hardHighFromResult(res);
+  116: 
+  117:     const raw = pickRisk(res?.riskLevel ?? res?.risk ?? res?.riskLevelId ?? res?.risk_level);
+  118:     if (raw) {
+  119:         if (raw === "high" && !hardHigh) return "medium";
+  120:         return raw;
+  121:     }
+  122: 
+  123:     // fallback: score로 high 금지
+  124:     if (hardHigh) return "high";
+  125:     if (Number.isFinite(scoreTotal) && scoreTotal >= 35) return "medium";
+  126:     return "low";
+  127: }
+  128: 
+  129: function pickCallChecks(row: any): any {
+  130:     // - boolean(true/false)은 그대로 전달(엔진 auto/enable 모드 호환)
+  131:     // - object면 기본값에 merge
+  132:     // - 없으면 runDataset 기본과 맞추기 위해 true를 기본값으로 사용
+  133:     const rawCall = (row as any)?.callChecks;
+  134: 
+  135:     if (typeof rawCall === "boolean") return rawCall;
+  136: 
+  137:     if (rawCall && typeof rawCall === "object") {
+  138:         return {
+  139:             otpAsked: false,
+  140:             remoteAsked: false,
+  141:             urgentPressured: false,

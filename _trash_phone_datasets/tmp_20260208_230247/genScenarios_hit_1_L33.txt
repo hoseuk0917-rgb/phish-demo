@@ -1,0 +1,253 @@
+﻿    1: // tools/analysis/genScenariosFromStubs.ts
+    2: // 목적: stubs(jsonl) -> scenarios(jsonl) 생성 (DEMO/방어용, 비기능 URL/번호만 사용)
+    3: // 실행: npx tsx tools/analysis/genScenariosFromStubs.ts --stubs ... --out ... --count 500 --seed 42
+    4: 
+    5: import fs from "node:fs/promises";
+    6: import path from "node:path";
+    7: 
+    8: type AnyObj = Record<string, any>;
+    9: 
+   10: type CallerClass = "official_landline" | "mobile" | "voip070" | "unknown" | "spoofed";
+   11: type Channel = "sms" | "call" | "chat";
+   12: type Vector = "none" | "url" | "qr";
+   13: type UrlKind = "official" | "typo" | "homoglyph" | "short";
+   14: type Anchor =
+   15:     | "A_LINK"
+   16:     | "A_QR"
+   17:     | "A_OTP"
+   18:     | "A_INSTALL"
+   19:     | "A_TRANSFER"
+   20:     | "A_GO_BANK"
+   21:     | "A_CASH_PICKUP"
+   22:     | "A_TRAVEL"
+   23:     | "A_CRED"
+   24:     | "A_PII";
+   25: 
+   26: type Risk = "low" | "medium" | "high";
+   27: type Stage = "info" | "verify" | "install" | "payment";
+   28: 
+   29: type ScenarioTurn = { role: "S" | "R"; text: string };
+   30: 
+   31: type ScenarioInternal = {
+   32:     id: string;
+   33:     caseType: CaseType;
+   34:     channel: Channel;
+   35:     caller: {
+   36:         caller_id: string;
+   37:         caller_display: string; // DEMO 가상 표기
+   38:         caller_class: CallerClass;
+   39:         is_whitelisted: boolean;
+   40:         is_first_seen: boolean;
+   41:     };
+   42:     vector: Vector;
+   43:     url?: { kind: UrlKind; value: string; count: 0 | 1; match?: boolean; official_id?: string };
+   44:     qr?: { target_kind: UrlKind; note: string; match?: boolean; official_id?: string };
+   45:     anchors: Anchor[];
+   46:     pressures: string[]; // press_*
+   47:     impersonation?: string; // imp_*
+   48:     turns: ScenarioTurn[];
+   49:     expected: {
+   50:         risk: Risk;
+   51:         stagePeak: Stage;
+   52:         triggers: string[];
+   53:     };
+   54:     meta?: AnyObj;
+   55: };
+   56: 
+   57: type CaseType =
+   58:     | "delivery_link"
+   59:     | "fine_refund_link"
+   60:     | "bank_otp"
+   61:     | "bank_install"
+   62:     | "account_takeover_cred"
+   63:     | "pii_collection"
+   64:     | "family_urgent_transfer"
+   65:     | "loan_fee"
+   66:     | "go_bank_atm"
+   67:     | "cash_pickup"
+   68:     | "job_travel"
+   69:     | "blackmail_sexvisit";
+   70: 
+   71: type Args = {
+   72:     stubs: string;
+   73:     out: string;
+   74:     count: number;
+   75:     seed: number;
+   76:     benign_ratio: number; // 0..1
+   77:     hardneg_ratio: number; // 0..1 (benign 내부 비중)
+   78:     max_len: number; // 1..20
+   79:     max_retries: number;
+   80:     registry_out?: string;
+   81: 
+   82:     // ✅ 추가: direct(기본) | meta(시연용 완곡문)
+   83:     anchor_style?: AnchorStyle;
+   84: };
+   85: 
+   86: type AnchorStyle = "direct" | "meta";
+   87: let ANCHOR_STYLE: AnchorStyle = "direct";
+   88: 
+   89: function parseArgs(argv: string[]): Args {
+   90:     const a: AnyObj = {};
+   91:     for (let i = 0; i < argv.length; i++) {
+   92:         const k = argv[i];
+   93:         if (!k.startsWith("--")) continue;
+   94:         const key = k.slice(2).replace(/-/g, "_");
+   95:         const v = argv[i + 1];
+   96:         if (v && !v.startsWith("--")) {
+   97:             a[key] = v;
+   98:             i++;
+   99:         } else {
+  100:             a[key] = true;
+  101:         }
+  102:     }
+  103: 
+  104:     const isHelp = argv.includes("--help") || argv.includes("-h") || a.help === true;
+  105:     if (isHelp) {
+  106:         console.log(
+  107:             [
+  108:                 "Usage:",
+  109:                 "  npx tsx tools/analysis/genScenariosFromStubs.ts --stubs <path> --out <path> [--count N] [--seed N] ...",
+  110:                 "",
+  111:                 "Options:",
+  112:                 "  --stubs <path>         input stubs jsonl",
+  113:                 "  --out <path>           output scenarios jsonl",
+  114:                 "  --count <n>            default 500",
+  115:                 "  --seed <n>             default 42",
+  116:                 "  --benign-ratio <0..1>  default 0.25",
+  117:                 "  --hardneg-ratio <0..1> default 0.6",
+  118:                 "  --max-len <1..20>      default 20",
+  119:                 "  --max-retries <n>      default 12",
+  120:                 "  --registry-out <path>  optional (debug)",
+  121:                 "  --anchor-style <direct|meta> default direct",
+  122:                 "",
+  123:                 "Example:",
+  124:                 "  npx tsx tools/analysis/genScenariosFromStubs.ts --stubs datasets/ko_scam/scenario_stubs_from_clusters_merged_patched.jsonl --out datasets/ko_scam/scenarios_ko_v3.jsonl --count 500 --seed 42",
+  125:             ].join("\n")
+  126:         );
+  127:         process.exit(0);
+  128:     }
+  129: 
+  130:     const stubs = String(a.stubs || "");
+  131:     const out = String(a.out || "");
+  132:     if (!stubs || !out) {
+  133:         throw new Error("Usage: --stubs <path> --out <path> [--count N] [--seed N] ... (try --help)");
+  134:     }
+  135: 
+  136:     const rawAnchorStyle = String(
+  137:         (a as any).anchor_style ?? (a as any)["anchor-style"] ?? (a as any).anchorStyle ?? "direct"
+  138:     ).toLowerCase();
+  139: 
+  140:     return {
+  141:         stubs,
+  142:         out,
+  143:         count: clampInt(parseInt(String(a.count || "500"), 10), 1, 200000),
+  144:         seed: clampInt(parseInt(String(a.seed || "42"), 10), 1, 2_000_000_000),
+  145:         benign_ratio: clamp01(parseFloat(String(a.benign_ratio || "0.25"))),
+  146:         hardneg_ratio: clamp01(parseFloat(String(a.hardneg_ratio || "0.6"))),
+  147:         max_len: clampInt(parseInt(String(a.max_len || "20"), 10), 1, 20),
+  148:         max_retries: clampInt(parseInt(String(a.max_retries || "12"), 10), 1, 200),
+  149:         registry_out: a.registry_out ? String(a.registry_out) : undefined,
+  150:         anchor_style: (rawAnchorStyle === "meta" ? "meta" : "direct"),
+  151:     };
+  152: }
+  153: 
+  154: function clamp01(x: number) {
+  155:     if (!Number.isFinite(x)) return 0;
+  156:     return Math.max(0, Math.min(1, x));
+  157: }
+  158: function clampInt(x: number, lo: number, hi: number) {
+  159:     if (!Number.isFinite(x)) return lo;
+  160:     return Math.max(lo, Math.min(hi, x));
+  161: }
+  162: 
+  163: function mulberry32(seed: number) {
+  164:     let t = seed >>> 0;
+  165:     return () => {
+  166:         t += 0x6d2b79f5;
+  167:         let r = Math.imul(t ^ (t >>> 15), 1 | t);
+  168:         r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+  169:         return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  170:     };
+  171: }
+  172: function pick<T>(rng: () => number, xs: T[]): T {
+  173:     return xs[Math.floor(rng() * xs.length)];
+  174: }
+  175: function chance(rng: () => number, p: number) {
+  176:     return rng() < p;
+  177: }
+  178: function uniqSorted(xs: string[]) {
+  179:     return Array.from(new Set(xs)).sort();
+  180: }
+  181: 
+  182: function uniqAnchors(xs: Anchor[]) {
+  183:     return Array.from(new Set(xs));
+  184: }
+  185: 
+  186: // anchors를 “텍스트에 실제 cue가 존재하는 것만” 남김 (expected 과대/과소 방지)
+  187: function anchorsEffFromText(anchors: Anchor[], senderText: string): Anchor[] {
+  188:     const t = String(senderText || "");
+  189:     const t2 = t.replace(/\s+/g, ""); // 한국어 붙여쓰기 대응(간단)
+  190: 
+  191:     const hasUrl = /https?:\/\/\S+|www\./i.test(t);
+  192:     const hasQr = /(qr|큐알|QR\s*코드|스캔)/i.test(t);
+  193: 
+  194:     const hasOtp = /(otp|인증번호|보안코드|인증\s*번호)/i.test(t);
+  195:     const hasInstall = /(teamviewer|anydesk|원격\s*지원|원격|remote|지원앱|apk|설치|install)/i.test(t);
+  196: 
+  197:     // ✅ payment 계열은 "행동 동사"가 있을 때만 유지(과대예측 방지)
+  198:     const hasTransferVerb = /(송금|이체|입금|보내|transfer|remit|wire)/i.test(t) || /(송금|이체|입금|보내)/i.test(t2);
+  199:     const hasAccountRef = /(계좌|계좌번호|예금주|입금계좌)/i.test(t);
+  200: 
+  201:     // 계좌/예금주만 있고 '송금/입금/이체'가 없으면 payment로 올리지 않게
+  202:     const hasTransfer = hasTransferVerb && (hasAccountRef || /(송금|이체|입금|보내)/i.test(t2));
+  203: 
+  204:     const hasCashVerb =
+  205:         /(인출|현금\s*인출|현금\s*수령|withdraw)/i.test(t) || /(인출|현금인출|현금수령)/i.test(t2);
+  206:     const hasPickupCue = /(퀵|대면\s*전달|직접\s*전달|픽업|수거|봉투)/i.test(t) || /(대면전달|직접전달|픽업|수거|봉투)/i.test(t2);
+  207:     const hasCash = hasCashVerb || ((/현금|cash/i.test(t) || /현금/.test(t2)) && hasPickupCue);
+  208: 
+  209:     const hasGoBankPlace = /(은행|atm|창구)/i.test(t) || /(은행|atm|창구)/i.test(t2);
+  210:     const hasGoBankVerb =
+  211:         /(방문|가서|가라|이동|찾아|인출|입금|송금)/i.test(t) || /(방문|가서|가라|이동|찾아|인출|입금|송금)/i.test(t2);
+  212:     const hasGoBank = hasGoBankPlace && hasGoBankVerb;
+  213: 
+  214:     const hasTravel =
+  215:         /(해외|출국|공항|현지\s*근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t) ||
+  216:         /(해외|출국|공항|현지근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t2);
+  217: 
+  218:     const hasCred =
+  219:         /(아이디|id\b|비밀번호|password|로그인\s*정보|계정\s*정보)/i.test(t) ||
+  220:         /(아이디|비밀번호|로그인정보|계정정보)/i.test(t2);
+  221: 
+  222:     const hasPii =
+  223:         /(주민등록|신분증|여권|계좌\s*사본|카드번호|개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+  224:         /(주민등록|신분증|여권|계좌사본|카드번호|개인정보|사진업로드|업로드|제출)/i.test(t2);
+  225: 
+  226:     const keep: Anchor[] = [];
+  227:     for (const a of anchors) {
+  228:         if (a === "A_LINK" && !hasUrl) continue;
+  229:         if (a === "A_QR" && !hasQr) continue;
+  230: 
+  231:         if (a === "A_OTP" && !hasOtp) continue;
+  232:         if (a === "A_INSTALL" && !hasInstall) continue;
+  233: 
+  234:         if (a === "A_TRANSFER" && !hasTransfer) continue;
+  235:         if (a === "A_CASH_PICKUP" && !hasCash) continue;
+  236:         if (a === "A_GO_BANK" && !hasGoBank) continue;
+  237: 
+  238:         if (a === "A_TRAVEL" && !hasTravel) continue;
+  239: 
+  240:         if (a === "A_CRED" && !hasCred) continue;
+  241:         if (a === "A_PII" && !hasPii) continue;
+  242: 
+  243:         keep.push(a);
+  244:     }
+  245: 
+  246:     return uniqAnchors(keep);
+  247: }
+  248: 
+  249: function safeId(prefix: string, i: number) {
+  250:     return `${prefix}${String(i).padStart(5, "0")}`;
+  251: }
+  252: 
+  253: // ---------- DEMO 전화번호 레지스트리(가상, 충돌 회피) ----------

@@ -1,0 +1,161 @@
+ 1120:       }
+ 1121: 
+ 1122:       const paymentVerb =
+ 1123:         /(보내\s*줘|보내줘|부쳐\s*줘|부쳐줘|입금\s*해|입금해|송금\s*해|송금해|이체\s*해|이체해|납부\s*해|납부해|지불\s*해|지불해|충전\s*해|충전해)/i.test(
+ 1124:           content
+ 1125:         ) ||
+ 1126:         /(입금|송금|이체|납부|지불|충전|선납|보험료).{0,14}(해\s*줘|해줘|해\s*주|해주|해주세요|부탁|요청|하셔야|바랍니다|주시)/i.test(
+ 1127:           content
+ 1128:         ) ||
+ 1129:         /(납부|지불|결제).{0,14}(하세요|바랍니다|필요|진행|처리|해주세요)/i.test(content) ||
+ 1130:         /(링크|페이지).{0,14}(에서|로).{0,12}(납부|결제|지불)/i.test(content);
+ 1131: 
+ 1132:       const paymentAlertOnly = isPaymentAlertOnlyText(content);
+ 1133:       const payBlockedByInstall =
+ 1134:         installMention && !hasStrongTransferCueLocal && (escrowLikeLocal || /결제.{0,10}(하려면|위해|하려고)/i.test(content));
+ 1135: 
+ 1136:       if (paymentVerb && !paymentAlertOnly && !payBlockedByInstall)
+ 1137:         addCtxHit(ctxHits, "ctx_payment_request", "맥락: 입금/송금/충전/납부 요청", "payment", 20, content, ["pay"]);
+ 1138: 
+ 1139:       const familyHook = /(엄마|아빠|어머니|아버지|누나|언니|형|오빠|딸|아들|친구|지인)/i.test(content);
+ 1140:       const deviceExcuse =
+ 1141:         /(폰|휴대폰|핸드폰|전화).*(고장|분실|바꿨|바꿔|새\s*번호|이\s*번호|번호야)/i.test(content) ||
+ 1142:         /(번호야|새\s*번호|이\s*번호로)/i.test(content);
+ 1143:       const moneyAsk =
+ 1144:         /(보내\s*줘|보내줘|이체|송금|입금)/i.test(content) && /(\d{1,3}(?:,\d{3})+|\d+)\s*(원|만원)/i.test(content);
+ 1145: 
+ 1146:       if (familyHook && deviceExcuse && moneyAsk)
+ 1147:         addCtxHit(ctxHits, "ctx_family_scam", "맥락: 가족/지인 사칭 + 새 번호/폰 고장 + 송금 요구", "payment", 30, content, ["family+pay"]);
+ 1148: 
+ 1149:       const jobHook =
+ 1150:         /(고액\s*알바|알바|재택|해외|현지|동남아|출국|파견|해외\s*근무|해외\s*업무|해외\s*단기|단기\s*고수익|고수익\s*업무|프로젝트\s*인력|인력\s*모집|채용|숙식\s*제공|항공권\s*지원)/i.test(
+ 1151:           content
+ 1152:         );
+ 1153: 
+ 1154:       // (신규) 고수익/단기/당일지급류 훅(취업사기 프리필터/본분석 트리거용)
+ 1155:       const jobHookWide =
+ 1156:         /(고수익|고액\s*알바|단기\s*알바|단기\s*고수익|당일\s*지급|당일지급|재택\s*알바|초보\s*가능|간단한\s*업무|리뷰\s*알바|댓글\s*알바)/i.test(
+ 1157:           content
+ 1158:         );
+ 1159: 
+ 1160:       // (신규) 연락처/플랫폼 이동 유도(오픈채팅/텔레그램 등)
+ 1161:       const contactMove =
+ 1162:         /(오픈\s*채팅|오픈채팅|open\s*chat|openchat|텔레그램|telegram|카카오\s*오픈|오픈\s*카톡|라인|line|디스코드|discord|dm|쪽지|1:1|개인\s*톡)/i.test(
+ 1163:           content
+ 1164:         ) && /(이동|입장|초대|링크|추가|문의|연락|대화|채팅|안내)/i.test(content);
+ 1165: 
+ 1166:       // (신규) 특정 장소 방문/이동 유도(교육장/면접장/사무실/공항/역 출구/주소/지도)
+ 1167:       const visitPlace =
+ 1168:         /(방문|내방|출석|출두|집결|모여|오세요|오셔|오시면|오라|와라|와\s*주세요|이동해\s*주세요|지금\s*이동|현장|교육장|면접장|사무실|지점|센터|공항|터미널|역\s*\d*\s*번?\s*출구|출구|주소|오시는\s*길|지도|로비|주차장|층|호)/i.test(
+ 1169:           content
+ 1170:         ) && /(오|오셔|오시면|방문|출석|출두|집결|이동|모여)/i.test(content);
+ 1171: 
+ 1172:       const personalAskStrong =
+ 1173:         /(여권|신분증|주민등록증|주민번호|계좌|계좌번호|연락처|전화번호).{0,22}(사진|등록|보내|제출|올려|필요|요청)/i.test(content);
+ 1174: 
+ 1175:       const personalMention = /(여권|신분증|주민등록증|주민번호|계좌|계좌번호|연락처|전화번호)/i.test(content);
+ 1176:       const personalAsk = personalAskStrong || (personalMention && /(필요|요청|등록|제출|선\s*등록|먼저\s*보내)/i.test(content));
+ 1177: 
+ 1178:       // (신규) 선입금/보증금/수수료 요구 → ctx_payment_request로 통합(기존 hasPayRequest가 잡아먹게)
+ 1179:       const feeRequest =
+ 1180:         /(보증금|예치금|가입비|등록비|교육비|수수료|선입금|입회비|예약금|계약금|보안\s*예치)/i.test(content) &&
+ 1181:         /(송금|이체|입금|결제|납부|먼저|필요|부탁|내)/i.test(content);
+ 1182: 
+ 1183:       // (신규) 이체/송금 “지시” (transfer 단독보다 강하게)
+ 1184:       const transferDemand =
+ 1185:         /(이체|송금|입금|결제|납부).{0,20}(해\s*주세요|해주세요|바랍니다|하라|해라|하시|지금|바로)/i.test(content) ||
+ 1186:         /(해\s*주세요|해주세요|바랍니다|하라|해라|지금|바로).{0,20}(이체|송금|입금|결제|납부)/i.test(content);
+ 1187: 
+ 1188:       // (신규) 현금 수거/퀵 전달(대면전달)
+ 1189:       const cashPickup =
+ 1190:         /(현금\s*봉투|현금\s*수거|현금\s*전달|퀵|퀵서비스|대면\s*전달|직접\s*전달|수거|회수)/i.test(content) &&
+ 1191:         /(전달|수거|회수|가져오|가져와|보내|받)/i.test(content);
+ 1192: 
+ 1193:       // (신규) 상품권/기프트카드/핀번호 요구
+ 1194:       const giftcardDemand =
+ 1195:         /(상품권|문화\s*상품권|문상|해피머니|해피\s*머니|구글\s*기프트|google\s*gift|기프트\s*카드|gift\s*card|틴\s*캐시|tincash|핀\s*번호|pin\s*(번호|code)|바코드)/i.test(
+ 1196:           content
+ 1197:         ) && /(보내|전달|구매|충전|등록|입력|코드|핀|pin|번호)/i.test(content);
+ 1198: 
+ 1199:       // (신규) 코인/가상자산 지갑주소/체인/거래소 송금
+ 1200:       const cryptoWalletDemand =
+ 1201:         /(가상\s*자산|가상자산|암호\s*화폐|암호화폐|crypto|코인|지갑|wallet|지갑\s*주소|주소|usdt|btc|eth|trc20|erc20|바이낸스|binance|업비트|upbit|빗썸|bithumb)/i.test(
+ 1202:           content
+ 1203:         ) && /(송금|전송|보내|입금|충전|이체|전달)/i.test(content);
+ 1204: 
+ 1205:       // (신규) 통장/계좌 대여·명의대여·수령대행
+ 1206:       const accountRental =
+ 1207:         /(대포\s*통장|자금\s*세탁|범죄\s*자금|수령\s*대행|수령대행)/i.test(content) ||
+ 1208:         (/(통장|계좌).{0,18}(대여|임대|빌려|양도|사용)/i.test(content) && /(수수료|알바|대행|모집|구인)/i.test(content));
+ 1209: 
+ 1210:       // (신규) QR/간편결제 스캔/찍고 결제 유도
+ 1211:       const qrPayDemand =
+ 1212:         /(qr\s*코드|qr코드|큐알\s*코드|큐알코드|간편\s*결제|간편결제|페이|토스|카카오\s*페이|kakao\s*pay|네이버\s*페이|naver\s*pay)/i.test(
+ 1213:           content
+ 1214:         ) && /(찍|스캔|scan|결제|송금|이체|입금|진행|처리)/i.test(content);
+ 1215: 
+ 1216:       // (신규) 환불/취소/해지/구독결제 미끼(단독은 verify, 다른 액션과 결합 시 상승)
+ 1217:       const refundLure =
+ 1218:         /(환불|환급|취소|해지|구독|정기\s*결제|정기결제|자동\s*결제|자동결제|결제\s*취소)/i.test(content) &&
+ 1219:         /(상담|고객센터|문의|링크|url|주소|접속|클릭|안내)/i.test(content);
+ 1220: 
+ 1221:       // (신규) 대출/대환/저금리/한도 훅(단독은 verify, 수수료/선입금 결합 시 상승)
+ 1222:       const loanHook =
+ 1223:         /(대출|대환|저금리|한도|승인|연체|상환)/i.test(content) &&
+ 1224:         /(가능|진행|신청|조회|상담|조건|수수료|보증금|선입금|예치금)/i.test(content);
+ 1225: 
+ 1226:       // ── ctx hits (가중치: jobHookWide + contactMove + visitPlace 조합만으로도 65↑ 가능)
+ 1227:       if (jobHookWide) addCtxHit(ctxHits, "ctx_job_hook", "맥락: 고수익/단기 구인 미끼", "verify", 22, content, ["job-hook"]);
+ 1228: 
+ 1229:       if (contactMove) addCtxHit(ctxHits, "ctx_contact_move", "맥락: 오픈채팅/텔레그램 이동 유도", "verify", 22, content, ["contact-move"]);
+ 1230: 
+ 1231:       if (visitPlace) addCtxHit(ctxHits, "ctx_visit_place", "맥락: 특정 장소 방문/이동 유도", "verify", 14, content, ["visit"]);
+ 1232: 
+ 1233:       if (feeRequest) addCtxHit(ctxHits, "ctx_payment_request", "맥락: 보증금/수수료/선입금 요구", "payment", 28, content, ["fee"]);
+ 1234: 
+ 1235:       if (transferDemand) addCtxHit(ctxHits, "ctx_transfer_demand", "맥락: 이체/송금 지시", "payment", 26, content, ["transfer-demand"]);
+ 1236: 
+ 1237:       if (cashPickup) addCtxHit(ctxHits, "ctx_cash_pickup", "맥락: 현금 수거/퀵 전달 유도", "payment", 32, content, ["cash-pickup"]);
+ 1238: 
+ 1239:       if (giftcardDemand) addCtxHit(ctxHits, "ctx_giftcard", "맥락: 상품권/기프트카드/핀번호 요구", "payment", 34, content, ["giftcard"]);
+ 1240: 
+ 1241:       if (cryptoWalletDemand) addCtxHit(ctxHits, "ctx_crypto_wallet", "맥락: 코인/지갑주소 송금 요구", "payment", 34, content, ["crypto-wallet"]);
+ 1242: 
+ 1243:       if (accountRental) addCtxHit(ctxHits, "ctx_account_rental", "맥락: 통장/계좌 대여·수령대행 유도", "payment", 32, content, ["account-rental"]);
+ 1244: 
+ 1245:       if (qrPayDemand) addCtxHit(ctxHits, "ctx_qr_pay", "맥락: QR/간편결제 스캔·결제 유도", "payment", 28, content, ["qr-pay"]);
+ 1246: 
+ 1247:       if (refundLure) addCtxHit(ctxHits, "ctx_refund_lure", "맥락: 환불/취소/해지 미끼", "verify", 14, content, ["refund-lure"]);
+ 1248: 
+ 1249:       if (loanHook) addCtxHit(ctxHits, "ctx_loan_hook", "맥락: 대출/대환/한도 미끼", "verify", 12, content, ["loan-hook"]);
+ 1250: 
+ 1251:       // 기존(유지): jobHook + 신분/계좌 요구는 강하게
+ 1252:       if (jobHook && personalAsk) addCtxHit(ctxHits, "ctx_job_scam", "맥락: 고액/해외 구인 + 신분/계좌 요구", "verify", 30, content, ["job+id"]);
+ 1253: 
+ 1254:       const investHook = /(투자|리딩방|수익|자동\s*투자|코인|주식|단타|vip|체험|정보방|오픈채팅)/i.test(content);
+ 1255:       if (investHook && urls.length) addCtxHit(ctxHits, "ctx_investment_link", "맥락: 투자/리딩방 + 링크", "verify", 12, content, ["invest+link"]);
+ 1256: 
+ 1257:       // 지원금/환급/보조금: "URL 실제 포함"은 강하게, "링크/신청 언급만"은 약하게(verify 후보 표시)
+ 1258:       const benefitKw = /(지원금|환급|보조금|대상자|대상\s*조회|조회|신청|지급|정부\s*지원|복지)/i.test(content);
+ 1259:       const benefitLink = urls.length > 0 && benefitKw;
+ 1260:       if (benefitLink) addCtxHit(ctxHits, "ctx_benefit_link", "맥락: 지원/환급/대상자 조회 + 링크", "verify", 18, content, ["benefit+link"]);
+ 1261: 
+ 1262:       const benefitMention =
+ 1263:         urls.length === 0 &&
+ 1264:         benefitKw &&
+ 1265:         /(링크|url|주소|신청|조회|확인|접속|클릭|눌러|입력|등록)/i.test(content);
+ 1266:       if (benefitMention)
+ 1267:         addCtxHit(ctxHits, "ctx_benefit_link_mention", "맥락: 지원/환급/대상자 조회 + 링크 언급", "verify", 8, content, [
+ 1268:           "benefit+link-mention",
+ 1269:         ]);
+ 1270: 
+ 1271:       // 메신저/프로필 확인 + 링크 언급: URL이 없어도 약하게(verify 후보), URL이 있으면 urlHits가 추가로 올려준다
+ 1272:       const profileLinkMention =
+ 1273:         urls.length === 0 &&
+ 1274:         /(카톡|카카오톡|프로필|사진|영상|문서)/i.test(content) &&
+ 1275:         /(링크|url|주소)/i.test(content) &&
+ 1276:         /(확인|클릭|접속|눌러|열어|들어가)/i.test(content);
+ 1277:       if (profileLinkMention)
+ 1278:         addCtxHit(ctxHits, "ctx_profile_link_mention", "맥락: 메신저/프로필 확인 + 링크 언급", "verify", 10, content, [
+ 1279:           "profile+link-mention",
+ 1280:         ]);

@@ -1,0 +1,3 @@
+﻿@{LineNumber=1202; Line=function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {}
+@{LineNumber=1221; Line=    if (!hasPhone(callerDisp) && !hasPhone(sTextAll)) errs.push("missing_phone");}
+@{LineNumber=1227; Line=        if (bad) errs.push("benign_has_danger_anchor");}

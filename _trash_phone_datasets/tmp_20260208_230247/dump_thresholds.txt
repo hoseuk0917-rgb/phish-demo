@@ -1,0 +1,67 @@
+﻿    1: // src/engine/rules/weights.ts
+    2: export type Weights = typeof WEIGHTS;
+    3: export type Thresholds = typeof THRESHOLDS;
+    4: 
+    5: export const WEIGHTS = {
+    6:   link: 25,
+    7:   shortener: 30,
+    8: 
+    9:   urlHttp: 8,
+   10:   urlIpHost: 18,
+   11:   urlPunycode: 20,
+   12:   urlAtSign: 16,
+   13:   urlSuspiciousTld: 12,
+   14:   urlDeepSubdomain: 10,
+   15:   urlDownloadExt: 22,
+   16:   urlBrandMismatch: 26,
+   17: 
+   18:   otp: 22,
+   19:   personalInfo: 20,
+   20:   money: 18,
+   21:   urgency: 10,
+   22:   authority: 10,
+   23:   threat: 14,
+   24:   installRemote: 28,
+   25:   safeAccount: 22,
+   26: 
+   27:   investLure: 10,
+   28:   jobLure: 20,
+   29: 
+   30:   callOtp: 30,
+   31:   callRemote: 35,
+   32:   callUrgent: 15,
+   33: } as const;
+   34: 
+   35: export const THRESHOLDS = {
+   36:   medium: 35,
+   37:   high: 65,
+   38: } as const;
+   39: 
+   40: export function clamp(n: number, min: number, max: number) {
+   41:   return Math.max(min, Math.min(max, n));
+   42: }
+   43: 
+   44: export function normalizeWeights(partial?: Partial<Record<keyof Weights, number>>): Weights {
+   45:   if (!partial) return WEIGHTS;
+   46:   const out: any = { ...WEIGHTS };
+   47:   for (const k of Object.keys(out)) {
+   48:     const key = k as keyof Weights;
+   49:     const v = partial[key];
+   50:     if (typeof v === "number" && Number.isFinite(v)) out[key] = v;
+   51:   }
+   52:   return out as Weights;
+   53: }
+   54: 
+   55: export function normalizeThresholds(partial?: Partial<Record<keyof Thresholds, number>>): Thresholds {
+   56:   if (!partial) return THRESHOLDS;
+   57:   const out: any = { ...THRESHOLDS };
+   58:   for (const k of Object.keys(out)) {
+   59:     const key = k as keyof Thresholds;
+   60:     const v = partial[key];
+   61:     if (typeof v === "number" && Number.isFinite(v)) out[key] = v;
+   62:   }
+   63:   // 정합성: medium < high 강제
+   64:   out.medium = clamp(out.medium, 0, 99);
+   65:   out.high = clamp(out.high, out.medium + 1, 200);
+   66:   return out as Thresholds;
+   67: }

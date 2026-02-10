@@ -1,0 +1,5 @@
+﻿C:\projects\phish-demo\tmp\fails_now.tsv:10:risk_pair	high->medium	42
+C:\projects\phish-demo\tmp\fails_now.tsv:11:risk_pair	high->high	15
+C:\projects\phish-demo\tmp\fails_now.tsv:12:risk_pair	low->medium	6
+C:\projects\phish-demo\tmp\fails_now.tsv:13:risk_pair	low->low	3
+C:\projects\phish-demo\tmp\fails_now.tsv:14:risk_pair	medium->high	3

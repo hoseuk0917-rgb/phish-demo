@@ -1,0 +1,53 @@
+﻿ 1662:     (alertSettingThread || hasTxnAlert) &&
+ 1663:     ackOrBenign &&
+ 1664:     !hasExplicitPayWord &&
+ 1665:     !hasOtp &&
+ 1666:     !hasThreat &&
+ 1667:     !hasUrgentHit &&
+ 1668:     !hasRemote &&
+ 1669:     !hasApk &&
+ 1670:     !hasInstallMention &&
+ 1671:     !hasJobScam &&
+ 1672:     !hasInvest &&
+ 1673:     !hasFamily &&
+ 1674:     !benignSupport;
+ 1675: 
+ 1676:   if (alertSettingOnly) riskLevel = "medium" as RiskLevel;
+ 1677: 
+ 1678:   // 원격/설치만(금융/OTP/협박 없이) high 금지 (문서/세금계산서/인보이스 뷰어 유도는 예외)
+ 1679:   const bizDocLure =
+ 1680:     /(세금계산서|거래처|회계팀|인보이스|invoice|견적서|발주서|계약서|정산|반려|수정본|문서\s*(뷰어|viewer)|열람)/i.test(rawThread);
+ 1681: 
+ 1682:   const remoteOnly =
+ 1683:     riskLevel === ("high" as RiskLevel) &&
+ 1684:     (hasRemote || hasInstallMention) &&
+ 1685:     !bizDocLure &&
+ 1686:     !hasExplicitPayWord &&
+ 1687:     !hasOtp &&
+ 1688:     !hasThreat &&
+ 1689:     !hasAuthority &&
+ 1690:     !hasUrgentHit &&
+ 1691:     !hasApk &&
+ 1692:     !hasJobScam &&
+ 1693:     !hasInvest &&
+ 1694:     !hasFamily &&
+ 1695:     !benignSupport;
+ 1696: 
+ 1697:   if (remoteOnly) riskLevel = "medium" as RiskLevel;
+ 1698: 
+ 1699:   // signals/hits 제공(엔진 index.ts에서 바로 사용)
+ 1700:   const signals = buildSignalsFromHits(sortedHits, 12);
+ 1701: 
+ 1702:   return {
+ 1703:     scoreTotal,
+ 1704:     riskLevel,
+ 1705:     stagePeak,
+ 1706:     stageTriggers,
+ 1707: 
+ 1708:     hits: sortedHits,
+ 1709:     signals,
+ 1710: 
+ 1711:     messageSummaries,
+ 1712:     context: windowed.meta,
+ 1713:   };
+ 1714: }

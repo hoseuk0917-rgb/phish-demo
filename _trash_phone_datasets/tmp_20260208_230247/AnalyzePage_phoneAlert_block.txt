@@ -1,0 +1,281 @@
+﻿ 1374:             title: "",
+ 1375:             detail: "",
+ 1376:             chips: [] as string[],
+ 1377:             toast: false,
+ 1378:         };
+ 1379: 
+ 1380:         const uniq = (arr: string[]) => {
+ 1381:             const out: string[] = [];
+ 1382:             for (const x of arr) {
+ 1383:                 const s = String(x || "").trim();
+ 1384:                 if (!s) continue;
+ 1385:                 if (out.includes(s)) continue;
+ 1386:                 out.push(s);
+ 1387:             }
+ 1388:             return out;
+ 1389:         };
+ 1390: 
+ 1391:         const extractPhones = (text: string, cap = 3): string[] => {
+ 1392:             const raw = String(text || "");
+ 1393:             if (!raw) return [];
+ 1394: 
+ 1395:             const hits: string[] = [];
+ 1396:             const pushAll = (re: RegExp) => {
+ 1397:                 const ms = raw.match(re);
+ 1398:                 if (ms && ms.length) for (const m of ms) hits.push(String(m || "").trim());
+ 1399:             };
+ 1400: 
+ 1401:             pushAll(/(?:\+82[-\s]?)?0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{4}\b/g); // +82 / 0xx
+ 1402:             pushAll(/\b1[5-8]\d{2}[-\s]?\d{4}\b/g); // 1588-xxxx
+ 1403:             pushAll(/\b(?:0\d{9,10}|1[5-8]\d{6})\b/g); // 하이픈 없는 케이스
+ 1404: 
+ 1405:             const fmt = (digits0: string): string => {
+ 1406:                 let digits = digits0;
+ 1407:                 if (digits.startsWith("82")) digits = "0" + digits.slice(2);
+ 1408: 
+ 1409:                 if (/^010\d{8}$/.test(digits)) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+ 1410:                 if (/^02\d{8}$/.test(digits)) return `02-${digits.slice(2, 6)}-${digits.slice(6)}`;
+ 1411:                 if (/^0\d{2}\d{7}$/.test(digits)) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+ 1412:                 if (/^0\d{2}\d{8}$/.test(digits)) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+ 1413:                 if (/^1[5-8]\d{6}$/.test(digits)) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+ 1414:                 return digits;
+ 1415:             };
+ 1416: 
+ 1417:             const out: string[] = [];
+ 1418:             for (const h of hits) {
+ 1419:                 const digits = String(h || "").replace(/\D/g, "");
+ 1420:                 if (!digits) continue;
+ 1421: 
+ 1422:                 const ok =
+ 1423:                     /^0\d{9,10}$/.test(digits) ||
+ 1424:                     /^1[5-8]\d{6}$/.test(digits) ||
+ 1425:                     (digits.startsWith("82") && digits.length >= 10 && digits.length <= 12);
+ 1426: 
+ 1427:                 if (!ok) continue;
+ 1428: 
+ 1429:                 const disp = fmt(digits);
+ 1430:                 if (!disp) continue;
+ 1431:                 if (out.includes(disp)) continue;
+ 1432: 
+ 1433:                 out.push(disp);
+ 1434:                 if (out.length >= cap) break;
+ 1435:             }
+ 1436:             return out;
+ 1437:         };
+ 1438: 
+ 1439:         const detectedPhones = extractPhones(rawThread, 3);
+ 1440: 
+ 1441:         // full analysis score (0..100)
+ 1442:         const scoreTotal = Math.round(
+ 1443:             Math.max(0, Math.min(100, Number((preview as any)?.uiScoreTotal ?? (preview as any)?.scoreTotal ?? 0)))
+ 1444:         );
+ 1445: 
+ 1446:         // UI 경고는 uiRiskLevel(개입 타이밍) 우선, 없으면 riskLevel(Threat) 사용
+ 1447:         const uiRiskLevel = String((preview as any)?.uiRiskLevel || (preview as any)?.riskLevel || "")
+ 1448:             .toLowerCase()
+ 1449:             .trim();
+ 1450: 
+ 1451:         if (uiRiskLevel === "high") {
+ 1452:             return {
+ 1453:                 level: "danger" as const,
+ 1454:                 title: "고위험 의심! 신고·상담 필요!",
+ 1455:                 detail: "",
+ 1456:                 chips: uniq([...detectedPhones, "112", "118", "1332"]),
+ 1457:                 toast: false,
+ 1458:             };
+ 1459:         }
+ 1460: 
+ 1461:         if (uiRiskLevel === "medium") {
+ 1462:             return {
+ 1463:                 level: "warn" as const,
+ 1464:                 title: "위험도 상승! 피싱/스캠 의심!",
+ 1465:                 detail: "",
+ 1466:                 chips: uniq([...detectedPhones]),
+ 1467:                 toast: false,
+ 1468:             };
+ 1469:         }
+ 1470: 
+ 1471:         // 프리필터가 임계값을 넘어서 "풀필터로 넘어가는" 구간에서만 노출
+ 1472:         if (
+ 1473:             !!triggerGateEnabled &&
+ 1474:             !!autoAnalyzeOnTrigger &&
+ 1475:             gatePass &&
+ 1476:             !preview &&
+ 1477:             Number(triggerThreshold || 0) > 0 &&
+ 1478:             Number(prefilterScore || 0) >= Number(triggerThreshold || 0)
+ 1479:         ) {
+ 1480:             return {
+ 1481:                 level: "warn" as const,
+ 1482:                 title: "위험 신호 발견! 분석 중…",
+ 1483:                 detail: "",
+ 1484:                 chips: uniq([...detectedPhones]),
+ 1485:                 toast: false,
+ 1486:             };
+ 1487:         }
+ 1488: 
+ 1489:         return none;
+ 1490:     }
+ 1491: 
+ 1492:     function PhoneTopAlertBar(props: { alert: PhoneAlert }) {
+ 1493:         const a: any = props?.alert as any;
+ 1494:         const level = String(a?.level || "none");
+ 1495:         const title = String(a?.title || "").trim();
+ 1496: 
+ 1497:         const key = `${level}|${title}`;
+ 1498:         const [dismissKey, setDismissKey] = useState<string>("");
+ 1499: 
+ 1500:         useEffect(() => {
+ 1501:             if (dismissKey && dismissKey !== key) setDismissKey("");
+ 1502:         }, [key, dismissKey]);
+ 1503: 
+ 1504:         if (!a || level === "none" || !title) return null;
+ 1505:         if (dismissKey === key) return null;
+ 1506: 
+ 1507:         const isDanger = level === "danger";
+ 1508:         const bg = isDanger ? "rgba(255,70,70,0.88)" : "rgba(255,170,40,0.86)";
+ 1509:         const bd = isDanger ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.18)";
+ 1510: 
+ 1511:         const chips: string[] = Array.isArray(a?.chips)
+ 1512:             ? a.chips.map((x: any) => String(x || "").trim()).filter(Boolean)
+ 1513:             : [];
+ 1514: 
+ 1515:         const toDigits = (s: string) => String(s || "").replace(/\D/g, "");
+ 1516:         const isEmergency = (d: string) => /^\d{2,4}$/.test(d); // 112/118/1332
+ 1517:         const isPhoneLike = (d: string) => d.length >= 7 && d.length <= 12; // 감지된 실제 번호(표시만)
+ 1518: 
+ 1519:         const evidencePhones: string[] = [];
+ 1520:         const emergencyNums: string[] = [];
+ 1521: 
+ 1522:         for (const c of chips) {
+ 1523:             const d = toDigits(c);
+ 1524:             if (!d) continue;
+ 1525: 
+ 1526:             if (isEmergency(d)) {
+ 1527:                 if (!emergencyNums.includes(d)) emergencyNums.push(d);
+ 1528:                 continue;
+ 1529:             }
+ 1530:             if (isPhoneLike(d)) {
+ 1531:                 if (!evidencePhones.includes(c)) evidencePhones.push(c);
+ 1532:                 continue;
+ 1533:             }
+ 1534:         }
+ 1535: 
+ 1536:         const shownEvidence = evidencePhones.slice(0, 2);
+ 1537:         const shownEmergency = emergencyNums.slice(0, 3);
+ 1538: 
+ 1539:         return (
+ 1540:             <div
+ 1541:                 style={{
+ 1542:                     position: "absolute",
+ 1543:                     left: 10,
+ 1544:                     right: 10,
+ 1545:                     top: 8,
+ 1546:                     zIndex: 60,
+ 1547:                     pointerEvents: "none",
+ 1548:                 }}
+ 1549:             >
+ 1550:                 <div
+ 1551:                     style={{
+ 1552:                         pointerEvents: "auto",
+ 1553:                         display: "flex",
+ 1554:                         flexDirection: "column",
+ 1555:                         gap: 8,
+ 1556:                         padding: "10px 12px",
+ 1557:                         borderRadius: 16,
+ 1558:                         background: bg,
+ 1559:                         border: `1px solid ${bd}`,
+ 1560:                         boxShadow: "0 10px 24px rgba(0,0,0,0.30)",
+ 1561:                         backdropFilter: "blur(6px)",
+ 1562:                     }}
+ 1563:                 >
+ 1564:                     {/* 1줄: 문구 + 닫기 */}
+ 1565:                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+ 1566:                         <div
+ 1567:                             style={{
+ 1568:                                 minWidth: 0,
+ 1569:                                 color: "rgba(255,255,255,0.98)",
+ 1570:                                 fontSize: 13,
+ 1571:                                 fontWeight: 900,
+ 1572:                                 whiteSpace: "nowrap",
+ 1573:                                 overflow: "hidden",
+ 1574:                                 textOverflow: "ellipsis",
+ 1575:                             }}
+ 1576:                             title={title}
+ 1577:                         >
+ 1578:                             {title}
+ 1579:                         </div>
+ 1580: 
+ 1581:                         <button
+ 1582:                             className="btn"
+ 1583:                             onClick={() => setDismissKey(key)}
+ 1584:                             title="닫기"
+ 1585:                             style={{
+ 1586:                                 padding: "6px 10px",
+ 1587:                                 borderRadius: 999,
+ 1588:                                 background: "rgba(0,0,0,0.18)",
+ 1589:                                 border: "1px solid rgba(255,255,255,0.22)",
+ 1590:                                 color: "rgba(255,255,255,0.98)",
+ 1591:                                 fontWeight: 900,
+ 1592:                                 lineHeight: 1,
+ 1593:                             }}
+ 1594:                         >
+ 1595:                             ×
+ 1596:                         </button>
+ 1597:                     </div>
+ 1598: 
+ 1599:                     {/* 2줄: 감지번호(근거) + (고위험이면) 신고/상담 전화버튼 */}
+ 1600:                     {(shownEvidence.length || (isDanger && shownEmergency.length)) ? (
+ 1601:                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+ 1602:                             {shownEvidence.map((p) => (
+ 1603:                                 <span
+ 1604:                                     key={`e-${p}`}
+ 1605:                                     title="감지된 번호(근거)"
+ 1606:                                     style={{
+ 1607:                                         display: "inline-flex",
+ 1608:                                         alignItems: "center",
+ 1609:                                         gap: 6,
+ 1610:                                         padding: "6px 10px",
+ 1611:                                         borderRadius: 999,
+ 1612:                                         background: "rgba(0,0,0,0.14)",
+ 1613:                                         border: "1px solid rgba(255,255,255,0.20)",
+ 1614:                                         color: "rgba(255,255,255,0.98)",
+ 1615:                                         fontSize: 12,
+ 1616:                                         fontWeight: 850,
+ 1617:                                     }}
+ 1618:                                 >
+ 1619:                                     <span style={{ fontSize: 13 }}>☎</span>
+ 1620:                                     <span>{p}</span>
+ 1621:                                 </span>
+ 1622:                             ))}
+ 1623: 
+ 1624:                             {isDanger
+ 1625:                                 ? shownEmergency.map((n) => (
+ 1626:                                     <a
+ 1627:                                         key={`c-${n}`}
+ 1628:                                         href={`tel:${n}`}
+ 1629:                                         title={`신고/상담 전화 ${n}`}
+ 1630:                                         style={{
+ 1631:                                             textDecoration: "none",
+ 1632:                                             display: "inline-flex",
+ 1633:                                             alignItems: "center",
+ 1634:                                             gap: 6,
+ 1635:                                             padding: "6px 10px",
+ 1636:                                             borderRadius: 999,
+ 1637:                                             background: "rgba(255,255,255,0.18)",
+ 1638:                                             border: "1px solid rgba(255,255,255,0.22)",
+ 1639:                                             color: "rgba(255,255,255,0.98)",
+ 1640:                                             fontSize: 12,
+ 1641:                                             fontWeight: 900,
+ 1642:                                         }}
+ 1643:                                     >
+ 1644:                                         <span style={{ fontSize: 13 }}>📞</span>
+ 1645:                                         <span>{n}</span>
+ 1646:                                     </a>
+ 1647:                                 ))
+ 1648:                                 : null}
+ 1649:                         </div>
+ 1650:                     ) : null}
+ 1651:                 </div>
+ 1652:             </div>
+ 1653:         );
+ 1654:     }

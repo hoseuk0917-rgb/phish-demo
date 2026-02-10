@@ -1,0 +1,156 @@
+﻿ 1197: 
+ 1198:     return turns.slice(0, capLen);
+ 1199: }
+ 1200: 
+ 1201: // ---------- 밸리데이터 ----------
+ 1202: function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {
+ 1203:     const errs: string[] = [];
+ 1204: 
+ 1205:     const urlCount = s.url?.count ?? 0;
+ 1206:     if (urlCount > 1) errs.push("url_count>1");
+ 1207: 
+ 1208:     if (!isBenign && (!s.anchors || s.anchors.length === 0)) errs.push("malicious_missing_anchor");
+ 1209: 
+ 1210:     const sTurns = s.turns.filter((t) => t.role === "S");
+ 1211:     if (sTurns.length < 2) errs.push("missing_pretext_or_cred");
+ 1212: 
+ 1213:     // ✅ 전화/메시지 타겟: 정상/비정상 모두 thread(특히 S)에 전화번호가 반드시 있어야 함
+ 1214:     const hasPhone = (x: string) => {
+ 1215:         const pat =
+ 1216:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/;
+ 1217:         return pat.test(String(x || ""));
+ 1218:     };
+ 1219:     const sTextAll = sTurns.map((t) => String((t as any)?.text ?? "")).join("\n");
+ 1220:     const callerDisp = String((s as any)?.caller?.caller_display ?? "");
+ 1221:     if (!hasPhone(callerDisp) && !hasPhone(sTextAll)) errs.push("missing_phone");
+ 1222: 
+ 1223:     if (isBenign) {
+ 1224:         const bad = s.anchors.some((a) =>
+ 1225:             ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)
+ 1226:         );
+ 1227:         if (bad) errs.push("benign_has_danger_anchor");
+ 1228:     }
+ 1229: 
+ 1230:     if (!isBenign && s.caller.is_whitelisted) {
+ 1231:         if (s.expected.risk === "low") errs.push("whitelisted_malicious_should_not_be_low");
+ 1232:     }
+ 1233: 
+ 1234:     if (s.url && s.vector !== "url") errs.push("url_vector_mismatch");
+ 1235:     if (s.qr && s.vector !== "qr") errs.push("qr_vector_mismatch");
+ 1236: 
+ 1237:     return errs;
+ 1238: }
+ 1239: 
+ 1240: // ---------- 출력 스키마 어댑터 ----------
+ 1241: function turnsToThread(
+ 1242:     turns: { role: "S" | "R"; text: string }[],
+ 1243:     callerDisplay?: string
+ 1244: ) {
+ 1245:     const phoneLike = (s: string) => {
+ 1246:         const t = String(s || "");
+ 1247:         return (
+ 1248:             /발신번호표시제한/.test(t) ||
+ 1249:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:70|50)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/.test(t)
+ 1250:         );
+ 1251:     };
+ 1252: 
+ 1253:     const normRole = (raw: any, idx: number): "S" | "R" => {
+ 1254:         if (raw === "S" || raw === "sender") return "S";
+ 1255:         if (raw === "R" || raw === "receiver") return "R";
+ 1256:         return idx === 0 ? "S" : "R";
+ 1257:     };
+ 1258: 
+ 1259:     const lines = (turns || []).map((t: any, idx: number) => {
+ 1260:         const role = normRole(t?.role, idx);
+ 1261:         const text = String(t?.text ?? "").trim();
+ 1262:         return `${role}: ${text}`;
+ 1263:     });
+ 1264: 
+ 1265:     // ✅ callerDisplay가 있으면 "첫 S 라인"에만 (caller) 주입
+ 1266:     if (callerDisplay && String(callerDisplay).trim()) {
+ 1267:         const cd = String(callerDisplay).trim();
+ 1268:         let si = lines.findIndex((x) => /^S:\s*/.test(x));
+ 1269:         if (si < 0) {
+ 1270:             // S 라인이 아예 없으면 S 라인 하나 만들어서 앞에 둠
+ 1271:             lines.unshift(`S: (${cd})`);
+ 1272:             si = 0;
+ 1273:         }
+ 1274:         if (!phoneLike(lines[si])) {
+ 1275:             lines[si] = lines[si].replace(/^S:\s*/, `S: (${cd}) `);
+ 1276:         }
+ 1277:     }
+ 1278: 
+ 1279:     return lines.join("\n");
+ 1280: }
+ 1281: 
+ 1282: function lengthBucketFromTurns(n: number) {
+ 1283:     if (n <= 4) return "S";
+ 1284:     if (n <= 8) return "M";
+ 1285:     if (n <= 12) return "L";
+ 1286:     return "XL";
+ 1287: }
+ 1288: 
+ 1289: function toScenarioOutput(s: ScenarioInternal): AnyObj {
+ 1290:     const thread = turnsToThread(s.turns, (s as any)?.caller?.caller_display);
+ 1291: 
+ 1292:     const senderText =
+ 1293:         s.turns
+ 1294:             ?.filter((t) => t && (t as any).role === "S")
+ 1295:             ?.map((t) => String((t as any).text ?? ""))
+ 1296:             ?.join("\n")
+ 1297:             ?.trim() || "";
+ 1298: 
+ 1299:     // S 텍스트가 없으면 thread 전체로 폴백
+ 1300:     const effBasis = (senderText || "").trim() || String(thread || "");
+ 1301:     const t = String(effBasis || "");
+ 1302:     const t2 = t.replace(/\s+/g, "");
+ 1303: 
+ 1304:     const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];
+ 1305:     let effAnchors = anchorsEffFromText(allAnchors, effBasis);
+ 1306: 
+ 1307:     // ---- 엔진과 최대한 비슷한 cue들(특히 payment/install 방어) ----
+ 1768:                     stub_hint: String(stub.normalized_ref || stub.id || stub.url || stub.title || "").slice(0, 180),
+ 1769:                     stub_features: stubFeat,
+ 1770:                     stub_keywords: stubKeywords,
+ 1771:                     augmented_vector: augmentedVector,
+ 1772:                     noiseLevel,
+ 1773:                     attempt,
+ 1774: 
+ 1775:                     // (디버그용) 원본/유효 pressures 같이 보관
+ 1776:                     pressures_raw: pressures,
+ 1777:                     pressures_eff: pressuresEff,
+ 1778: 
+ 1779:                     // (디버그용) planned vs eff anchors 같이 보관
+ 1780:                     anchors_planned: anchorsPlanned,
+ 1781:                     anchors_eff: anchorsEff,
+ 1782:                 },
+ 1783:             };
+ 1784: 
+ 1785:             const errs = validateScenario(s, isBenign);
+ 1786:             if (errs.length === 0) {
+ 1787:                 outRows.push(toScenarioOutput(s));
+ 1788:                 produced++;
+ 1789:                 break;
+ 1790:             } else {
+ 1791:                 bestErrs = errs;
+ 1792:             }
+ 1793:         }
+ 1794: 
+ 1795:         if (attempt >= args.max_retries) {
+ 1796:             outRows.push({
+ 1797:                 id: safeId("FAIL", i + 1),
+ 1798:                 error: "generator_failed_constraints",
+ 1799:                 errors: bestErrs,
+ 1800:             });
+ 1801:         }
+ 1802:     }
+ 1803: 
+ 1804:     await writeJsonl(args.out, outRows);
+ 1805:     console.log(`[genScenariosFromStubs] wrote=${outRows.length} produced=${produced} out=${args.out}`);
+ 1806:     if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);
+ 1807: }
+ 1808: 
+ 1809: main().catch((e) => {
+ 1810:     console.error(e);
+ 1811:     process.exit(1);
+ 1812: });

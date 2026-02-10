@@ -1,0 +1,341 @@
+﻿  629: 
+  630:     const has = (re: RegExp) => re.test(text);
+  631: 
+  632:     if (has(/유흥|유포|협박|영상|폭로|불륜|성매매|업소/)) return "blackmail_sexvisit";
+  633:     if (has(/출국|항공|비행기|여권|현지|취업|동남아|캄보|라오|태국/)) return "job_travel";
+  634:     if (has(/택배|배송|운송장|부재|보관/)) return "delivery_link";
+  635:     if (has(/과태료|범칙금|미납|납부|환급/)) return "fine_refund_link";
+  636:     if (has(/원격|앱설치|설치|팀뷰|애니데|anydesk|지원앱/)) return "bank_install";
+  637:     if (has(/인증번호|otp|보안코드/)) return "bank_otp";
+  638:     if (has(/비밀번호|로그인|계정|인증\s*실패|잠금/)) return "account_takeover_cred";
+  639:     if (has(/주민|계좌|카드번호|신분증|개인정보/)) return "pii_collection";
+  640:     if (has(/대출|수수료|보증금|선입금/)) return "loan_fee";
+  641:     if (has(/atm|현금인출|은행으로|창구/)) return "go_bank_atm";
+  642:     if (has(/퀵|봉투|현금|직접\s*전달|대면/)) return "cash_pickup";
+  643: 
+  644:     const pool: CaseType[] = [
+  645:         "delivery_link",
+  646:         "fine_refund_link",
+  647:         "bank_otp",
+  648:         "bank_install",
+  649:         "account_takeover_cred",
+  650:         "pii_collection",
+  651:         "family_urgent_transfer",
+  652:         "loan_fee",
+  653:         "go_bank_atm",
+  654:         "cash_pickup",
+  655:         "job_travel",
+  656:         "blackmail_sexvisit",
+  657:     ];
+  658:     return pick(rng, pool);
+  659: }
+  660: 
+  661: // ---------- 케이스별 설정 ----------
+  662: function requiredAnchors(caseType: CaseType): Anchor[] {
+  663:     switch (caseType) {
+  664:         case "delivery_link":
+  665:         case "fine_refund_link":
+  666:             return ["A_LINK"];
+  667:         case "bank_otp":
+  668:             return ["A_OTP"];
+  669:         case "bank_install":
+  670:             return ["A_INSTALL"];
+  671:         case "account_takeover_cred":
+  672:             return ["A_CRED"];
+  673:         case "pii_collection":
+  674:             return ["A_PII"];
+  675:         case "family_urgent_transfer":
+  676:             return ["A_TRANSFER"];
+  677:         case "loan_fee":
+  678:             return ["A_TRANSFER"];
+  679:         case "go_bank_atm":
+  680:             return ["A_GO_BANK"];
+  681:         case "cash_pickup":
+  682:             return ["A_CASH_PICKUP"];
+  683:         case "job_travel":
+  684:             return ["A_TRAVEL"];
+  685:         case "blackmail_sexvisit":
+  686:             return ["A_TRANSFER"];
+  687:         default:
+  688:             return ["A_TRANSFER"];
+  689:     }
+  690: }
+  691: 
+  692: function defaultVectorFor(caseType: CaseType): Vector {
+  693:     switch (caseType) {
+  694:         case "delivery_link":
+  695:         case "fine_refund_link":
+  696:         case "account_takeover_cred":
+  697:         case "pii_collection":
+  698:             return "url";
+  699:         default:
+  700:             return "none";
+  701:     }
+  702: }
+  703: 
+  704: function impersonationFor(caseType: CaseType): string | undefined {
+  705:     switch (caseType) {
+  706:         case "delivery_link":
+  707:             return "imp_delivery";
+  708:         case "fine_refund_link":
+  709:             return "imp_gov";
+  710:         case "bank_otp":
+  711:         case "bank_install":
+  712:         case "account_takeover_cred":
+  713:             return "imp_bank";
+  714:         case "go_bank_atm":
+  715:             return "imp_court";
+  716:         default:
+  717:             return undefined;
+  718:     }
+  719: }
+  720: 
+  721: function pressuresFor(rng: () => number, caseType: CaseType): string[] {
+  722:     switch (caseType) {
+  723:         case "blackmail_sexvisit":
+  724:             return ["press_threat", "press_secrecy", "press_urgent"];
+  725: 
+  726:         case "family_urgent_transfer":
+  727:             return ["press_urgent", "press_secrecy"];
+  728: 
+  729:         case "bank_install":
+  730:         case "bank_otp":
+  731:         case "loan_fee":
+  732:             return ["press_urgent"];
+  733: 
+  734:         // ✅ ATM/현금전달은 보통 “지금 당장 + 외부에 말하지마”가 같이 붙음
+  735:         case "go_bank_atm":
+  736:         case "cash_pickup":
+  737:             return ["press_urgent", "press_secrecy"];
+  738: 
+  739:         // 링크형도 너무 “평문 안내”면 낮게 나올 수 있어 가끔 급한 톤을 줌
+  740:         case "delivery_link":
+  741:         case "fine_refund_link":
+  742:             return chance(rng, 0.5) ? ["press_urgent"] : [];
+  743: 
+  744:         default:
+  745:             return [];
+  746:     }
+  747: }
+  748: 
+  749: function stageFromAnchors(
+  750:     caseType: CaseType,
+  751:     anchors: Anchor[],
+  752:     vector: Vector,
+  753:     urlKind: UrlKind | undefined,
+  754:     urlMatch: boolean | undefined,
+  755:     pressures: string[],
+  756:     senderText: string
+  757: ): Stage {
+  758:     // ✅ 엔진(scoreThread)처럼 "rawThread 텍스트" 기준으로 stage를 산정
+  759:     // anchors는 생성 힌트일 뿐, 엔진은 anchors를 보지 않으므로 기대값도 텍스트에 맞춰야 stage mismatch가 줄어듦
+  760:     const t = String(senderText || "");
+  761: 
+  762:     const hasRemote =
+  763:         /(원격|원격\s*제어|팀뷰|teamviewer|anydesk|supremo|퀵서포트|quick\s*support)/i.test(t);
+  764: 
+  765:     const hasApk =
+  766:         /(apk|설치\s*파일|앱\s*설치|다운로드|파일\s*설치|프로그램\s*설치|업데이트\s*설치)/i.test(t);
+  767: 
+  768:     const hasInstallMention =
+  769:         /(설치|다운로드|앱\s*설치|원격\s*앱|원격\s*지원|지원\s*앱|뷰어\s*설치)/i.test(t);
+  770: 
+  771:     const hasPayRequest =
+  772:         /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire|현금|인출|withdraw|cash|atm|창구|퀵|대면\s*전달|봉투|납부|지불|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌)/i.test(
+  773:             t
+  774:         );
+  775: 
+  776:     const hasOtp = /(otp|인증번호|인증\s*코드|보안\s*코드)/i.test(t);
+  777: 
+  778:     const hasPersonal =
+  779:         /(비밀번호|비번|패스워드|계정|아이디|신분증|주민등록|여권|카드번호|cvv|cvc|보안카드|인증서|개인정보)/i.test(t);
+  780: 
+  781:     if (hasRemote || hasApk || hasInstallMention) return "install";
+  782:     if (hasPayRequest) return "payment";
+  783:     if (hasOtp || hasPersonal) return "verify";
+  784: 
+  785:     // 링크/QR은 엔진이 info로 두는 경우가 많아서 기본 info
+  786:     return "info";
+  787: }
+  788: 
+  789: function riskFromSignals(
+  790:     anchors: Anchor[],
+  791:     pressures: string[],
+  792:     impersonation?: string,
+  793:     vector?: Vector,
+  794:     urlKind?: UrlKind,
+  795:     urlMatch?: boolean,
+  796:     senderText?: string
+  797: ): Risk {
+  798:     const rawThread = String(senderText || "");
+  799:     const ps = new Set((pressures || []).map((x) => String(x || "")));
+  800: 
+  801:     // ✅ 링크/QR 존재 여부는 "텍스트"로만 판단(anchors 힌트로 false positive 금지)
+  802:     const hasUrl = /https?:\/\/\S+|www\./i.test(rawThread);
+  803:     const hasQrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(rawThread);
+  804:     const hasLink = hasUrl || hasQrCue;
+  805: 
+  806:     const hasShortener =
+  807:         /(bit\.ly|t\.co|me2\.kr|tinyurl\.com|url\.kr|han\.gl|gg\.gg|vo\.la)/i.test(rawThread);
+  808: 
+  809:     const hasUrgent =
+  810:         ps.has("press_urgent") ||
+  811:         /(긴급|즉시|지금\s*바로|서둘러|재촉|기한|마감|지연\s*시|오늘\s*까지|금일\s*까지)/i.test(rawThread);
+  812: 
+  813:     const hasThreat =
+  814:         ps.has("press_threat") ||
+  815:         /(체포|구속|영장|압류|고소|기소|법적\s*조치|수사|출석\s*요구|계좌\s*정지|처벌)/i.test(rawThread);
+  816: 
+  817:     const isAuthorityImp =
+  818:         !!impersonation && /^imp_(gov|police|prosecutor|court|bank|card)/.test(impersonation);
+  819: 
+  820:     const hasAuthority =
+  821:         isAuthorityImp ||
+  822:         /(경찰|검찰|법원|금감원|금융감독원|국세청|관세청|수사관|검사|담당자|은행|카드사|고객센터)/i.test(rawThread);
+  823: 
+  824:     const hasDemand =
+  825:         /(보내\s*주|전달\s*해|입력\s*해|알려\s*주|회신|답장|제출|업로드|등록|확인\s*해\s*주)/i.test(rawThread);
+  826: 
+  827:     const hasPayRequest =
+  828:         /(계좌번호|예금주|입금|송금|이체|무통장|remit|wire|현금|인출|withdraw|cash|atm|창구|퀵|대면\s*전달|봉투)/i.test(
+  829:             rawThread
+  830:         );
+  831: 
+  832:     const hasExplicitPayWord =
+  833:         /(납부|지불|결제|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌)/i.test(rawThread);
+  834: 
+  835:     const hasOtp = /(otp|인증번호|인증\s*코드|보안\s*코드)/i.test(rawThread);
+  836: 
+  837:     const hasRemote =
+  838:         /(원격|원격\s*제어|팀뷰|teamviewer|anydesk|supremo|퀵서포트|quick\s*support)/i.test(rawThread);
+  839: 
+  840:     const hasApk =
+  841:         /(apk|설치\s*파일|앱\s*설치|다운로드|파일\s*설치|프로그램\s*설치|업데이트\s*설치)/i.test(rawThread);
+  842: 
+  843:     const hasInstallMention =
+  844:         /(설치|다운로드|앱\s*설치|원격\s*앱|원격\s*지원|지원\s*앱|뷰어\s*설치)/i.test(rawThread);
+  845: 
+  846:     const hasJobScam =
+  847:         /(구인|채용|공고|지원|알바|일자리|업무|면접|현지\s*근무|고수익|톡방|오픈채팅|동남아)/i.test(rawThread);
+  848: 
+  849:     const hasJobPiiRequest =
+  850:         /(신분증|여권|주민등록|사진|업로드|올려|제출|전달)/i.test(rawThread);
+  851: 
+  852:     const jobPiiHigh = hasJobScam && hasLink && hasJobPiiRequest;
+  853: 
+  854:     const hasInvest =
+  855:         /(투자|코인|가상자산|주식|선물|마진|리딩방|수익률|원금\s*보장|고수익\s*확정)/i.test(rawThread);
+  856: 
+  857:     const hasFamily =
+  858:         /(아들|딸|엄마|아빠|가족|지인|친구).*?(사고|납치|급전|합의금|병원|경찰서)/i.test(rawThread);
+  859: 
+  860:     const hasPersonal =
+  861:         /(개인정보|비밀번호|비번|패스워드|계정|아이디|신분증|주민등록|여권|카드번호|cvv|cvc|보안카드|인증서)/i.test(
+  862:             rawThread
+  863:         );
+  864: 
+  865:     const financeLike = /(카드|은행|계좌|승인|결제|정지|해지|분실|도난)/i.test(rawThread);
+  866: 
+  867:     // ---------- 엔진의 "high 금지/캡" 류를 기대값에도 반영 ----------
+  868:     const selfAckThread = /(제가\s*아닌데|제가\s*한\s*적\s*없|한\s*적\s*없|접수\s*안\s*했|모르겠|아닌데요)/i.test(rawThread);
+  869:     const alertSettingThread =
+  870:         /(알림\s*설정|설정\s*변경|설정\s*확인|로그인\s*시도\s*감지|접속\s*시도\s*감지|자동\s*이체\s*등록)/i.test(rawThread);
+  871: 
+  872:     const promoLike = /(쿠폰|기프티콘|설문|프로모션|이벤트|경품|당첨|무료)/i.test(rawThread);
+  873:     const piiLike = /(개인정보|이름|주소|전화번호|연락처|배송|신청|입력)/i.test(rawThread);
+  874: 
+  875:     const deliveryLikeThread =
+  876:         /(택배|배송|배송지|운송장|송장|집화|출고|입고|도착|지연|보관중|배송중|배달중|통관|세관|반품|교환|수취|수령|부재중)/i.test(
+  877:             rawThread
+  878:         );
+  879: 
+  880:     // 1) payment/송금 계열은 high (엔진도 score가 크게 뜸)
+  881:     if (hasPayRequest || hasExplicitPayWord) return "high";
+  882: 
+  883:     // 2) 설치/원격은 기본 high, 다만 “원격만(금융/OTP/위협/권위/긴급 없음)”이면 medium 캡
+  884:     if (hasRemote || hasApk || hasInstallMention) {
+  885:         const remoteOnly =
+  886:             !hasPayRequest &&
+  887:             !hasExplicitPayWord &&
+  888:             !hasOtp &&
+  889:             !hasThreat &&
+  890:             !hasAuthority &&
+  891:             !hasUrgent &&
+  892:             !hasJobScam &&
+  893:             !hasInvest &&
+  894:             !hasFamily;
+  895:         return remoteOnly ? "medium" : "high";
+  896:     }
+  897: 
+  898:     // 3) 잡스캠(링크+신분/여권/사진 업로드 요구) high
+  899:     if (jobPiiHigh) return "high";
+  900: 
+  901:     // 4) 투자/가족 급전 high
+  902:     if (hasInvest || hasFamily) return "high";
+  903: 
+  904:     // 5) OTP: 엔진 hardHigh에 잘 걸리는 조합을 high로
+  905:     if (hasOtp) {
+  906:         // 링크+OTP+요구(demand) or 권위/위협/긴급 or 금융맥락이면 high
+  907:         const otpHard =
+  908:             (hasLink && hasDemand) || hasAuthority || hasThreat || hasUrgent || financeLike || hasShortener;
+  909:         // 단, OTP “안내만” 류(요구 없음)면 medium
+  910:         return otpHard ? "high" : "medium";
+  911:     }
+  912: 
+  913:     // 6) 링크+개인정보는 보통 medium (구인/잡스캠 hard는 위에서 high 처리)
+  914:     if (hasLink && (hasPersonal || piiLike)) {
+  915:         const promoInfoOnly =
+  916:             promoLike &&
+  917:             piiLike &&
+  918:             !hasThreat &&
+  919:             !hasAuthority &&
+  920:             !hasUrgent &&
+  921:             !hasDemand;
+  922: 
+  923:         if (promoInfoOnly) return "medium";
+  924: 
+  925:         const personalLinkOnly =
+  926:             !hasThreat &&
+  927:             !hasAuthority &&
+  928:             !hasUrgent &&
+  929:             !hasDemand;
+  930: 
+  931:         return personalLinkOnly ? "medium" : "high";
+  932:     }
+  933: 
+  934:     // 7) 알림/설정/확인 링크 + “내가 했다/아니다”류는 high 금지 → medium
+  935:     if (hasLink && (alertSettingThread || selfAckThread)) {
+  936:         const noHard =
+  937:             !hasThreat && !hasAuthority && !hasUrgent && !hasDemand && !hasOtp && !hasPersonal;
+  938:         return noHard ? "medium" : "high";
+  939:     }
+  940: 
+  941:     // 8) 택배 링크만은 high 금지 → medium/low
+  942:     if (hasLink && deliveryLikeThread) {
+  943:         const noHard =
+  944:             !hasThreat && !hasAuthority && !hasUrgent && !hasDemand && !hasOtp && !hasPersonal;
+  945:         return noHard ? "medium" : "high";
+  946:     }
+  947: 
+  948:     // 9) 링크/QR 단독은 low, 단서(긴급/요구/위협/권위/단축) 있으면 medium
+  949:     if (hasLink) {
+  950:         const hasDanger = hasThreat || hasAuthority || hasUrgent || hasDemand || hasShortener;
+  951:         return hasDanger ? "medium" : "low";
+  952:     }
+  953: 
+  954:     return "low";
+  955: }
+  956: 
+  957: function triggersFrom(
+  958:     caseType: CaseType,
+  959:     anchors: Anchor[],
+  960:     pressures: string[],
+  961:     impersonation?: string,
+  962:     vector?: Vector,
+  963:     urlKind?: UrlKind
+  964: ) {
+  965:     const t: string[] = [];
+  966:     if (impersonation) t.push(impersonation);
+  967: 
+  968:     for (const a of anchors) {
+  969:         if (a === "A_LINK") t.push("act_link");

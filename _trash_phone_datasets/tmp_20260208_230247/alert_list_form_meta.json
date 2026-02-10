@@ -1,0 +1,18 @@
+﻿{
+    "method":  "GET",
+    "action":  "/bbs003/board/boardList.do;jsessionid=SSY4AOwmHAvX5KFUq7REo53yVXUoF73EquoCPqPJ.AP_homepage11",
+    "hidden":  [
+                   {
+                       "name":  "pageIndex",
+                       "value":  "1"
+                   },
+                   {
+                       "name":  "pageUnit",
+                       "value":  "10"
+                   },
+                   {
+                       "name":  "pstSn",
+                       "value":  ""
+                   }
+               ]
+}

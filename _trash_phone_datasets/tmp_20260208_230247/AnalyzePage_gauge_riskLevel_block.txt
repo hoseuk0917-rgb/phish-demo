@@ -1,0 +1,121 @@
+﻿ 1759:         const b = String(primaryPhone || "").trim();
+ 1760:         if (b) return b;
+ 1761: 
+ 1762:         return "";
+ 1763:     }, [fromNumber, primaryPhone]);
+ 1764: 
+ 1765:     const phoneUx = phoneUxEnabled ? (
+ 1766:         <div className="card" style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.12)" }}>
+ 1767:             <div className="row-between" style={{ gap: 10, flexWrap: "wrap" }}>
+ 1768:                 <div>
+ 1769:                     <div className="card-title">Demo layout</div>
+ 1770:                     <div className="card-desc">left: gauge · center: phone · right: compact controls</div>
+ 1771:                 </div>
+ 1772:                 <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+ 1773:                     <span className="pill">{demoRunning ? `DEMO ${demoIndex}/${demoTurns.length}` : "LIVE"}</span>
+ 1774:                     <span className="pill">ALERT: {String((phoneAlert as any)?.level || "none") === "none" ? "NONE" : String((phoneAlert as any)?.level || "unknown").toUpperCase()}</span>
+ 1775:                     <button className="btn" onClick={() => setPhoneUxEnabled(false)}>
+ 1776:                         Close
+ 1777:                     </button>
+ 1778:                 </div>
+ 1779:             </div>
+ 1780: 
+ 1781:             <div style={{ height: 10 }} />
+ 1782: 
+ 1783:             <div
+ 1784:                 style={{
+ 1785:                     display: "grid",
+ 1786:                     gridTemplateColumns: "minmax(260px, 1fr) 380px minmax(260px, 1fr)",
+ 1787:                     gap: 12,
+ 1788:                     alignItems: "start",
+ 1789:                 }}
+ 1790:             >
+ 1791:                 {/* LEFT: Gauge */}
+ 1792:                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+ 1793:                     <div className="card" style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.12)" }}>
+ 1794:                         {(() => {
+ 1795:                             const scoreTotal = Math.round(
+ 1796:                                 Math.max(0, Math.min(100, Number((preview as any)?.uiScoreTotal ?? (preview as any)?.scoreTotal ?? 0)))
+ 1797:                             );
+ 1798: 
+ 1799:                             const riskLevelRaw = String((preview as any)?.riskLevel || "").toLowerCase().trim();
+ 1800:                             const uiRiskLevelRaw = String((preview as any)?.uiRiskLevel || "").toLowerCase().trim();
+ 1801: 
+ 1802:                             const riskLevel = riskLevelRaw || "n/a";
+ 1803:                             const uiRiskLevel = uiRiskLevelRaw || (riskLevelRaw || "n/a");
+ 1804: 
+ 1805:                             const stagePeak = String((preview as any)?.stagePeak || (preview as any)?.stage || "n/a");
+ 1806: 
+ 1807:                             const gateMode = triggerGateEnabled
+ 1808:                                 ? autoAnalyzeOnTrigger
+ 1809:                                     ? ((triggerState as any)?.mode === "auto" ? ((triggerState as any)?.ok ? "TRIGGERED" : "IDLE") : "MANUAL")
+ 1810:                                     : "MANUAL"
+ 1811:                                 : "OFF";
+ 1812: 
+ 1813:                             const topSignals: any[] = Array.isArray((preview as any)?.signalsTop) ? ((preview as any)?.signalsTop as any[]) : [];
+ 1814: 
+ 1815:                             return (
+ 1816:                                 <>
+ 1817:                                     <div className="row-between" style={{ gap: 10, flexWrap: "wrap" }}>
+ 1818:                                         <div>
+ 1819:                                             <div className="card-title">Risk</div>
+ 1820:                                             <div className="card-desc">prefilter → full analysis → warning</div>
+ 1821:                                         </div>
+ 1822:                                         <span className="pill">THREAT {String(riskLevel).toUpperCase()} · UI {String(uiRiskLevel).toUpperCase()} · {stagePeak}</span>
+ 1823:                                     </div>
+ 1824: 
+ 1825:                                     <div style={{ height: 12 }} />
+ 1826: 
+ 1827:                                     <div className="row-between" style={{ gap: 10, alignItems: "flex-end" }}>
+ 1828:                                         <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1 }}>
+ 1829:                                             {scoreTotal}
+ 1830:                                         </div>
+ 1831:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+ 1832:                                             <span className="pill">Gate: {gateMode}</span>
+ 1833:                                             <span className="pill">Prefilter: {triggerGateEnabled ? prefilterScore : 0} / {triggerThreshold}</span>
+ 1834:                                             <span className="pill">SIM gate: {simMinSim} · topK: {simTopK}</span>
+ 1835:                                         </div>
+ 1836:                                     </div>
+ 1837: 
+ 1838:                                     <div style={{ height: 10 }} />
+ 1839: 
+ 1840:                                     <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+ 1841:                                         <div
+ 1842:                                             style={{
+ 1843:                                                 height: 8,
+ 1844:                                                 width: `${scoreTotal}%`,
+ 1845:                                                 background:
+ 1846:                                                     String(uiRiskLevel) === "high" ? "rgba(255,60,60,0.75)" :
+ 1847:                                                         String(uiRiskLevel) === "medium" ? "rgba(255,200,60,0.70)" :
+ 1848:                                                             "rgba(90,220,120,0.65)",
+ 1849:                                             }}
+ 1850:                                         />
+ 1851:                                     </div>
+ 1852: 
+ 1853:                                     <div style={{ height: 12 }} />
+ 1854: 
+ 1855:                                     <div className="pill">Top signals</div>
+ 1856:                                     <div style={{ height: 8 }} />
+ 1857: 
+ 1858:                                     {topSignals.length === 0 ? (
+ 1859:                                         <div className="muted" style={{ fontSize: 12 }}>no signals</div>
+ 1860:                                     ) : (
+ 1861:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+ 1862:                                             {topSignals.slice(0, 6).map((s: any, i: number) => {
+ 1863:                                                 const lab = String(s?.label || s?.id || `sig_${i + 1}`);
+ 1864:                                                 const w = Math.round(Number(s?.weightSum || s?.weight || 0));
+ 1865:                                                 const c = Number(s?.count || 0);
+ 1866:                                                 return (
+ 1867:                                                     <div key={`${lab}-${i}`} className="row-between" style={{ gap: 8 }}>
+ 1868:                                                         <span
+ 1869:                                                             className="muted"
+ 1870:                                                             style={{
+ 1871:                                                                 fontSize: 12,
+ 1872:                                                                 overflow: "hidden",
+ 1873:                                                                 textOverflow: "ellipsis",
+ 1874:                                                                 whiteSpace: "nowrap",
+ 1875:                                                                 maxWidth: 220,
+ 1876:                                                             }}
+ 1877:                                                             title={lab}
+ 1878:                                                         >
+ 1879:                                                             {lab}

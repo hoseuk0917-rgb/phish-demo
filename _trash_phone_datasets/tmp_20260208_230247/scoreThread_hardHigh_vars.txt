@@ -1,0 +1,221 @@
+﻿  758: function computeHardHighFromHits(hits: Hit[], threadText: string) {
+  759:   const has = (id: string) => hits.some((h) => String(h.ruleId || "") === id);
+  760:   const hasAny = (ids: string[]) => ids.some((id) => has(id));
+  761: 
+  762:   const install = hasAny(["ctx_install_mention", "install_app", "apk", "remote", "url_download_ext"]);
+  763:   const otp = hasAny(["ctx_otp_proxy", "ctx_otp_relay", "ctx_otp_finance", "otp"]);
+  764:   const pay = hasAny([
+  765:     "ctx_transfer_phrase",
+  766:     "ctx_transfer_demand",
+  767:     "transfer",
+  768:     "ctx_payment_request",
+  769:     "ctx_pay_with_link",
+  770:     "safe_account",
+  771:     "ctx_cash_pickup",
+  772:     "ctx_giftcard",
+  773:     "ctx_crypto_wallet",
+  774:     "ctx_account_rental",
+  775:     "ctx_qr_pay",
+  776:   ]);
+  777: 
+  778:   const family = has("ctx_family_scam");
+  779:   const jobPii = has("ctx_job_scam") && has("pii_request");
+  780: 
+  781:   // “대신 입력/처리”는 그 자체가 구조적으로 강함
+  782:   const otpProxy = has("ctx_otp_proxy");
+  783: 
+  784:   // 안내계좌/자산이전 문맥(핵심 구조) + (압박/권위/OTP/요구 중 하나)
+  785:   const safeTransfer =
+  786:     has("ctx_transfer_phrase") && hasAny(["urgent", "threat", "authority", "ctx_otp_finance", "ctx_otp_relay", "ctx_demand"]);
+  787: 
+  788:   // 링크 결제는 “링크+결제요구” + (추가 근거) 조합에서만
+  789:   const payWithLinkStrong =
+  790:     has("ctx_pay_with_link") &&
+  791:     (has("ctx_payment_request") || has("ctx_transfer_phrase") || hasAny(["urgent", "threat", "authority"])) &&
+  792:     (hasStrongPayCueText(threadText) || /납부|송금|이체|입금|지불|충전|선납|보험료/i.test(threadText));
+  793: 
+  794:   // 원격/설치 + OTP는 대표적인 하이리스크 구조
+  795:   const remoteOtp = install && otp;
+  796: 
+  797:   // OTP + 송금/안내계좌 결합도 구조적으로 강함
+  798:   const otpPay = otp && pay;
+  799: 
+  800:   // 송금요구 자체는 단독 High 금지 → (안내계좌/링크/압박/권위) 같은 결합이 있을 때만
+  801:   const payDemandCombo =
+  802:     has("ctx_payment_request") && (has("ctx_transfer_phrase") || has("ctx_pay_with_link") || hasAny(["urgent", "threat", "authority"]));
+  803: 
+  804:   return remoteOtp || otpProxy || otpPay || safeTransfer || payWithLinkStrong || family || jobPii || payDemandCombo;
+  805: }
+  806: 
+  807: /** 타임스탬프가 있으면 Date로 파싱(있을 때만 윈도우 제한에 사용) */
+  808: function parseTimestampMaybe(rawLine: string): Date | null {
+  809:   const x = String(rawLine || "").trim();
+  810:   if (!x) return null;
+  811: 
+  812:   // 2026-02-03 09:12
+  813:   let m = x.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+  814:   if (m) {
+  815:     const yy = Number(m[1]);
+  816:     const mm = Number(m[2]);
+  817:     const dd = Number(m[3]);
+  818:     const hh = Number(m[4]);
+  819:     const mi = Number(m[5]);
+  820:     const ss = Number(m[6] || "0");
+  821:     const d = new Date(yy, mm - 1, dd, hh, mi, ss);
+  822:     return Number.isFinite(d.getTime()) ? d : null;
+  823:   }
+  824: 
+  825:   // 2026.02.03 오전 9:12
+  826:   m = x.match(/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})\s+(오전|오후)?\s*(\d{1,2}):(\d{2})/);
+  827:   if (m) {
+  828:     const yy = Number(m[1]);
+  829:     const mm = Number(m[2]);
+  830:     const dd = Number(m[3]);
+  831:     const ap = String(m[4] || "");
+  832:     let hh = Number(m[5]);
+  833:     const mi = Number(m[6]);
+  834:     if (ap === "오후" && hh < 12) hh += 12;
+  835:     if (ap === "오전" && hh === 12) hh = 0;
+  836:     const d = new Date(yy, mm - 1, dd, hh, mi, 0);
+  837:     return Number.isFinite(d.getTime()) ? d : null;
+  838:   }
+  839: 
+  840:   return null;
+  841: }
+  842: 
+  843: function selectContextWindow(
+  844:   messages: string[],
+  845:   call: CallChecks,
+  846:   ctx?: ScoreThreadContextOptions
+  847: ): { selected: Array<{ originalIndex: number; text: string }>; meta: ScoreThreadResult["context"] } {
+  848:   const mode: ScoreThreadContextMode = ctx?.mode || "auto";
+  849:   const maxMessages = Math.max(5, Math.min(80, ctx?.maxMessages ?? 20));
+  850:   const maxSticky = Math.max(40, Math.min(300, ctx?.maxStickyMessages ?? 160));
+  851:   const backtrack = Math.max(0, Math.min(12, ctx?.backtrack ?? 4));
+  852:   const maxDays = Math.max(1, Math.min(14, ctx?.maxDays ?? 3));
+  853: 
+  854:   const all = messages.map((text, i) => ({ originalIndex: i, text: String(text ?? "") }));
+  855: 
+  856:   const clampTail = (arr: typeof all, cap: number) => (arr.length <= cap ? arr : arr.slice(arr.length - cap));
+  857: 
+  858:   if (mode === "sticky") {
+  859:     const kept = clampTail(all, maxSticky);
+  860:     return {
+  861:       selected: kept,
+  862:       meta: { mode, kept: kept.length, dropped: all.length - kept.length, reason: "sticky" },
+  863:     };
+  864:   }
+  865: 
+  866:   if (mode === "rolling") {
+  867:     const kept = clampTail(all, maxMessages);
+  868:     return {
+  869:       selected: kept,
+  870:       meta: { mode, kept: kept.length, dropped: all.length - kept.length, reason: `rolling:${maxMessages}` },
+  871:     };
+  872:   }
+  873: 
+  874:   // auto
+  875:   // 1) 강한 행동요구 or 콜체크가 있으면 sticky 성격(단, 캡)
+  876:   const strongByCall = !!(call?.otpAsked || call?.remoteAsked);
+  877:   let firstStrongIdx = -1;
+  878: 
+  879:   for (let i = 0; i < all.length; i++) {
+  880:     const parsed = parseHeaderAndContent(all[i].text);
+  881:     const content = parsed.content || all[i].text;
+  882:     if (hasStrongActionDemandText(content)) {
+  883:       firstStrongIdx = i;
+  884:       break;
+  885:     }
+  886:   }
+  887: 
+  888:   if (strongByCall || firstStrongIdx >= 0) {
+  889:     const start = Math.max(0, (firstStrongIdx >= 0 ? firstStrongIdx : all.length - maxSticky) - backtrack);
+  890:     const kept0 = all.slice(start);
+  891: 
+  892:     // strong 모드에서는 “강행동 시점부터 이후”를 유지해야 하므로 tail-clamp가 아니라 head-clamp
+  893:     const kept = kept0.length <= maxSticky ? kept0 : kept0.slice(0, maxSticky);
+  894: 
+  895:     return {
+  896:       selected: kept,
+  897:       meta: {
+  898:         mode,
+  899:         kept: kept.length,
+  900:         dropped: all.length - kept.length,
+  901:         reason: firstStrongIdx >= 0 ? `auto:strong@${firstStrongIdx + 1}` : "auto:strong(call)",
+  902:       },
+  903:     };
+  904:   }
+  905: 
+  906:   // 2) 강한 행동요구가 없으면: 최근 maxMessages + (타임스탬프 있으면 maxDays)
+  907:   let kept = clampTail(all, maxMessages);
+  908: 
+  909:   // 타임스탬프 기반 제한(가능할 때만)
+  910:   const stamps: Array<{ i: number; ts: Date }> = [];
+  911:   for (const it of kept) {
+  912:     const firstLine = String(it.text || "").split("\n")[0] || "";
+  913:     const ts = parseTimestampMaybe(firstLine);
+  914:     if (ts) stamps.push({ i: it.originalIndex, ts });
+  915:   }
+  916: 
+  917:   if (stamps.length >= 2) {
+  918:     const latest = stamps.map((x) => x.ts.getTime()).reduce((a, b) => Math.max(a, b), 0);
+  919:     const cutoff = latest - maxDays * 24 * 60 * 60 * 1000;
+  920:     const minIdx = stamps
+  921:       .filter((x) => x.ts.getTime() >= cutoff)
+  922:       .map((x) => x.i)
+  923:       .reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
+  924: 
+  925:     if (Number.isFinite(minIdx)) {
+  926:       const kept2 = kept.filter((x) => x.originalIndex >= minIdx);
+  927:       kept = kept2.length ? kept2 : kept;
+  928:       return {
+  929:         selected: kept,
+  930:         meta: {
+  931:           mode,
+  932:           kept: kept.length,
+  933:           dropped: all.length - kept.length,
+  934:           reason: `auto:weak(maxMessages=${maxMessages},maxDays=${maxDays})`,
+  935:         },
+  936:       };
+  937:     }
+  938:   }
+  939: 
+  940:   return {
+  941:     selected: kept,
+  942:     meta: { mode, kept: kept.length, dropped: all.length - kept.length, reason: `auto:weak(maxMessages=${maxMessages})` },
+  943:   };
+  944: }
+  945: 
+  946: /**
+  947:  * 스레드 합산 누진(같은 ruleId 반복이 “단순 누적”으로 폭주하지 않게):
+  948:  * - 같은 ruleId의 k번째 발생은 weight * factor(k)
+  949:  * - factor: 1.00, 0.85, 0.70, 0.55, 0.45, 이후 0.35 고정
+  950:  */
+  951: function applyDiminishingByRuleId(hits: Hit[]): Hit[] {
+  952:   const countById = new Map<string, number>();
+  953:   const factor = (k: number) => {
+  954:     if (k <= 1) return 1.0;
+  955:     if (k === 2) return 0.85;
+  956:     if (k === 3) return 0.7;
+  957:     if (k === 4) return 0.55;
+  958:     if (k === 5) return 0.45;
+  959:     return 0.35;
+  960:   };
+  961: 
+  962:   return hits.map((h) => {
+  963:     const id = String(h.ruleId || "");
+  964:     const k = (countById.get(id) || 0) + 1;
+  965:     countById.set(id, k);
+  966:     const f = factor(k);
+  967:     return { ...h, weight: Math.round(h.weight * f * 100) / 100 };
+  968:   });
+  969: }
+  970: 
+  971: function buildSignalsFromHits(sortedHits: Hit[], maxSignals = 12): SignalSummary[] {
+  972:   const uniq = new Map<string, Hit>();
+  973:   for (const h of sortedHits) {
+  974:     const id = String(h.ruleId || "");
+  975:     const prev = uniq.get(id);
+  976:     if (!prev || prev.weight < h.weight) uniq.set(id, h);
+  977:   }
+  978: 

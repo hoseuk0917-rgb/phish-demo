@@ -1,0 +1,354 @@
+﻿/* src/engine/prefilter/prefilter.ts
+   Lightweight prefilter / trigger engine
+   - very cheap regex/url heuristics
+   - scores strong+medium signals + combo bonuses
+   - returns action: none | soft | auto
+*/
+
+export type PrefilterAction = "none" | "soft" | "auto";
+
+export type PrefilterSignal = {
+    id: string;
+    label: string;
+    points: number;
+    matches?: string[];
+};
+
+export type PrefilterResult = {
+    score: number;
+    action: PrefilterAction;
+    thresholdSoft: number;
+    thresholdAuto: number;
+    signals: PrefilterSignal[];
+    combos: PrefilterSignal[];
+    window: {
+        blocksConsidered: number;
+        charsConsidered: number;
+    };
+};
+
+export type PrefilterOptions = {
+    // how many recent blocks(lines) to consider (real-time feed에서는 최근 N만 보게끔)
+    recentBlocksMax?: number;
+
+    // thresholds
+    thresholdSoft?: number; // show “의심” UI (quiet)
+    thresholdAuto?: number; // auto-run full analysis
+
+    // benign allowlist host suffixes (optional)
+    allowHosts?: string[];
+};
+
+const DEFAULT_SOFT = 28;
+const DEFAULT_AUTO = 52;
+
+const DEFAULT_RECENT_BLOCKS = 10;
+
+const SHORTENER_HOSTS = new Set([
+    "t.co",
+    "bit.ly",
+    "tinyurl.com",
+    "goo.gl",
+    "rebrand.ly",
+    "cutt.ly",
+    "is.gd",
+    "vo.la",
+    "me2.do",
+    "han.gl",
+]);
+
+const DOWNLOAD_EXTS = [
+    ".apk",
+    ".exe",
+    ".msi",
+    ".dmg",
+    ".pkg",
+    ".scr",
+    ".bat",
+    ".cmd",
+    ".ps1",
+    ".zip",
+    ".rar",
+    ".7z",
+];
+
+function safeParseUrl(u: string): URL | null {
+    try {
+        return new URL(u);
+    } catch {
+        return null;
+    }
+}
+
+function extractUrls(text: string): string[] {
+    const t = text || "";
+    const m = t.match(/https?:\/\/[^\s)]+/gi) || [];
+    return Array.from(new Set(m.map((x) => x.trim()))).slice(0, 10);
+}
+
+function normalizeBlocks(threadText: string, recentBlocksMax: number): string[] {
+    const raw = String(threadText ?? "").replace(/\r\n/g, "\n").trim();
+    if (!raw) return [];
+
+    // dataset 스타일: "S: ...\nR: ...\nS: ..."
+    // 일반 텍스트: 개행 단위로도 충분히 프리필터 가능
+    const lines = raw.split("\n").map((x) => x.trim()).filter(Boolean);
+
+    // 너무 길면 최근 N개만
+    const sliced = lines.length > recentBlocksMax ? lines.slice(lines.length - recentBlocksMax) : lines;
+    return sliced;
+}
+
+function hostMatchesAllow(host: string, allow: string) {
+    const h = (host || "").toLowerCase();
+    const a = (allow || "").toLowerCase();
+    return h === a || h.endsWith("." + a);
+}
+
+function points(id: string, label: string, p: number, matches?: string[]): PrefilterSignal {
+    return { id, label, points: p, matches: matches?.slice(0, 3) };
+}
+
+function hasAny(re: RegExp, text: string) {
+    return re.test(text);
+}
+
+function scoreUrlSignals(allText: string, urls: string[], allowHosts: string[]): PrefilterSignal[] {
+    const out: PrefilterSignal[] = [];
+    const allow = allowHosts || [];
+
+    let httpCount = 0;
+    let shortCount = 0;
+    let downloadCount = 0;
+    let ipHostCount = 0;
+
+    const matches: string[] = [];
+
+    for (const raw of urls) {
+        const u = safeParseUrl(raw);
+        if (!u) continue;
+
+        const proto = (u.protocol || "").toLowerCase();
+        const host = (u.hostname || "").toLowerCase();
+        const path = ((u.pathname || "") + (u.search || "")).toLowerCase();
+
+        const benignAllowed = allow.some((a) => hostMatchesAllow(host, a));
+
+        if (proto === "http:") {
+            httpCount += 1;
+            matches.push(raw);
+        }
+
+        if (SHORTENER_HOSTS.has(host)) {
+            shortCount += 1;
+            matches.push(host);
+        }
+
+        if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+            ipHostCount += 1;
+            matches.push(host);
+        }
+
+        for (const ext of DOWNLOAD_EXTS) {
+            if (path.endsWith(ext) || path.includes(ext + "?") || path.includes(ext + "&")) {
+                // allowHosts면 약하게 하거나 무시하고 싶을 수 있는데,
+                // 프리필터는 “트리거”라서 설치파일은 강하게 유지
+                downloadCount += 1;
+                matches.push(raw);
+                break;
+            }
+        }
+
+        // benignAllowed라도 “단축URL”은 의심으로 남겨두는 편이 좋음(내부에서도 거의 안 씀)
+        // benignAllowed 처리: 아래에서 점수만 살짝 약화
+        if (benignAllowed) {
+            // no-op here, later weight tweak 가능
+        }
+    }
+
+    if (urls.length > 0) out.push(points("pf_url_present", "URL 포함", 8, urls));
+
+    if (shortCount > 0) out.push(points("pf_url_shortener", "단축 URL", 22, matches));
+    if (httpCount > 0) out.push(points("pf_url_http", "HTTP(비TLS) URL", 20, matches));
+    if (ipHostCount > 0) out.push(points("pf_url_ip_host", "IP 호스트 URL", 24, matches));
+    if (downloadCount > 0) out.push(points("pf_url_download", "설치/압축 파일 링크", 35, matches));
+
+    return out;
+}
+
+type ActorHint = "demand" | "comply" | "neutral";
+
+function actorHint(block: string): ActorHint {
+    const t = String(block || "").trim();
+    if (!t) return "neutral";
+
+    const s = t.toLowerCase();
+
+    const demand = [
+        /입금|송금|이체|결제|납부/,
+        /설치|다운|다운로드|원격|팀뷰어|anydesk|quicksupport|화면\s*공유/,
+        /인증번호|otp|오티피|보안코드|확인번호|6\s*자리/,
+        /(링크|url|주소).*(클릭|눌러|접속|확인)/,
+        /지금|즉시|바로|긴급|오늘\s*안에|기한\s*내|통화\s*끊지/,
+    ];
+
+    const comply = [
+        /^\s*(네|예)\b/,
+        /알겠|알겠습니다|확인했|확인했습니다|확인했어요/,
+        /보냈|전송했|입력했|설치했|클릭했|눌렀/,
+        /인증번호|otp|오티피|비밀번호|계좌번호|카드번호|주민번호|여권/i,
+    ];
+
+    let d = 0;
+    let c = 0;
+
+    for (const r of demand) if (r.test(s)) d += 1;
+    for (const r of comply) if (r.test(s)) c += 1;
+
+    const shortYes = /^\s*(네|예|알겠|알겠습니다)\b/i.test(t) && t.length <= 32;
+    if (shortYes && c >= 1) return "comply";
+    if (d >= 2 && d > c) return "demand";
+    if (c >= 2 && c >= d) return "comply";
+    return "neutral";
+}
+
+function scoreTextSignals(allText: string): PrefilterSignal[] {
+    const t = String(allText || "");
+    const s = t.toLowerCase();
+
+    const out: PrefilterSignal[] = [];
+
+    // 강 신호
+    if (hasAny(/(안전\s*계좌|보호\s*계좌|보호조치\s*계좌|자산\s*이동)/, s)) {
+        out.push(points("pf_safe_account", "안전/보호계좌 키워드", 32));
+    }
+
+    if (hasAny(/(송금|이체|입금|결제|납부|보증보험료|수수료\s*입금)/, s)) {
+        out.push(points("pf_transfer", "송금/결제 유도", 28));
+    }
+
+    if (hasAny(/(원격|원격지원|팀뷰어|teamviewer|anydesk|quicksupport|화면\s*공유|접속코드)/, s)) {
+        out.push(points("pf_remote", "원격/화면공유 유도", 26));
+    }
+
+    if (hasAny(/(인증번호|otp|오티피|2단계\s*인증|보안코드|확인번호|6\s*자리)/, s)) {
+        // “인증번호”는 단독이면 중~강. 프리필터에선 일단 중상으로 둠
+        out.push(points("pf_otp", "인증번호/OTP 언급", 18));
+    }
+
+    // 중 신호
+    if (hasAny(/(검찰|수사관|경찰|금감원|국세청|법원|카드사|은행|고객센터)\s*(입니다|입니다\.|입니다\!|안내)/, s)) {
+        out.push(points("pf_authority", "기관/금융사 사칭 톤", 20));
+    }
+
+    if (hasAny(/(지급정지|압류|고소|처벌|차단|정지|불이익|법적\s*조치)/, s)) {
+        out.push(points("pf_threat", "위협/불이익 압박", 20));
+    }
+
+    if (hasAny(/(지금|즉시|바로|긴급|오늘\s*안에|기한\s*내|통화\s*끊지\s*마)/, s)) {
+        out.push(points("pf_urgency", "긴급/시간압박", 10));
+    }
+
+    if (hasAny(/(여권|신분증|주민번호|계좌번호|카드번호|비밀번호|주소|연락처|이름)\s*(보내|알려|입력|제출|확인)/, s)) {
+        out.push(points("pf_pii", "개인정보/신분증 요청", 16));
+    }
+
+    if (hasAny(/(링크|url|주소)\s*(접속|클릭|눌러|확인|들어가)/, s)) {
+        out.push(points("pf_link_verbs", "링크 클릭/접속 유도", 12));
+    }
+
+    // “코드/번호를 읽어달라” 류(OTP 강보강)
+    if (hasAny(/(인증번호|otp|오티피).*(보내|알려|불러|읽어|전달|캡처|스크린샷|입력)/, s)) {
+        out.push(points("pf_otp_demand", "인증번호 전달/입력 요구", 22));
+    }
+
+    return out;
+}
+
+function scoreCombos(blocks: string[], urls: string[], sigIds: Set<string>): PrefilterSignal[] {
+    const out: PrefilterSignal[] = [];
+
+    const hasUrl = urls.length > 0;
+    const hasShort = sigIds.has("pf_url_shortener");
+    const hasDl = sigIds.has("pf_url_download");
+    const hasOtp = sigIds.has("pf_otp") || sigIds.has("pf_otp_demand");
+    const hasRemote = sigIds.has("pf_remote");
+    const hasXfer = sigIds.has("pf_transfer");
+    const hasSafe = sigIds.has("pf_safe_account");
+    const hasUrg = sigIds.has("pf_urgency");
+    const hasThreat = sigIds.has("pf_threat");
+
+    // 조합 보너스(“확실한 순간”을 잡기 위한 핵심)
+    if (hasUrl && hasOtp) out.push(points("pf_combo_url_otp", "조합: 링크 + 인증번호", 18));
+    if (hasRemote && hasOtp) out.push(points("pf_combo_remote_otp", "조합: 원격 + 인증번호", 22));
+    if (hasSafe && hasXfer) out.push(points("pf_combo_safe_xfer", "조합: 안전계좌 + 이체", 26));
+    if (hasXfer && (hasUrg || hasThreat)) out.push(points("pf_combo_xfer_pressure", "조합: 이체 + 압박", 18));
+    if (hasDl && (hasUrg || hasThreat)) out.push(points("pf_combo_install_pressure", "조합: 설치링크 + 압박", 18));
+    if (hasShort && hasOtp) out.push(points("pf_combo_short_otp", "조합: 단축URL + OTP", 20));
+
+    // demand → comply 연쇄(최근 2~3블록만)
+    // “요구 다음에 사용자가 ‘네/보냈어요/설치했어요’” 형태면 트리거 강화
+    for (let i = 0; i < blocks.length; i++) {
+        const a = actorHint(blocks[i]);
+        if (a !== "demand") continue;
+
+        for (let j = i + 1; j <= Math.min(i + 2, blocks.length - 1); j++) {
+            const b = actorHint(blocks[j]);
+            if (b === "comply") {
+                out.push(points("pf_combo_demand_comply", "연쇄: 요구 직후 수락/수행", 14, [`BLK ${i + 1}→${j + 1}`]));
+                i = blocks.length; // one-shot
+                break;
+            }
+        }
+    }
+
+    return out;
+}
+
+export function prefilterThread(threadText: string, opts?: PrefilterOptions): PrefilterResult {
+    const recentBlocksMax = Math.max(1, opts?.recentBlocksMax ?? DEFAULT_RECENT_BLOCKS);
+    const thresholdSoft = opts?.thresholdSoft ?? DEFAULT_SOFT;
+    const thresholdAuto = opts?.thresholdAuto ?? DEFAULT_AUTO;
+    const allowHosts = Array.isArray(opts?.allowHosts) ? opts!.allowHosts! : [];
+
+    const blocks = normalizeBlocks(threadText, recentBlocksMax);
+    const windowText = blocks.join("\n");
+    const urls = extractUrls(windowText);
+
+    const signalsA = scoreUrlSignals(windowText, urls, allowHosts);
+    const signalsB = scoreTextSignals(windowText);
+
+    const allSignals = [...signalsA, ...signalsB];
+
+    // id별 최고점만(중복 방지)
+    const best = new Map<string, PrefilterSignal>();
+    for (const s of allSignals) {
+        const prev = best.get(s.id);
+        if (!prev || s.points > prev.points) best.set(s.id, s);
+    }
+
+    const sigList = Array.from(best.values()).sort((a, b) => b.points - a.points);
+    const sigIds = new Set(sigList.map((x) => x.id));
+
+    const combos = scoreCombos(blocks, urls, sigIds).sort((a, b) => b.points - a.points);
+
+    const scoreRaw = sigList.reduce((sum, x) => sum + x.points, 0) + combos.reduce((sum, x) => sum + x.points, 0);
+    const score = Math.min(100, Math.max(0, Math.round(scoreRaw)));
+
+    const action: PrefilterAction =
+        score >= thresholdAuto ? "auto" : score >= thresholdSoft ? "soft" : "none";
+
+    return {
+        score,
+        action,
+        thresholdSoft,
+        thresholdAuto,
+        signals: sigList,
+        combos,
+        window: {
+            blocksConsidered: blocks.length,
+            charsConsidered: windowText.length,
+        },
+    };
+}
+

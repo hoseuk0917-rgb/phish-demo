@@ -1,0 +1,187 @@
+{
+  "errorsPath": "C:\\projects\\phish-demo\\corpus\\meta\\errors.jsonl",
+  "matched": 611,
+  "groups": 12,
+  "top": [
+    {
+      "pstSn": "87",
+      "count": 68,
+      "sample": {
+        "ts": "2026-01-21T12:31:38.305Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "87",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:38.305Z",
+      "lastTs": "2026-01-21T15:23:27.613Z"
+    },
+    {
+      "pstSn": "60",
+      "count": 64,
+      "sample": {
+        "ts": "2026-01-21T12:31:58.942Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "60",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000090&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000090&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:58.942Z",
+      "lastTs": "2026-01-21T13:51:36.724Z"
+    },
+    {
+      "pstSn": "97",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:31:18.799Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "97",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000104&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000104&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:18.799Z",
+      "lastTs": "2026-01-21T13:50:53.953Z"
+    },
+    {
+      "pstSn": "95",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:31:23.401Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "95",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000102&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000102&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:23.401Z",
+      "lastTs": "2026-01-21T13:50:59.791Z"
+    },
+    {
+      "pstSn": "86",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:31:49.471Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "86",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000098&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000098&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:49.471Z",
+      "lastTs": "2026-01-21T13:51:22.380Z"
+    },
+    {
+      "pstSn": "63",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:31:54.117Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "63",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000092&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000092&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:31:54.117Z",
+      "lastTs": "2026-01-21T13:51:27.251Z"
+    },
+    {
+      "pstSn": "37",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:32:08.391Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "37",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000081&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000081&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:32:08.391Z",
+      "lastTs": "2026-01-21T13:51:44.232Z"
+    },
+    {
+      "pstSn": "5",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:32:13.223Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "5",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000080&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000080&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:32:13.223Z",
+      "lastTs": "2026-01-21T13:51:49.628Z"
+    },
+    {
+      "pstSn": "3",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:32:28.433Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "3",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000077&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000077&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:32:28.433Z",
+      "lastTs": "2026-01-21T13:52:07.270Z"
+    },
+    {
+      "pstSn": "2",
+      "count": 48,
+      "sample": {
+        "ts": "2026-01-21T12:32:35.600Z",
+        "stage": "download_failed",
+        "source": "police_press",
+        "pstSn": "2",
+        "referer": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+        "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000076&fileSn=1",
+        "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000076&fileSn=1",
+        "status": 404,
+        "ct": "text/html;charset=utf-8",
+        "via": "fn_fileDownload+FileDown+HEAD"
+      },
+      "firstTs": "2026-01-21T12:32:35.600Z",
+      "lastTs": "2026-01-21T13:52:16.999Z"
+    }
+  ]
+}

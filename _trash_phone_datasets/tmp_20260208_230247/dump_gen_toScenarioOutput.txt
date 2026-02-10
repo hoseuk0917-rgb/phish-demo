@@ -1,0 +1,641 @@
+﻿ 1069:             credLines.push(`로그인 차단 해제를 위해 확인이 필요합니다`);
+ 1070:             break;
+ 1071:         case "pii_collection":
+ 1072:             pretextLines.push(`${callerTag}${ORG} 확인 안내입니다`);
+ 1073:             credLines.push(`신분 확인을 위해 기초 정보 확인이 필요합니다`);
+ 1074:             break;
+ 1075:         case "family_urgent_transfer":
+ 1076:             pretextLines.push(`${callerTag}[가족] 긴급 상황입니다`);
+ 1077:             credLines.push(`지금 바로 확인이 필요합니다`);
+ 1078:             break;
+ 1079:         case "loan_fee":
+ 1080:             pretextLines.push(`${callerTag}${ORG} 심사 안내입니다`);
+ 1081:             credLines.push(`절차 진행을 위해 확인이 필요합니다`);
+ 1082:             break;
+ 1083:         case "go_bank_atm":
+ 1084:             pretextLines.push(`${callerTag}${ORG} 사건 처리 안내입니다`);
+ 1085:             credLines.push(`현장 확인 절차가 필요합니다`);
+ 1086:             break;
+ 1087:         case "cash_pickup":
+ 1088:             pretextLines.push(`${callerTag}${ORG} 처리 안내입니다`);
+ 1089:             credLines.push(`대면 전달 절차가 필요합니다`);
+ 1090:             break;
+ 1091:         case "job_travel":
+ 1092:             pretextLines.push(`${callerTag}해외 고수익 채용 안내입니다`);
+ 1093:             credLines.push(`출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요합니다`);
+ 1094:             break;
+ 1095:         case "blackmail_sexvisit":
+ 1096:             pretextLines.push(`${callerTag}협박 메시지입니다`);
+ 1097:             credLines.push(`시간 압박/비밀 강요 등이 포함됩니다`);
+ 1098:             break;
+ 1099:     }
+ 1100: 
+ 1101:     for (const a of anchors) {
+ 1102:         const line = renderAnchorLineSafe(rng, a, tone, urlStr, vector, urlKind);
+ 1103:         anchorLines.push(applyNoiseKo(rng, line, noiseLevel));
+ 1104:     }
+ 1105: 
+ 1106:     if (anchors.length === 0) {
+ 1107:         followLines.push(applyNoiseKo(rng, varyEnding(rng, `민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다`, tone), noiseLevel));
+ 1108:         followLines.push(applyNoiseKo(rng, varyEnding(rng, `필요하면 대표번호로 직접 확인하는 방식이 안전합니다`, tone), noiseLevel));
+ 1109:     }
+ 1110: 
+ 1111:     const resistance = [
+ 1112:         `그런 건 왜 물어보시죠?`,
+ 1113:         `왜 그걸 확인해야 하나요?`,
+ 1114:         `내용이 이상한데요. 제가 직접 확인할게요.`,
+ 1115:         `대표번호로 확인하고 다시 연락드리겠습니다.`,
+ 1116:         `링크는 직접 검색해서 들어가겠습니다.`,
+ 1117:         `민감한 정보는 안내하기 어렵습니다.`,
+ 1118:         `지금은 진행하지 않겠습니다.`,
+ 1119:     ].map((s) => applyNoiseKo(rng, varyEnding(rng, s.endsWith(".") ? s : s + ".", tone), noiseLevel));
+ 1120: 
+ 1121:     const turns: ScenarioTurn[] = [];
+ 1122: 
+ 1123:     turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, (pretextLines[0] || `${callerTag}${ORG} 안내입니다`) + ".", tone), noiseLevel) });
+ 1124:     turns.push({ role: "R", text: pick(rng, ["무슨 내용인가요?", "확인해볼게요.", "네."]) });
+ 1125:     turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, (credLines[0] || `확인 절차가 필요합니다`) + ".", tone), noiseLevel) });
+ 1126: 
+ 1127:     // ✅ 예약: pressureLines + anchorLines + followLines는 절대 잘리지 않게
+ 1128:     const reserved = pressureLines.length + anchorLines.length + followLines.length;
+ 1129:     const hardMin = Math.min(20, 3 + Math.max(0, reserved));
+ 1130:     const capLen = Math.min(20, Math.max(maxLen, hardMin));
+ 1131: 
+ 1132:     const roomForOptional = Math.max(0, capLen - reserved);
+ 1133: 
+ 1134:     if (stubKeywords.length && turns.length + 1 <= roomForOptional) {
+ 1135:         turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, `참고 키워드: ${stubKeywords.join(", ")}`, tone), noiseLevel) });
+ 1136:     }
+ 1137: 
+ 1138:     if (chance(rng, 0.4) && capLen >= 6 && turns.length + 2 <= roomForOptional) {
+ 1139:         turns.push({ role: "R", text: pick(rng, resistance) });
+ 1140: 
+ 1141:         const canHandoff = !!urlStr && (vector === "url" || vector === "qr");
+ 1142:         const handoffUrl = urlStr || "https://example.invalid/";
+ 1143:         const pressurePool = [
+ 1144:             "긴급 건입니다. 지금 바로 처리해 주세요.",
+ 1145:             "오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.",
+ 1146:             "시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.",
+ 1147:             ...(canHandoff ? [`확인 링크 보내드립니다: ${handoffUrl}`] : []),
+ 1148:         ];
+ 1149: 
+ 1150:         turns.push({
+ 1151:             role: "S",
+ 1152:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, pressurePool), tone), noiseLevel),
+ 1153:         });
+ 1154:     }
+ 1155: 
+ 1156:     const canSpikeLate = chance(rng, 0.55) && capLen >= 8;
+ 1157:     if (canSpikeLate) {
+ 1158:         const remainingForBuild = Math.max(0, roomForOptional - turns.length);
+ 1159:         const buildN = clampInt(Math.floor(rng() * 5) + 2, 0, Math.min(6, remainingForBuild));
+ 1160:         for (let i = 0; i < buildN; i++) {
+ 1161:             turns.push({
+ 1162:                 role: i % 2 === 0 ? "S" : "R",
+ 1163:                 text:
+ 1164:                     i % 2 === 0
+ 1165:                         ? applyNoiseKo(rng, varyEnding(rng, pick(rng, ["절차 안내입니다.", "확인이 필요합니다.", "기한이 있습니다."]), tone), noiseLevel)
+ 1166:                         : pick(rng, ["지금 해야 하나요?", "어떻게 하나요?", "왜요?"]),
+ 1167:             });
+ 1168:             if (turns.length >= roomForOptional) break;
+ 1169:         }
+ 1170:     }
+ 1171: 
+ 1172:     // ✅ 압박 → 앵커 → 후속 순서로 삽입
+ 1173:     for (const line of pressureLines) turns.push({ role: "S", text: line });
+ 1174:     for (const line of anchorLines) turns.push({ role: "S", text: line });
+ 1175:     for (const line of followLines) turns.push({ role: "S", text: line });
+ 1176: 
+ 1177:     while (turns.length < capLen && chance(rng, 0.35)) {
+ 1178:         turns.push({ role: "R", text: pick(rng, ["확인했습니다.", "이상한데요.", "진행 안 하겠습니다."]) });
+ 1179:         if (turns.length >= capLen) break;
+ 1180: 
+ 1181:         const canHandoff = !!urlStr && (vector === "url" || vector === "qr");
+ 1182:         const handoffUrl = urlStr || "";
+ 1183:         const followPool = [
+ 1184:             "추가 진행을 유도하는 내용이 포함됩니다.",
+ 1185:             "급하게 진행하라고 재촉하는 내용이 포함됩니다.",
+ 1186:             "다른 방식으로 확인하라고 안내하는 내용이 포함됩니다.",
+ 1187:             ...(canHandoff ? [`다른 채널로 안내하겠다며 링크를 전달하는 내용이 포함됩니다: ${handoffUrl}`] : []),
+ 1188:         ];
+ 1189: 
+ 1190:         turns.push({
+ 1191:             role: "S",
+ 1192:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, followPool), tone), noiseLevel),
+ 1193:         });
+ 1194: 
+ 1195:         if (turns.length >= capLen) break;
+ 1196:     }
+ 1197: 
+ 1198:     return turns.slice(0, capLen);
+ 1199: }
+ 1200: 
+ 1201: // ---------- 밸리데이터 ----------
+ 1202: function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {
+ 1203:     const errs: string[] = [];
+ 1204: 
+ 1205:     const urlCount = s.url?.count ?? 0;
+ 1206:     if (urlCount > 1) errs.push("url_count>1");
+ 1207: 
+ 1208:     if (!isBenign && (!s.anchors || s.anchors.length === 0)) errs.push("malicious_missing_anchor");
+ 1209: 
+ 1210:     const sTurns = s.turns.filter((t) => t.role === "S");
+ 1211:     if (sTurns.length < 2) errs.push("missing_pretext_or_cred");
+ 1212: 
+ 1213:     // ✅ 전화/메시지 타겟: 정상/비정상 모두 thread(특히 S)에 전화번호가 반드시 있어야 함
+ 1214:     const hasPhone = (x: string) => {
+ 1215:         const pat =
+ 1216:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:70|50)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/;
+ 1217:         return pat.test(String(x || ""));
+ 1218:     };
+ 1219:     const sTextAll = sTurns.map((t) => String((t as any)?.text ?? "")).join("\n");
+ 1220:     const callerDisp = String((s as any)?.caller?.caller_display ?? "");
+ 1221:     if (!hasPhone(callerDisp) && !hasPhone(sTextAll)) errs.push("missing_phone");
+ 1222: 
+ 1223:     if (isBenign) {
+ 1224:         const bad = s.anchors.some((a) =>
+ 1225:             ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)
+ 1226:         );
+ 1227:         if (bad) errs.push("benign_has_danger_anchor");
+ 1228:     }
+ 1229: 
+ 1230:     if (!isBenign && s.caller.is_whitelisted) {
+ 1231:         if (s.expected.risk === "low") errs.push("whitelisted_malicious_should_not_be_low");
+ 1232:     }
+ 1233: 
+ 1234:     if (s.url && s.vector !== "url") errs.push("url_vector_mismatch");
+ 1235:     if (s.qr && s.vector !== "qr") errs.push("qr_vector_mismatch");
+ 1236: 
+ 1237:     return errs;
+ 1238: }
+ 1239: 
+ 1240: // ---------- 출력 스키마 어댑터 ----------
+ 1241: function turnsToThread(
+ 1242:     turns: { role: "S" | "R"; text: string }[],
+ 1243:     callerDisplay?: string
+ 1244: ) {
+ 1245:     const phoneLike = (s: string) => {
+ 1246:         const t = String(s || "");
+ 1247:         return (
+ 1248:             /발신번호표시제한/.test(t) ||
+ 1249:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:70|50)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/.test(t)
+ 1250:         );
+ 1251:     };
+ 1252: 
+ 1253:     const normRole = (raw: any, idx: number): "S" | "R" => {
+ 1254:         if (raw === "S" || raw === "sender") return "S";
+ 1255:         if (raw === "R" || raw === "receiver") return "R";
+ 1256:         return idx === 0 ? "S" : "R";
+ 1257:     };
+ 1258: 
+ 1259:     const lines = (turns || []).map((t: any, idx: number) => {
+ 1260:         const role = normRole(t?.role, idx);
+ 1261:         const text = String(t?.text ?? "").trim();
+ 1262:         return `${role}: ${text}`;
+ 1263:     });
+ 1264: 
+ 1265:     // ✅ callerDisplay가 있으면 "첫 S 라인"에만 (caller) 주입
+ 1266:     if (callerDisplay && String(callerDisplay).trim()) {
+ 1267:         const cd = String(callerDisplay).trim();
+ 1268:         let si = lines.findIndex((x) => /^S:\s*/.test(x));
+ 1269:         if (si < 0) {
+ 1270:             // S 라인이 아예 없으면 S 라인 하나 만들어서 앞에 둠
+ 1271:             lines.unshift(`S: (${cd})`);
+ 1272:             si = 0;
+ 1273:         }
+ 1274:         if (!phoneLike(lines[si])) {
+ 1275:             lines[si] = lines[si].replace(/^S:\s*/, `S: (${cd}) `);
+ 1276:         }
+ 1277:     }
+ 1278: 
+ 1279:     return lines.join("\n");
+ 1280: }
+ 1281: 
+ 1282: function lengthBucketFromTurns(n: number) {
+ 1283:     if (n <= 4) return "S";
+ 1284:     if (n <= 8) return "M";
+ 1285:     if (n <= 12) return "L";
+ 1286:     return "XL";
+ 1287: }
+ 1288: 
+ 1289: function toScenarioOutput(s: ScenarioInternal): AnyObj {
+ 1290:     const thread = turnsToThread(s.turns, (s as any)?.caller?.caller_display);
+ 1291: 
+ 1292:     const senderText =
+ 1293:         s.turns
+ 1294:             ?.filter((t) => t && (t as any).role === "S")
+ 1295:             ?.map((t) => String((t as any).text ?? ""))
+ 1296:             ?.join("\n")
+ 1297:             ?.trim() || "";
+ 1298: 
+ 1299:     // S 텍스트가 없으면 thread 전체로 폴백
+ 1300:     const effBasis = (senderText || "").trim() || String(thread || "");
+ 1301:     const t = String(effBasis || "");
+ 1302:     const t2 = t.replace(/\s+/g, "");
+ 1303: 
+ 1304:     const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];
+ 1305:     let effAnchors = anchorsEffFromText(allAnchors, effBasis);
+ 1306: 
+ 1307:     // ---- 엔진과 최대한 비슷한 cue들(특히 payment/install 방어) ----
+ 1308:     const hasAmountKRW = (x: string) => /(\d{1,3}(?:,\d{3})+|\d+)\s*(원|만원)/.test(String(x || ""));
+ 1309: 
+ 1310:     const urlMatches = t.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [];
+ 1311:     const urlCount = urlMatches.length;
+ 1312:     const linkHits = Math.min(urlCount, 2);
+ 1313: 
+ 1314:     const qrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(t);
+ 1315: 
+ 1316:     const otpCue =
+ 1317:         /(otp|인증번호|오티피|보안\s*코드|보안코드|확인\s*코드|확인코드|ars|2\s*단계\s*인증|2fa|6\s*자리|6자리)/i.test(t);
+ 1318: 
+ 1319:     const installCue =
+ 1320:         /(teamviewer|anydesk|quicksupport|원격\s*지원|원격|remote|지원앱|apk|설치|install|다운로드|뷰어|viewer|플러그인|plugin)/i.test(t);
+ 1321: 
+ 1322:     const credCue =
+ 1323:         /(아이디|id\b|비밀번호|password|로그인\s*정보|계정\s*정보)/i.test(t) || /(아이디|비밀번호|로그인정보|계정정보)/i.test(t2);
+ 1324: 
+ 1325:     const travelCue =
+ 1326:         /(해외|출국|공항|현지\s*근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t) ||
+ 1327:         /(해외|출국|공항|현지근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t2);
+ 1328: 
+ 1329:     const piiStrongCue =
+ 1330:         /(주민등록|주민번호|신분증|여권|계좌\s*사본|카드번호)/i.test(t) || /(주민등록|주민번호|신분증|여권|계좌사본|카드번호)/i.test(t2);
+ 1331: 
+ 1332:     const piiCue =
+ 1333:         piiStrongCue ||
+ 1334:         /(개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+ 1335:         /(개인정보|사진업로드|업로드|제출)/i.test(t2);
+ 1336: 
+ 1337:     const piiRequestCue =
+ 1338:         /(이름|성함|연락처|전화번호|휴대폰|생년월일|주민등록번호|주민번호|주소|우편번호|계좌번호|카드번호|비밀번호|패스워드|암호|신분증|여권)/i.test(t) &&
+ 1339:         /(알려|말해|남겨|적어|입력|작성|보내|제출|올려|전송|사진|캡처)/i.test(t);
+ 1340: 
+ 1341:     // scoreThread.ts의 paymentAlertOnly 필터와 동일 계열(결제 알림/설정 변경은 payment로 끌지 않음)
+ 1342:     const paymentAlertOnly =
+ 1343:         /(결제\s*알림|알림\s*설정|계좌\s*알림|설정\s*변경|설정이\s*변경|설정\s*확인|자동이체\s*등록|자동\s*이체\s*등록|다른\s*기기\s*로그인\s*시도\s*감지|로그인\s*시도\s*감지|접속\s*시도\s*감지)/i.test(
+ 1344:             t
+ 1345:         );
+ 1346: 
+ 1347:     const escrowLike = /(안전\s*결제|안전\s*거래|에스크로|escrow|거래)/i.test(t);
+ 1348: 
+ 1349:     const strongPayCue = /(입금|송금|이체|납부|지불|충전|선납|보험료)/i.test(t) || hasAmountKRW(t);
+ 1350: 
+ 1351:     const paymentVerb =
+ 1352:         /(보내\s*줘|보내줘|부쳐\s*줘|부쳐줘|입금\s*해|입금해|송금\s*해|송금해|이체\s*해|이체해|납부\s*해|납부해|지불\s*해|지불해|충전\s*해|충전해)/i.test(t) ||
+ 1353:         /(입금|송금|이체|납부|지불|충전|선납|보험료).{0,14}(해\s*줘|해줘|해\s*주|해주|해주세요|부탁|요청|하셔야|바랍니다|주시)/i.test(t) ||
+ 1354:         /(납부|지불|결제).{0,14}(하세요|바랍니다|필요|진행|처리|해주세요)/i.test(t) ||
+ 1355:         /(링크|페이지).{0,14}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t);
+ 1356: 
+ 1357:     const installBeforePay =
+ 1358:         /(설치).{0,10}(후|해야|필요).{0,24}(결제|납부|송금|이체|입금|진행)/i.test(t) ||
+ 1359:         /(결제|납부|송금|이체|입금).{0,18}(하려면|위해).{0,18}(설치)/i.test(t);
+ 1360: 
+ 1361:     const transferCue =
+ 1362:         effAnchors.includes("A_TRANSFER") ||
+ 1363:         /(안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌|계좌번호|예금주|무통장|입금|송금|이체|remit|wire)/i.test(t);
+ 1364: 
+ 1365:     const cashPickupCue =
+ 1366:         effAnchors.includes("A_CASH_PICKUP") ||
+ 1367:         (((/현금|cash/i.test(t) || /현금/.test(t2)) &&
+ 1368:             /(인출|현금\s*인출|현금\s*수령|withdraw|봉투|퀵|대면\s*전달|직접\s*전달|픽업|수거)/i.test(t)) as any);
+ 1369: 
+ 1370:     const goBankCue =
+ 1371:         effAnchors.includes("A_GO_BANK") ||
+ 1372:         ((/(은행|atm|창구)/i.test(t) || /(은행|atm|창구)/i.test(t2)) &&
+ 1373:             (/(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t) || /(방문|가서|가라|이동|찾아|인출|입금|송금|이체)/i.test(t2)));
+ 1374: 
+ 1375:     const ctxPayWithLinkCue =
+ 1376:         linkHits > 0 &&
+ 1377:         !paymentAlertOnly &&
+ 1378:         (/(링크|페이지|사이트).{0,18}(에서|로).{0,12}(납부|결제|지불|송금|이체|입금)/i.test(t) ||
+ 1379:             /(납부|결제|지불|송금|이체|입금).{0,18}(링크|페이지|사이트)/i.test(t)) &&
+ 1380:         (/(해\s*줘|해줘|해\s*주|해주|해주세요|하세요|하셔야|진행|처리|완료|부탁|요청|바랍니다)/i.test(t) || strongPayCue);
+ 1381: 
+ 1382:     // cue 없으면 anchor도 제거(과대 stage/risk 방지)
+ 1383:     if (!transferCue) effAnchors = effAnchors.filter((a) => a !== "A_TRANSFER");
+ 1384:     if (!cashPickupCue) effAnchors = effAnchors.filter((a) => a !== "A_CASH_PICKUP");
+ 1385:     if (!goBankCue) effAnchors = effAnchors.filter((a) => a !== "A_GO_BANK");
+ 1386: 
+ 1387:     // ---- scoreLike (THRESHOLDS 35/65 맞추기) ----
+ 1388:     let scoreLike =
+ 1389:         25 * linkHits +
+ 1390:         (qrCue ? 25 : 0) +
+ 1391:         (otpCue ? 25 : 0) +
+ 1392:         (installCue ? 30 : 0) +
+ 1393:         (ctxPayWithLinkCue ? 22 : 0) +
+ 1394:         (transferCue ? 28 : 0) +
+ 1395:         (cashPickupCue ? 28 : 0) +
+ 1396:         (goBankCue ? 22 : 0) +
+ 1397:         (piiStrongCue ? 40 : piiCue ? 20 : 0) +
+ 1398:         (piiRequestCue ? 18 : 0) +
+ 1399:         (credCue ? 18 : 0) +
+ 1400:         (travelCue ? 22 : 0);
+ 1401: 
+ 1402:     if (scoreLike > 100) scoreLike = 100;
+ 1403: 
+ 1404:     let derivedRisk: Risk = scoreLike >= 65 ? "high" : scoreLike >= 35 ? "medium" : "low";
+ 1405: 
+ 1406:     // ---- stagePeak: scoreThread.ts(stageFromHitsV2) 우선순위 근사 ----
+ 1407:     const hasVerifyHit = linkHits > 0 || qrCue || otpCue || piiCue || piiRequestCue || ctxPayWithLinkCue || credCue || travelCue;
+ 1408:     const hasInstallAnchor = installCue || effAnchors.includes("A_INSTALL");
+ 1409:     const hasPaymentAnchor = transferCue || cashPickupCue || goBankCue || ctxPayWithLinkCue;
+ 1410: 
+ 1411:     let derivedStagePeak: Stage = "info";
+ 1412: 
+ 1413:     if (hasInstallAnchor && installBeforePay) derivedStagePeak = "install";
+ 1414:     else if (hasInstallAnchor && escrowLike && !strongPayCue) derivedStagePeak = "install";
+ 1415:     else if (hasPaymentAnchor) derivedStagePeak = "payment";
+ 1416:     else if (hasInstallAnchor) derivedStagePeak = "install";
+ 1417:     else if (hasVerifyHit) derivedStagePeak = "verify";
+ 1418:     else derivedStagePeak = "info";
+ 1419: 
+ 1420:     // payment 방어: "알림/설정"만이면 verify로
+ 1421:     if (derivedStagePeak === "payment") {
+ 1422:         const hasHardPayContext =
+ 1423:             paymentVerb ||
+ 1424:             strongPayCue ||
+ 1425:             cashPickupCue ||
+ 1426:             goBankCue ||
+ 1427:             /(압류|미납|체납|과태료|벌금|고지|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌)/i.test(t);
+ 1428: 
+ 1429:         if (paymentAlertOnly || !hasHardPayContext) derivedStagePeak = "verify";
+ 1430:     }
+ 1431: 
+ 1432:     // stage가 올라가는데 risk가 low면 medium으로(경계 안정화)
+ 1433:     if (derivedRisk === "low" && (derivedStagePeak === "verify" || derivedStagePeak === "install" || derivedStagePeak === "payment")) {
+ 1434:         derivedRisk = "medium";
+ 1435:     }
+ 1436:     if (derivedStagePeak === "info") derivedRisk = "low";
+ 1437: 
+ 1438:     const scoreMin = derivedRisk === "high" ? 45 : derivedRisk === "medium" ? 25 : 0;
+ 1439: 
+ 1440:     // triggered: s.expected.triggers가 비어있으면 false(benign/hardneg 방어), 있으면 true
+ 1441:     const expectedTriggered = Array.isArray((s as any)?.expected?.triggers) ? (s as any).expected.triggers.length > 0 : derivedRisk !== "low";
+ 1442: 
+ 1443:     const notes = [
+ 1444:         s.impersonation ? String(s.impersonation) : "",
+ 1445:         ...(Array.isArray((s as any).pressures) ? (s as any).pressures.map(String) : []),
+ 1446:     ].filter(Boolean);
+ 1447: 
+ 1448:     // callChecks (call 채널에서만 기본 생성)
+ 1449:     const callChecks =
+ 1450:         s.channel === "call"
+ 1451:             ? {
+ 1452:                 otpAsked: otpCue,
+ 1453:                 remoteAsked: installCue,
+ 1454:                 urgentPressured: /(긴급|지금|즉시|당장|바로|오늘\s*안에|지연\s*시|미조치\s*시)/i.test(t),
+ 1455:                 firstContact: Boolean((s as any)?.caller?.is_first_seen),
+ 1456:             }
+ 1457:             : undefined;
+ 1458: 
+ 1459:     return {
+ 1460:         id: s.id,
+ 1461:         category: s.caseType,
+ 1462:         label: derivedRisk,
+ 1463:         length_bucket: lengthBucketFromTurns(s.turns.length),
+ 1464:         thread,
+ 1465: 
+ 1466:         ...(callChecks ? { callChecks } : {}),
+ 1467: 
+ 1468:         expected: {
+ 1469:             riskLevel: derivedRisk,
+ 1470:             score_min: scoreMin,
+ 1471:             stagePeak: derivedStagePeak,
+ 1472:             triggered: expectedTriggered,
+ 1473:         },
+ 1474: 
+ 1475:         // 기존 필드 유지(리포트/디버그용)
+ 1476:         should_trigger: (s as any)?.expected?.triggers || [],
+ 1477: 
+ 1478:         notes,
+ 1479: 
+ 1480:         meta: {
+ 1481:             ...(s.meta || {}),
+ 1482:             eff_basis: effBasis.slice(0, 4000),
+ 1483:             eff_anchors: effAnchors,
+ 1484:             scoreLike,
+ 1485:             cues: {
+ 1486:                 linkHits,
+ 1487:                 qrCue,
+ 1488:                 otpCue,
+ 1489:                 installCue,
+ 1490:                 transferCue,
+ 1491:                 cashPickupCue,
+ 1492:                 goBankCue,
+ 1493:                 ctxPayWithLinkCue,
+ 1494:                 paymentAlertOnly,
+ 1495:                 escrowLike,
+ 1496:                 strongPayCue,
+ 1497:                 installBeforePay,
+ 1498:             },
+ 1499:         },
+ 1500:     };
+ 1501: }
+ 1502: 
+ 1503: async function readJsonl(filePath: string): Promise<AnyObj[]> {
+ 1504:     const raw = await fs.readFile(filePath, "utf8");
+ 1505:     const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+ 1506:     const out: AnyObj[] = [];
+ 1507:     for (const line of lines) {
+ 1508:         try {
+ 1509:             out.push(JSON.parse(line));
+ 1510:         } catch {
+ 1511:             // skip bad line
+ 1512:         }
+ 1513:     }
+ 1514:     return out;
+ 1515: }
+ 1516: 
+ 1517: async function writeJsonl(filePath: string, rows: AnyObj[]) {
+ 1518:     const dir = path.dirname(filePath);
+ 1519:     await fs.mkdir(dir, { recursive: true });
+ 1520:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1521:     await fs.writeFile(filePath, body, "utf8");
+ 1522: }
+ 1523: 
+ 1524: async function main() {
+ 1525:     const args = parseArgs(process.argv);
+ 1526:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1527:     const rng = mulberry32(args.seed);
+ 1528: 
+ 1529:     const stubs = await readJsonl(args.stubs);
+ 1530:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1531: 
+ 1532:     if (args.registry_out) {
+ 1533:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1534:     }
+ 1535: 
+ 1536:     const outRows: AnyObj[] = [];
+ 1537:     let produced = 0;
+ 1538: 
+ 1539:     for (let i = 0; i < args.count; i++) {
+ 1540:         const stub = stubs[i % stubs.length];
+ 1541:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1542:         const stubFeat = deriveStubFeatures(stub);
+ 1543:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1544: 
+ 1545:         const isBenign = chance(rng, args.benign_ratio);
+ 1546:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1547: 
+ 1548:         // ✅ benign은 "대화 기본문장"에서 위험 cue(원격/출국/ATM 등)가 나오지 않도록
+ 1549:         //    안전 케이스 타입으로 강제 (validator: benign_has_danger_anchor 방지)
+ 1550:         const benignCasePool: CaseType[] = ["delivery_link", "fine_refund_link", "loan_fee"];
+ 1551:         const caseType: CaseType = isBenign ? pick(rng, benignCasePool) : baseType;
+ 1552: 
+ 1553:         // ✅ benign에서는 키워드 주입으로 위험 cue가 섞이지 않게(대화 생성용만)
+ 1554:         const stubKeywordsConv: string[] = isBenign ? [] : stubKeywords;
+ 1555: 
+ 1556:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1557:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1558:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1559:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1560: 
+ 1561:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1562:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1563:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1564: 
+ 1565:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1566:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1567:             ANCHOR_STYLE === "direct"
+ 1568:                 ? "none"
+ 1569:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1570: 
+ 1571:         let attempt = 0;
+ 1572:         let bestErrs: string[] = [];
+ 1573: 
+ 1574:         while (attempt < args.max_retries) {
+ 1575:             attempt++;
+ 1576: 
+ 1577:             // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지
+ 1578:             const impersonation = isBenign ? undefined : impersonationFor(caseType);
+ 1579:             const pressures = isBenign ? [] : pressuresFor(rng, caseType);
+ 1580: 
+ 1581:             // 계획(생성 힌트) 앵커: 대화 생성에만 사용
+ 1582:             let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();
+ 1583: 
+ 1584:             // 스텁 기반 “추가 유도” 보강(핵심수법/유도방식 반영): 과도하게 늘리지 않고 0~1개만 가끔 추가
+ 1585:             if (!isBenign) {
+ 1586:                 const extra: Anchor[] = [];
+ 1587:                 if (stubFeat.hasPII) extra.push("A_PII");
+ 1588:                 if (stubFeat.hasCred) extra.push("A_CRED");
+ 1589:                 if (stubFeat.hasGoBank) extra.push("A_GO_BANK");
+ 1590: 
+ 1591:                 const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));
+ 1592:                 if (filtered.length && chance(rng, 0.35)) {
+ 1593:                     const pickOne = pick(rng, filtered);
+ 1594:                     if (!anchorsPlanned.includes(pickOne)) anchorsPlanned.push(pickOne);
+ 1595:                 }
+ 1596:             }
+ 1597: 
+ 1598:             // vector: 수법에서 필요할 때만 + “분석 힌트 있으면 우선”, 없으면 소량 증강(augmented)
+ 1599:             let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);
+ 1600:             let augmentedVector = false;
+ 1601: 
+ 1602:             if (!isBenign) {
+ 1603:                 if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {
+ 1604:                     vector = "qr";
+ 1605:                 } else if (stubFeat.hasUrl && vector === "none") {
+ 1606:                     vector = "url";
+ 1607:                 } else {
+ 1608:                     // 스텁에 없더라도 기능 데모를 위해 아주 소량만 추가(메타에 표시)
+ 1609:                     if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {
+ 1610:                         vector = chance(rng, 0.5) ? "url" : "qr";
+ 1611:                         augmentedVector = true;
+ 1612:                     }
+ 1613:                 }
+ 1614:             }
+ 1615: 
+ 1616:             // URL/QR 생성(0~1개, 원샷)
+ 1617:             let urlObj: ScenarioInternal["url"] | undefined;
+ 1618:             let qrObj: ScenarioInternal["qr"] | undefined;
+ 1619: 
+ 1620:             let urlKind: UrlKind | undefined;
+ 1621:             let urlStr: string | undefined;
+ 1622: 
+ 1623:             const ownerChoices = ownersFromImpersonation(impersonation);
+ 1624:             const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => ownerChoices.includes(r.owner)).map(r => r.host)));
+ 1625: 
+ 1626:             if (!isBenign && vector === "url") {
+ 1627:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1628:                 const official = pickOfficialUrlEntry(rng, ownerChoices);
+ 1629:                 const officialId = official.url_id;
+ 1630: 
+ 1631:                 urlStr = makeVariantUrlFromOfficial(rng, official, urlKind);
+ 1632:                 const match = urlMatchesRegistry(urlStr, allowedHosts);
+ 1633: 
+ 1634:                 urlObj = { kind: urlKind, value: urlStr, count: 1, match, official_id: officialId };
+ 1635:             }
+ 1636: 
+ 1637:             if (!isBenign && vector === "qr") {
+ 1638:                 urlKind = chooseUrlKindFromFeatures(rng, stubFeat);
+ 1639:                 const qr = makeQrLandingUrl(rng, urlKind, ownerChoices);
+ 1640: 
+ 1641:                 urlStr = qr.qr_url;
+ 1642:                 const match = qr.match;
+ 1643: 
+ 1644:                 qrObj = { target_kind: urlKind, note: `QR 스캔 유도(랜딩): ${urlStr}`, match, official_id: qr.official_id };
+ 1645: 
+ 1646:                 if (!anchorsPlanned.includes("A_QR")) anchorsPlanned.push("A_QR");
+ 1647:                 const idx = anchorsPlanned.indexOf("A_LINK");
+ 1648:                 if (idx >= 0) anchorsPlanned.splice(idx, 1);
+ 1649:             }
+ 1650: 
+ 1651:             const caller = chooseCaller(rng, caseType, isBenign);
+ 1652: 
+ 1653:             const turns = buildConversation(
+ 1654:                 rng,
+ 1655:                 caseType,
+ 1656:                 anchorsPlanned,
+ 1657:                 vector,
+ 1658:                 urlStr,
+ 1659:                 urlKind,
+ 1660:                 noiseLevel,
+ 1661:                 maxLen,
+ 1662:                 caller.caller_display,
+ 1663:                 stubKeywordsConv,
+ 1664:                 pressures,
+ 1665:                 impersonation,
+ 1666:             );
+ 1667: 
+ 1668:             const senderText = turns
+ 1669:                 .filter((t) => t.role === "S")
+ 1670:                 .map((t) => t.text)
+ 1671:                 .join(" ");
+ 1672: 
+ 1673:             const hasPayCue = /(계좌번호|예금주|입금|송금|이체|ATM|현금\s*인출|퀵|대면\s*전달|remit|wire|withdraw|cash)/i.test(senderText);
+ 1674:             const hasInstallCue = /(teamviewer|anydesk|원격|지원앱|앱\s*설치|설치|remote|apk)/i.test(senderText);
+ 1675: 
+ 1676:             // urlMatch 가져오기
+ 1677:             const urlMatch = (urlObj?.match ?? qrObj?.match) as (boolean | undefined);
+ 1678: 
+ 1679:             // ✅ pressures는 "텍스트에 실제로 존재" 기준으로 재구성해서 expected 과대/과소를 줄임
+ 1680:             const pressuresEff = (() => {
+ 1681:                 const ps: string[] = [];
+ 1682: 
+ 1683:                 // urgent: “급하게/서둘러/재촉” 같은 표현도 잡기
+ 1684:                 if (/(긴급|즉시|지금\s*바로|바로\s*처리|급하게|서둘러|재촉|빨리\s*진행)/i.test(senderText)) {
+ 1685:                     ps.push("press_urgent");
+ 1686:                 }
+ 1687: 
+ 1688:                 // secrecy: “혼자만/절대/외부” 등 변형 포함
+ 1689:                 if (/(공유\s*금지|보안상|비밀\s*유지|지인에게도\s*말하지|외부\s*유출|혼자만|절대\s*말하지)/i.test(senderText)) {
+ 1690:                     ps.push("press_secrecy");
+ 1691:                 }
+ 1692: 
+ 1693:                 // threat: “수사/검거/기소” 계열도 포함
+ 1694:                 if (/(계좌\s*정지|법적\s*조치|체포|구속|영장|고소|처벌|벌금|동결|압수|수사|검거|기소)/i.test(senderText)) {
+ 1695:                     ps.push("press_threat");
+ 1696:                 }
+ 1697: 
+ 1698:                 return uniqSorted(ps);
+ 1699:             })();
+ 1700: 
+ 1701:             // ✅ eff anchors: “텍스트에 실제 cue가 존재하는 것만”으로 재구성(트리거/라벨 정합용)
+ 1702:             const allAnchors: Anchor[] = [
+ 1703:                 "A_LINK",
+ 1704:                 "A_QR",
+ 1705:                 "A_OTP",
+ 1706:                 "A_INSTALL",
+ 1707:                 "A_TRANSFER",
+ 1708:                 "A_CRED",
+ 1709:                 "A_PII",

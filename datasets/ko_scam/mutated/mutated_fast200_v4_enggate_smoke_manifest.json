@@ -1,0 +1,38 @@
+{
+  "schema_version": "mutated_manifest.v1",
+  "created_at": "2026-02-01T05:27:26.033Z",
+  "input": "datasets/ko_scam/scenarios_ko_v4_eval_engineAligned_variants_e3_mutateR_urlfixed.jsonl",
+  "output": "datasets/ko_scam/mutated/mutated_fast200_v4_enggate_smoke.jsonl",
+  "stats": {
+    "parents_in": 510,
+    "n_per_parent": 6,
+    "kept": 10,
+    "dropped": 882,
+    "drop_reasons": [
+      {
+        "reason": "restore_mismatch",
+        "count": 522
+      },
+      {
+        "reason": "lex_too_similar",
+        "count": 360
+      }
+    ]
+  },
+  "config_digest": "sha256:589720ad6975cf36d4fe96f2b33975aad74674f9a74a9f31291d70113eee29b9",
+  "models": {
+    "mlm": "Xenova/bert-base-multilingual-cased",
+    "embed": "Xenova/bert-base-multilingual-cased"
+  },
+  "options": {
+    "preset": "fast200_v4",
+    "mode": "anchor_preserve",
+    "mask_scope": "any",
+    "engine_gate": true,
+    "target_kept": 10
+  },
+  "known_presets": [
+    "fast200_v2",
+    "fast200_v4"
+  ]
+}

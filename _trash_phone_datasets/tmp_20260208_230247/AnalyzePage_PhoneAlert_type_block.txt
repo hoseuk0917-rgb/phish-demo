@@ -1,0 +1,101 @@
+﻿ 1196:             } catch {
+ 1197:                 // ignore
+ 1198:             }
+ 1199:             return;
+ 1200:         }
+ 1201:     };
+ 1202: 
+ 1203:     // Compact single-screen demo: Phone UX는 유지하고, 디버그/딥 패널은 기본 숨김
+ 1204:     const COMPACT_UI = true;
+ 1205: 
+ 1206:     // Call context는 데모 가치가 높아서 항상 노출(체크만으로도 설명 가능)
+ 1207:     const ctxOn = true;
+ 1208: 
+ 1209:     // URL/Embedding/Similarity 후보 목록 등 “딥 패널”은 compact에서는 숨김
+ 1210:     const urlOn = !COMPACT_UI && deepEnabled && uxPhase >= 2;
+ 1211:     const embOn = !COMPACT_UI && deepEnabled && uxPhase >= 3;
+ 1212: 
+ 1213: 
+ 1214:     type PhoneAlertLevel = "none" | "info" | "warn" | "danger";
+ 1215: 
+ 1216:     type PhoneAlert = {
+ 1217:         level: PhoneAlertLevel;
+ 1218:         title: string;
+ 1219:         detail?: string;
+ 1220:         chips?: string[];
+ 1221:         // danger일 때 중앙 토스트를 띄울지
+ 1222:         toast?: boolean;
+ 1223:     };
+ 1224: 
+ 1225:     // R(수신) 텍스트는 Threat 점수에 넣지 말고 “개입 타이밍”만 당기는 용도
+ 1226:     function inferInterventionUrgencyFromRawThread(rawThread: string): PhoneAlertLevel {
+ 1227:         if (!rawThread) return "none";
+ 1228:         const rLines = rawThread
+ 1229:             .split("\n")
+ 1230:             .filter((l) => /^\s*R\s*:/.test(l))
+ 1231:             .join(" ");
+ 1232: 
+ 1233:         // “이미 행동함/지금 하겠다” 류 = 개입 급함
+ 1234:         const danger = /(설치했|설치할게|원격|애니데스크|팀뷰어|눌렀|접속했|입력했|인증번호.*(보낼게|전달)|송금|이체|입금했|보냈어|결제했)/;
+ 1235:         if (danger.test(rLines)) return "danger";
+ 1236: 
+ 1237:         // “진행 중/검증 없이 따름” 류
+ 1238:         const warn = /(알겠|네\s*예|진행할게|확인했어|보낼까|어떻게 하면 돼|따라할게|지금 해볼게)/;
+ 1239:         if (warn.test(rLines)) return "warn";
+ 1240: 
+ 1241:         return "none";
+ 1242:     }
+ 1243: 
+ 1244:     function toScoreNumber(x: any): number | null {
+ 1245:         const n = typeof x === "number" ? x : Number(x);
+ 1246:         return Number.isFinite(n) ? n : null;
+ 1247:     }
+ 1248: 
+ 1249:     function normalizeRiskLevel(x: any): "low" | "medium" | "high" | null {
+ 1250:         const s = String(x ?? "").toLowerCase();
+ 1251:         if (s.includes("high")) return "high";
+ 1252:         if (s.includes("med")) return "medium";
+ 1253:         if (s.includes("low")) return "low";
+ 1254:         return null;
+ 1255:     }
+ 1256: 
+ 1257:     function stageToAlertLevel(stagePeak: any): PhoneAlertLevel {
+ 1258:         const s = String(stagePeak ?? "").toLowerCase();
+ 1259:         // 네 엔진 단계명에 맞춰 조정 가능
+ 1260:         if (s.includes("install") || s.includes("payment") || s.includes("bank")) return "danger";
+ 1261:         if (s.includes("verify") || s.includes("account")) return "warn";
+ 1262:         return "none";
+ 1263:     }
+ 1264: 
+ 1265:     function pickChipsFromPreview(preview: any, max = 3): string[] {
+ 1266:         const chips: string[] = [];
+ 1267: 
+ 1268:         const signalsTop = preview?.signalsTop;
+ 1269:         if (Array.isArray(signalsTop)) {
+ 1270:             for (const s of signalsTop) {
+ 1271:                 const label = (s?.label ?? s?.id ?? "").toString().trim();
+ 1272:                 if (label) chips.push(label);
+ 1273:                 if (chips.length >= max) return chips;
+ 1274:             }
+ 1275:         }
+ 1276: 
+ 1277:         const similarityTop = preview?.similarityTop;
+ 1278:         if (similarityTop?.id && chips.length < max) chips.push(`유사사례: ${String(similarityTop.id)}`);
+ 1279: 
+ 1280:         return chips.slice(0, max);
+ 1281:     }
+ 1282: 
+ 1283:     /** 메시지/근거에서 “전화번호 후보” 추출 (근거용: tel 링크 아님) */
+ 1284:     function normalizePhoneKey(raw: string): string {
+ 1285:         if (!raw) return "";
+ 1286:         let s = String(raw).trim();
+ 1287:         // +82 / 82 → 0 으로 통일
+ 1288:         s = s.replace(/[^\d+]/g, "");
+ 1289:         if (s.startsWith("+82")) s = "0" + s.slice(3);
+ 1290:         else if (s.startsWith("82")) s = "0" + s.slice(2);
+ 1291:         s = s.replace(/[^\d]/g, "");
+ 1292:         if (s.length < 7) return "";
+ 1293:         return s;
+ 1294:     }
+ 1295: 
+ 1296:     function formatPhoneDisplay(key: string): string {

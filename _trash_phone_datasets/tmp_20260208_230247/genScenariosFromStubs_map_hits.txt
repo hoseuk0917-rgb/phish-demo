@@ -1,0 +1,136 @@
+﻿@{LineNumber=20; Line=    | "A_GO_BANK"}
+@{LineNumber=33; Line=    caseType: CaseType;}
+@{LineNumber=57; Line=type CaseType =}
+@{LineNumber=60; Line=    | "bank_otp"}
+@{LineNumber=61; Line=    | "bank_install"}
+@{LineNumber=64; Line=    | "family_urgent_transfer"}
+@{LineNumber=66; Line=    | "go_bank_atm"}
+@{LineNumber=80; Line=    registry_out?: string;}
+@{LineNumber=120; Line=                "  --registry-out <path>  optional (debug)",}
+@{LineNumber=149; Line=        registry_out: a.registry_out ? String(a.registry_out) : undefined,}
+@{LineNumber=209; Line=    const hasGoBankPlace = /(은행|atm|창구)/i.test(t) || /(은행|atm|창구)/i.test(t2);}
+@{LineNumber=210; Line=    const hasGoBankVerb =}
+@{LineNumber=212; Line=    const hasGoBank = hasGoBankPlace && hasGoBankVerb;}
+@{LineNumber=236; Line=        if (a === "A_GO_BANK" && !hasGoBank) continue;}
+@{LineNumber=254; Line=type CallerRegistryEntry = {}
+@{LineNumber=261; Line=function buildCallerRegistry(): CallerRegistryEntry[] {}
+@{LineNumber=265; Line=        { caller_id: "OFFICIAL_BANK_MAIN", caller_display: "1588-0000", caller_class: "official_landline", is_whitelisted: true },}
+@{LineNumber=295; Line=    c: CallerRegistryEntry,}
+@{LineNumber=296; Line=): CallerRegistryEntry {}
+@{LineNumber=303; Line=function chooseCaller(rng: () => number, caseType: CaseType, isBenign: boolean): ScenarioInternal["caller"] {}
+@{LineNumber=304; Line=    const reg = buildCallerRegistry();}
+@{LineNumber=323; Line=    if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") {}
+@{LineNumber=324; Line=        if (chance(rng, 0.25)) return spoofedOfficial("OFFICIAL_BANK_MAIN");}
+@{LineNumber=330; Line=    if (caseType === "go_bank_atm") {}
+@{LineNumber=343; Line=type UrlOwner = "bank" | "card" | "court" | "police" | "prosecutor" | "gov" | "delivery";}
+@{LineNumber=345; Line=type UrlRegistryEntry = {}
+@{LineNumber=353; Line=function buildUrlRegistry(): UrlRegistryEntry[] {}
+@{LineNumber=355; Line=        { url_id: "OFFICIAL_BANK_LOGIN", owner: "bank", url: "https://portal-bank.invalid/secure/login", host: "portal-bank.invalid", label: "은행 포털 로그인" },}
+@{LineNumber=356; Line=        { url_id: "OFFICIAL_BANK_VERIFY", owner: "bank", url: "https://portal-bank.invalid/secure/verify", host: "portal-bank.invalid", label: "은행 보안 확인" },}
+@{LineNumber=371; Line=        case "imp_bank": return ["bank", "card"];}
+@{LineNumber=376; Line=        default: return ["bank", "card", "court", "police", "gov", "delivery"];}
+@{LineNumber=380; Line=function pickOfficialUrlEntry(rng: () => number, ownerChoices: UrlOwner[]): UrlRegistryEntry {}
+@{LineNumber=381; Line=    const reg = buildUrlRegistry().filter(r => ownerChoices.includes(r.owner));}
+@{LineNumber=382; Line=    return pick(rng, reg.length ? reg : buildUrlRegistry());}
+@{LineNumber=406; Line=function makeVariantUrlFromOfficial(rng: () => number, official: UrlRegistryEntry, kind: UrlKind): string {}
+@{LineNumber=423; Line=function urlMatchesRegistry(url: string, allowedHosts: string[]) {}
+@{LineNumber=430; Line=    const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => officialOwnerChoices.includes(r.owner)).map(r => r.host)));}
+@{LineNumber=432; Line=    const match = urlMatchesRegistry(qr_url, allowedHosts);}
+@{LineNumber=509; Line=    const dummyBank = () => pick(rng, ["OO은행", "OO저축은행", "OO카드"] as const);}
+@{LineNumber=525; Line=            base = `송금/이체 유도가 포함됩니다: ${dummyBank()} 계좌번호 ${dummyAcct()} (예금주:${dummyName()})로 입금/송금(remit/wire)`;}
+@{LineNumber=526; Line=        if (a === "A_GO_BANK") base = `은행/ATM 방문 및 현금 인출(withdraw/cash) 유도가 포함됩니다 (ATM)`;}
+@{LineNumber=543; Line=        out = `${dummyBank()} 계좌번호 ${dummyAcct()} (예금주:${dummyName()})로 지금 입금/송금(remit/wire)해 주세요`;}
+@{LineNumber=544; Line=    if (a === "A_GO_BANK") out = `지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM)`;}
+@{LineNumber=565; Line=    hasGoBank: boolean;       // ✅ 추가}
+@{LineNumber=587; Line=        hasGoBank: has(/atm|은행\/?atm|현금인출|창구|은행으로|은행\s*가|방문/i),}
+@{LineNumber=606; Line=    if (f.hasGoBank) out.push("go_bank");   // ✅ 추가}
+@{LineNumber=625; Line=function inferCaseTypeFromStub(rng: () => number, stub: AnyObj): CaseType {}
+@{LineNumber=636; Line=    if (has(/원격|앱설치|설치|팀뷰|애니데|anydesk|지원앱/)) return "bank_install";}
+@{LineNumber=637; Line=    if (has(/인증번호|otp|보안코드/)) return "bank_otp";}
+@{LineNumber=641; Line=    if (has(/atm|현금인출|은행으로|창구/)) return "go_bank_atm";}
+@{LineNumber=644; Line=    const pool: CaseType[] = [}
+@{LineNumber=647; Line=        "bank_otp",}
+@{LineNumber=648; Line=        "bank_install",}
+@{LineNumber=651; Line=        "family_urgent_transfer",}
+@{LineNumber=653; Line=        "go_bank_atm",}
+@{LineNumber=662; Line=function requiredAnchors(caseType: CaseType): Anchor[] {}
+@{LineNumber=663; Line=    switch (caseType) {}
+@{LineNumber=667; Line=        case "bank_otp":}
+@{LineNumber=669; Line=        case "bank_install":}
+@{LineNumber=675; Line=        case "family_urgent_transfer":}
+@{LineNumber=679; Line=        case "go_bank_atm":}
+@{LineNumber=680; Line=            return ["A_GO_BANK"];}
+@{LineNumber=692; Line=function defaultVectorFor(caseType: CaseType): Vector {}
+@{LineNumber=693; Line=    switch (caseType) {}
+@{LineNumber=704; Line=function impersonationFor(caseType: CaseType): string | undefined {}
+@{LineNumber=705; Line=    switch (caseType) {}
+@{LineNumber=710; Line=        case "bank_otp":}
+@{LineNumber=711; Line=        case "bank_install":}
+@{LineNumber=713; Line=            return "imp_bank";}
+@{LineNumber=714; Line=        case "go_bank_atm":}
+@{LineNumber=721; Line=function pressuresFor(rng: () => number, caseType: CaseType): string[] {}
+@{LineNumber=722; Line=    switch (caseType) {}
+@{LineNumber=726; Line=        case "family_urgent_transfer":}
+@{LineNumber=729; Line=        case "bank_install":}
+@{LineNumber=730; Line=        case "bank_otp":}
+@{LineNumber=735; Line=        case "go_bank_atm":}
+@{LineNumber=750; Line=    caseType: CaseType,}
+@{LineNumber=818; Line=        !!impersonation && /^imp_(gov|police|prosecutor|court|bank|card)/.test(impersonation);}
+@{LineNumber=857; Line=    const hasFamily =}
+@{LineNumber=894; Line=            !hasFamily;}
+@{LineNumber=902; Line=    if (hasInvest || hasFamily) return "high";}
+@{LineNumber=958; Line=    caseType: CaseType,}
+@{LineNumber=974; Line=        if (a === "A_GO_BANK") t.push("act_go_bank");}
+@{LineNumber=993; Line=    if (caseType === "job_travel") t.push("job_lure");}
+@{LineNumber=994; Line=    if (caseType === "blackmail_sexvisit") t.push("cat_blackmail");}
+@{LineNumber=1002; Line=    caseType: CaseType,}
+@{LineNumber=1018; Line=        if (impersonation === "imp_bank") return pick(rng, ["OO은행", "OO카드", "금융감독원"] as const);}
+@{LineNumber=1025; Line=        if (caseType === "delivery_link") return pick(rng, ["OO택배", "배송업체"] as const);}
+@{LineNumber=1026; Line=        if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") return pick(rng, ["OO은행", "금융감독원"] as const);}
+@{LineNumber=1027; Line=        if (caseType === "go_bank_atm") return pick(rng, ["OO지방법원", "검찰"] as const);}
+@{LineNumber=1050; Line=    switch (caseType) {}
+@{LineNumber=1059; Line=        case "bank_otp":}
+@{LineNumber=1063; Line=        case "bank_install":}
+@{LineNumber=1075; Line=        case "family_urgent_transfer":}
+@{LineNumber=1083; Line=        case "go_bank_atm":}
+@{LineNumber=1225; Line=            ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)}
+@{LineNumber=1227; Line=        if (bad) errs.push("benign_has_danger_anchor");}
+@{LineNumber=1231; Line=        if (s.expected.risk === "low") errs.push("whitelisted_malicious_should_not_be_low");}
+@{LineNumber=1289; Line=function toScenarioOutput(s: ScenarioInternal): AnyObj {}
+@{LineNumber=1370; Line=    const goBankCue =}
+@{LineNumber=1371; Line=        effAnchors.includes("A_GO_BANK") ||}
+@{LineNumber=1385; Line=    if (!goBankCue) effAnchors = effAnchors.filter((a) => a !== "A_GO_BANK");}
+@{LineNumber=1396; Line=        (goBankCue ? 22 : 0) +}
+@{LineNumber=1409; Line=    const hasPaymentAnchor = transferCue || cashPickupCue || goBankCue || ctxPayWithLinkCue;}
+@{LineNumber=1426; Line=            goBankCue ||}
+@{LineNumber=1440; Line=    // triggered: s.expected.triggers가 비어있으면 false(benign/hardneg 방어), 있으면 true}
+@{LineNumber=1441; Line=    const expectedTriggered = Array.isArray((s as any)?.expected?.triggers) ? (s as any).expected.triggers.length > 0 : derivedRisk !== "low";}
+@{LineNumber=1461; Line=        category: s.caseType,}
+@{LineNumber=1476; Line=        should_trigger: (s as any)?.expected?.triggers || [],}
+@{LineNumber=1492; Line=                goBankCue,}
+@{LineNumber=1532; Line=    if (args.registry_out) {}
+@{LineNumber=1533; Line=        await writeJsonl(args.registry_out, buildCallerRegistry());}
+@{LineNumber=1541; Line=        const baseType = inferCaseTypeFromStub(rng, stub);}
+@{LineNumber=1548; Line=        const caseType: CaseType = baseType;}
+@{LineNumber=1571; Line=            // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지}
+@{LineNumber=1572; Line=            const impersonation = isBenign ? undefined : impersonationFor(caseType);}
+@{LineNumber=1573; Line=            const pressures = isBenign ? [] : pressuresFor(rng, caseType);}
+@{LineNumber=1576; Line=            let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();}
+@{LineNumber=1583; Line=                if (stubFeat.hasGoBank) extra.push("A_GO_BANK");}
+@{LineNumber=1585; Line=                const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));}
+@{LineNumber=1593; Line=            let vector: Vector = isBenign ? "none" : defaultVectorFor(caseType);}
+@{LineNumber=1597; Line=                if (stubFeat.hasQr && (caseType === "delivery_link" || caseType === "fine_refund_link")) {}
+@{LineNumber=1603; Line=                    if ((caseType === "delivery_link" || caseType === "fine_refund_link") && chance(rng, 0.06)) {}
+@{LineNumber=1618; Line=            const allowedHosts = Array.from(new Set(buildUrlRegistry().filter(r => ownerChoices.includes(r.owner)).map(r => r.host)));}
+@{LineNumber=1626; Line=                const match = urlMatchesRegistry(urlStr, allowedHosts);}
+@{LineNumber=1645; Line=            const caller = chooseCaller(rng, caseType, isBenign);}
+@{LineNumber=1649; Line=                caseType,}
+@{LineNumber=1705; Line=                "A_GO_BANK",}
+@{LineNumber=1714; Line=                stagePeak = stageFromAnchors(caseType, anchorsEff, vector, urlKind, urlMatch, pressuresEff, senderText);}
+@{LineNumber=1722; Line=                    anchorsEff.includes("A_GO_BANK") ||}
+@{LineNumber=1747; Line=            const triggers = triggersFrom(caseType, anchorsEff, pressuresEff, impersonation, vector, urlKind);}
+@{LineNumber=1751; Line=                caseType,}
+@{LineNumber=1761; Line=                // ✅ "실제 텍스트에 존재" 기준으로 저장(출력 notes/toScenarioOutput도 이 값을 씀)}
+@{LineNumber=1787; Line=                outRows.push(toScenarioOutput(s));}
+@{LineNumber=1798; Line=                error: "generator_failed_constraints",}
+@{LineNumber=1806; Line=    if (args.registry_out) console.log(`[genScenariosFromStubs] registry_out=${args.registry_out}`);}

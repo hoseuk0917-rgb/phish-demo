@@ -1,0 +1,186 @@
+﻿ 1760:             <div className="row-between" style={{ gap: 10, flexWrap: "wrap" }}>
+ 1761:                 <div>
+ 1762:                     <div className="card-title">Demo layout</div>
+ 1763:                     <div className="card-desc">left: gauge · center: phone · right: compact controls</div>
+ 1764:                 </div>
+ 1765:                 <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+ 1766:                     <span className="pill">{demoRunning ? `DEMO ${demoIndex}/${demoTurns.length}` : "LIVE"}</span>
+ 1767:                     <span className="pill">ALERT: {String((phoneAlert as any)?.level || "none") === "none" ? "NONE" : String((phoneAlert as any)?.level || "unknown").toUpperCase()}</span>
+ 1768:                     <button className="btn" onClick={() => setPhoneUxEnabled(false)}>
+ 1769:                         Close
+ 1770:                     </button>
+ 1771:                 </div>
+ 1772:             </div>
+ 1773: 
+ 1774:             <div style={{ height: 10 }} />
+ 1775: 
+ 1776:             <div
+ 1777:                 style={{
+ 1778:                     display: "grid",
+ 1779:                     gridTemplateColumns: "minmax(260px, 1fr) 380px minmax(260px, 1fr)",
+ 1780:                     gap: 12,
+ 1781:                     alignItems: "start",
+ 1782:                 }}
+ 1783:             >
+ 1784:                 {/* LEFT: Gauge */}
+ 1785:                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+ 1786:                     <div className="card" style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.12)" }}>
+ 1787:                         {(() => {
+ 1788:                             const scoreTotal = Math.round(Math.max(0, Math.min(100, Number((preview as any)?.scoreTotal || 0))));
+ 1789:                             const riskLevelRaw = String((preview as any)?.riskLevel || "").toLowerCase();
+ 1790:                             const riskLevel =
+ 1791:                                 riskLevelRaw ||
+ 1792:                                 (scoreTotal >= 65 ? "high" : scoreTotal >= 35 ? "medium" : "low");
+ 1793: 
+ 1794:                             const stagePeak = String((preview as any)?.stagePeak || (preview as any)?.stage || "n/a");
+ 1795: 
+ 1796:                             const gateMode = triggerGateEnabled
+ 1797:                                 ? autoAnalyzeOnTrigger
+ 1798:                                     ? ((triggerState as any)?.mode === "auto" ? ((triggerState as any)?.ok ? "TRIGGERED" : "IDLE") : "MANUAL")
+ 1799:                                     : "MANUAL"
+ 1800:                                 : "OFF";
+ 1801: 
+ 1802:                             const topSignals: any[] = Array.isArray((preview as any)?.signalsTop) ? ((preview as any)?.signalsTop as any[]) : [];
+ 1803: 
+ 1804:                             return (
+ 1805:                                 <>
+ 1806:                                     <div className="row-between" style={{ gap: 10, flexWrap: "wrap" }}>
+ 1807:                                         <div>
+ 1808:                                             <div className="card-title">Risk</div>
+ 1809:                                             <div className="card-desc">prefilter → full analysis → warning</div>
+ 1810:                                         </div>
+ 1811:                                         <span className="pill">{String(riskLevel).toUpperCase()} · {stagePeak}</span>
+ 1812:                                     </div>
+ 1813: 
+ 1814:                                     <div style={{ height: 12 }} />
+ 1815: 
+ 1816:                                     <div className="row-between" style={{ gap: 10, alignItems: "flex-end" }}>
+ 1817:                                         <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1 }}>
+ 1818:                                             {scoreTotal}
+ 1819:                                         </div>
+ 1820:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+ 1821:                                             <span className="pill">Gate: {gateMode}</span>
+ 1822:                                             <span className="pill">Prefilter: {triggerGateEnabled ? prefilterScore : 0} / {triggerThreshold}</span>
+ 1823:                                             <span className="pill">SIM gate: {simMinSim} · topK: {simTopK}</span>
+ 1824:                                         </div>
+ 1825:                                     </div>
+ 1826: 
+ 1827:                                     <div style={{ height: 10 }} />
+ 1828: 
+ 1829:                                     <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+ 1830:                                         <div
+ 1831:                                             style={{
+ 1832:                                                 height: 8,
+ 1833:                                                 width: `${scoreTotal}%`,
+ 1834:                                                 background: scoreTotal >= 65 ? "rgba(255,60,60,0.75)" : scoreTotal >= 35 ? "rgba(255,200,60,0.70)" : "rgba(90,220,120,0.65)",
+ 1835:                                             }}
+ 1836:                                         />
+ 1837:                                     </div>
+ 1838: 
+ 1839:                                     <div style={{ height: 12 }} />
+ 1840: 
+ 1841:                                     <div className="pill">Top signals</div>
+ 1842:                                     <div style={{ height: 8 }} />
+ 1843: 
+ 1844:                                     {topSignals.length === 0 ? (
+ 1845:                                         <div className="muted" style={{ fontSize: 12 }}>no signals</div>
+ 1846:                                     ) : (
+ 1847:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+ 1848:                                             {topSignals.slice(0, 6).map((s: any, i: number) => {
+ 1849:                                                 const lab = String(s?.label || s?.id || `sig_${i + 1}`);
+ 1850:                                                 const w = Math.round(Number(s?.weightSum || s?.weight || 0));
+ 1851:                                                 const c = Number(s?.count || 0);
+ 1852:                                                 return (
+ 1853:                                                     <div key={`${lab}-${i}`} className="row-between" style={{ gap: 8 }}>
+ 1854:                                                         <span
+ 1855:                                                             className="muted"
+ 1856:                                                             style={{
+ 1857:                                                                 fontSize: 12,
+ 1858:                                                                 overflow: "hidden",
+ 1859:                                                                 textOverflow: "ellipsis",
+ 1860:                                                                 whiteSpace: "nowrap",
+ 1861:                                                                 maxWidth: 220,
+ 1862:                                                             }}
+ 1863:                                                             title={lab}
+ 1864:                                                         >
+ 1865:                                                             {lab}
+ 1866:                                                         </span>
+ 1867:                                                         <span className="pill">
+ 1868:                                                             +{w}{c ? ` · ${c}` : ""}
+ 1869:                                                         </span>
+ 1870:                                                     </div>
+ 1871:                                                 );
+ 1872:                                             })}
+ 1873:                                         </div>
+ 1874:                                     )}
+ 1875: 
+ 1876:                                     <div style={{ height: 12 }} />
+ 1877: 
+ 1878:                                     <div className="pill">Status</div>
+ 1879:                                     <div style={{ height: 8 }} />
+ 1880:                                     <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
+ 1881:                                         {scoreTotal >= 65 ? "⚠️ HIGH: warning should show" : scoreTotal >= 35 ? "⚠️ MED: caution zone" : "OK: low zone"}
+ 1882:                                         <br />
+ 1883:                                         {triggerGateEnabled ? "prefilter always-on" : "gate OFF"}
+ 1884:                                         {autoAnalyzeOnTrigger ? " · auto analyze" : " · manual analyze"}
+ 1885:                                     </div>
+ 1886:                                 </>
+ 1887:                             );
+ 1888:                         })()}
+ 1889:                     </div>
+ 1890: 
+ 1891:                     {/* Timeline / Progress (with recent events) */}
+ 1892:                     <div className="card" style={{ background: "rgba(255,255,255,0.06)" }}>
+ 1893:                         {(() => {
+ 1894:                             const now = new Date();
+ 1895:                             const tSec = demoRunning || demoIndex > 0 ? Math.max(0, (demoIndex - 1) * (Number(demoSpeedMs || 0) / 1000)) : 0;
+ 1896: 
+ 1897:                             const gateMode = triggerGateEnabled
+ 1898:                                 ? autoAnalyzeOnTrigger
+ 1899:                                     ? ((triggerState as any)?.mode === "auto" ? ((triggerState as any)?.ok ? "TRIGGERED" : "IDLE") : "MANUAL")
+ 1900:                                     : "MANUAL"
+ 1901:                                 : "OFF";
+ 1902: 
+ 1903:                             const pf = triggerGateEnabled ? prefilterScore : 0;
+ 1904:                             const pfOk = !triggerGateEnabled ? true : pf >= triggerThreshold;
+ 1905: 
+ 1906:                             const scoreTotal = Math.round(Math.max(0, Math.min(100, Number((preview as any)?.scoreTotal || 0))));
+ 1907:                             const stagePeak = String((preview as any)?.stagePeak || (preview as any)?.stage || "n/a");
+ 1908:                             const riskLevelRaw = String((preview as any)?.riskLevel || "").toLowerCase();
+ 1909:                             const riskLevel = riskLevelRaw || (scoreTotal >= 65 ? "high" : scoreTotal >= 35 ? "medium" : "low");
+ 1910: 
+ 1911:                             const simArr: any[] = Array.isArray((preview as any)?.similarityTop) ? ((preview as any).similarityTop as any[]) : [];
+ 1912:                             const simTop = simArr?.[0] || null;
+ 1913:                             const simPct = simTop ? Math.round(Math.max(0, Math.min(1, Number(simTop?.similarity || 0))) * 100) : null;
+ 1914: 
+ 1915:                             const emb: any = embedSignals as any;
+ 1916:                             const embLabel = String(emb?.top?.[0]?.label || "n/a");
+ 1917:                             const embPct = Math.round(Math.max(0, Math.min(1, Number(emb?.maxSim || 0))) * 100);
+ 1918: 
+ 1919:                             const lines: Array<{ k: string; v: string; tone?: "good" | "warn" | "bad" }> = [
+ 1920:                                 {
+ 1921:                                     k: "t",
+ 1922:                                     v: (demoRunning || demoIndex > 0) ? `T+${tSec.toFixed(1)}s · DEMO ${demoIndex}/${demoTurns.length}` : `${now.toLocaleTimeString()} · LIVE`,
+ 1923:                                 },
+ 1924:                                 { k: "prefilter", v: `${pf}/${triggerThreshold} · ${pfOk ? "pass" : "wait"}`, tone: pfOk ? "good" : "warn" },
+ 1925:                                 { k: "gate", v: `Gate: ${gateMode}`, tone: gateMode === "TRIGGERED" ? "good" : gateMode === "IDLE" ? "warn" : undefined },
+ 1926:                                 { k: "analysis", v: preview ? `score ${scoreTotal} · ${String(riskLevel).toUpperCase()} · ${stagePeak}` : "no full analysis", tone: preview ? (scoreTotal >= 65 ? "bad" : scoreTotal >= 35 ? "warn" : "good") : undefined },
+ 1927:                                 { k: "emb", v: deepEnabled ? `EMB ${embLabel} · ${embPct}%${emb?.triggered ? " · TRIGGER" : ""}` : "EMB OFF" },
+ 1928:                                 { k: "sim", v: deepEnabled ? (simPct == null ? `SIM n/a · gate ${simMinSim}` : `SIM ${simPct}% · gate ${simMinSim}`) : "SIM OFF" },
+ 1929:                                 { k: "reasons", v: (Array.isArray(prefilterReasons) && prefilterReasons.length) ? `reasons: ${prefilterReasons.slice(0, 4).join(" · ")}` : "reasons: n/a" },
+ 1930:                             ];
+ 1931: 
+ 1932:                             const dot = (tone?: "good" | "warn" | "bad") => {
+ 1933:                                 const bg =
+ 1934:                                     tone === "bad" ? "rgba(255,70,70,0.80)" :
+ 1935:                                         tone === "warn" ? "rgba(255,200,60,0.80)" :
+ 1936:                                             tone === "good" ? "rgba(90,220,120,0.80)" :
+ 1937:                                                 "rgba(255,255,255,0.35)";
+ 1938:                                 return <span style={{ width: 8, height: 8, borderRadius: 999, background: bg, display: "inline-block" }} />;
+ 1939:                             };
+ 1940: 
+ 1941:                             const toneOfEvent = (type: string) => {
+ 1942:                                 const t = String(type || "").toLowerCase();
+ 1943:                                 if (t.includes("err")) return "bad" as const;
+ 1944:                                 if (t.includes("wait")) return "warn" as const;
+ 1945:                                 if (t.includes("blocked")) return "warn" as const;

@@ -1,0 +1,91 @@
+﻿  470:         minSim: 0, // ✅ 후보는 항상 뽑기(설명/디버그)
+  471:       })
+  472:       : [];
+  473: 
+  474:   // ✅ 반환 필드는 “후보(원본)”을 유지: 이유 확인(0.899 vs gate 0.9) 가능
+  475:   const similarityTop = similarityTopRaw;
+  476: 
+  477:   // ✅ 본분석 “소프트 부스트” (SIM은 점수만 소폭, 리스크는 여기서 올리지 않음)
+  478:   if (similarityTopRaw && (similarityTopRaw as any[]).length) {
+  479:     const top: any = (similarityTopRaw as any[])[0];
+  480:     const sim = Number(top?.similarity ?? 0);
+  481: 
+  482:     // anchors: SIM은 "행동 유도"가 있을 때만 점수에 반영 (권위/알림만으론 반영 금지)
+  483:     const hasHit = (id: string) => scored.hits.some((h) => String(h?.ruleId || "") === id);
+  484: 
+  485:     const hasActionAnchor = hasActionAnchorByHits(hasHit);
+  486: 
+  487:     // score-only boost (cap). sim 스케일(0~1)에 맞춰 동작
+  488:     let boost = 0;
+  489:     if (sim >= 0.96) boost = 10;
+  490:     else if (sim >= 0.93) boost = 8;
+  491:     else if (sim >= 0.9) boost = 6;
+  492:     else if (sim >= 0.87) boost = 4;
+  493: 
+  494:     const gatePass = sim >= simGate;
+  495:     const appliedBoost = boost > 0 && gatePass && hasActionAnchor ? boost : 0;
+  496:     if (appliedBoost > 0) scoreTotal = Math.min(100, scoreTotal + appliedBoost);
+  497: 
+  498:     // ✅ signalsTop에 “유사도 힌트” (타입 필수필드 포함)
+  499:     const ex: string[] = [
+  500:       `sim=${sim.toFixed(3)}`,
+  501:       `gate=${Number(simGate).toFixed(3)}`,
+  502:       `gatePass=${gatePass ? "yes" : "no"}`,
+  503:       `match=${String(top?.id || "").trim() || "n/a"}`,
+  504:       `cat=${String(top?.category || "").trim() || "n/a"}`,
+  505:       `boost=${appliedBoost > 0 ? `+${appliedBoost}` : "0"}`,
+  506:       `anchor=${hasActionAnchor ? "yes" : "no"}`,
+  507:     ];
+  508: 
+  509:     if (Array.isArray(top?.sharedSignals) && top.sharedSignals.length) {
+  510:       for (const s of top.sharedSignals.slice(0, 3)) ex.push(`shared:${String(s)}`);
+  511:     }
+  512: 
+  513:     const hint: SignalSummary = {
+  514:       id: "sim_hint",
+  515:       label: appliedBoost > 0 ? "SIM hint (soft boost)" : "SIM hint (no boost)",
+  516:       weightSum: appliedBoost,
+  517:       count: 1,
+  518:       examples: ex,
+  519:       stage: "verify",
+  520:     };
+  521: 
+  522:     signalsTop = [hint, ...signalsTop].slice(0, 8);
+  523:   }
+  524: 
+  525:   const packageText = buildPackageText({
+  526:     riskLevel,
+  527:     scoreTotal,
+  528:     messageCount: messages.length,
+  529:     evidenceTop3,
+  530:     signalsTop,
+  531:     actions,
+  532:   });
+  533: 
+  534:   return {
+  535:     riskLevel,
+  536:     scoreTotal, // [OK] 부스트 반영값 반환
+  537: 
+  538:     // UI용(개입 타이밍/긴급도) 표시 — Threat 결과는 유지, 표시만 약하게 상향
+  539:     uiRiskLevel,
+  540:     uiScoreTotal,
+  541:     rGateTag: canShowIntervention && rGateTag ? rGateTag : undefined,
+  542: 
+  543:     messageCount: messages.length,
+  544:     evidenceTop3,
+  545:     signalsTop,
+  546:     actions,
+  547:     packageText,
+  548:     hitsTop,
+  549:     urls,
+  550:     messageSummaries: scored.messageSummaries,
+  551:     stageTimeline,
+  552:     prefilter,
+  553:     similarityTop, // [OK] 후보(원본) 반환
+  554: 
+  555:     // [OK] triggered: prefilter 기준 + URL(S) 보장
+  556:     triggered: prefilter
+  557:       ? (pfTriggered || hasSenderUrl)
+  558:       : ((scored.hits?.length ?? 0) > 0 || hasSenderUrl),
+  559:   };
+  560: }

@@ -1,0 +1,10 @@
+﻿@{LineNumber=570; Line=function deriveStubFeatures(stub: AnyObj): StubFeatures {}
+@{LineNumber=594; Line=function featuresToKeywords(f: StubFeatures): string[] {}
+@{LineNumber=1000; Line=function buildConversation(}
+@{LineNumber=1010; Line=    stubKeywords: string[],}
+@{LineNumber=1134; Line=    if (stubKeywords.length && turns.length + 1 <= roomForOptional) {}
+@{LineNumber=1135; Line=        turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, `참고 키워드: ${stubKeywords.join(", ")}`, tone), noiseLevel) });}
+@{LineNumber=1542; Line=        const stubFeat = deriveStubFeatures(stub);}
+@{LineNumber=1543; Line=        const stubKeywords = featuresToKeywords(stubFeat);}
+@{LineNumber=1657; Line=                stubKeywords,}
+@{LineNumber=1770; Line=                    stub_keywords: stubKeywords,}

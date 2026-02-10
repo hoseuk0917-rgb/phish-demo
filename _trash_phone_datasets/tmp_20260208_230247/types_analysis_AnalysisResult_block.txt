@@ -1,0 +1,43 @@
+﻿  120:   expectedRisk?: string;
+  121:   sharedSignals?: string[];
+  122: };
+  123: 
+  124: export type SimilarityMatch = {
+  125:   id: string;
+  126:   label: string;
+  127:   similarity: number;
+  128:   category?: string;
+  129:   expectedRisk?: string;
+  130:   sharedSignals?: string[];
+  131: };
+  132: 
+  133: export interface AnalysisResult {
+  134:   // base(Threat=S 기반) 결과
+  135:   riskLevel: RiskLevel;
+  136:   scoreTotal: number;
+  137: 
+  138:   // UI용(개입 타이밍/긴급도 반영) — Threat 점수는 그대로 두고 표시만 약하게 끌어올림
+  139:   uiRiskLevel?: RiskLevel;
+  140:   uiScoreTotal?: number;
+  141:   rGateTag?: string;
+  142: 
+  143:   messageCount: number;
+  144:   evidenceTop3: EvidenceItem[];
+  145:   signalsTop: SignalSummary[];
+  146:   actions: ActionItem[];
+  147:   packageText: string;
+  148: 
+  149:   hitsTop: HitItem[];
+  150:   urls: string[];
+  151: 
+  152:   messageSummaries: MessageSummary[];
+  153:   stageTimeline: StageEvent[];
+  154: 
+  155:   // optional: prefilter 결과(트리거/가벼운 실시간 감지용)
+  156:   prefilter?: PrefilterResult;
+  157: 
+  158:   // optional: similarity top-k (simindex 기반)
+  159:   similarityTop?: SimilarityMatch[];
+  160:   triggered?: boolean;
+  161: }
+  162: 

@@ -1,0 +1,25 @@
+﻿    1: import React, { useEffect, useMemo, useRef, useState } from "react";
+    2: import type { AnalysisInput, AnalysisResult, StageId } from "../types/analysis";
+    3: import { analyzeThread } from "../engine";
+    4: import { splitThreadWithRanges } from "../engine/extract/splitThread";
+    5: // (removed) prefilterThread: UI에서 직접 실행하지 않음 (엔진 preview.prefilter 사용)
+    6: import { TextArea } from "../components/TextArea";
+    7: import { ToggleRow } from "../components/ToggleRow";
+    8: import { ExamplePicker } from "../components/ExamplePicker";
+    9: import { ActionButtons } from "../components/ActionButtons";
+   10: import { EXAMPLES } from "../data/examples";
+   11: import { copyText } from "../utils/clipboard";
+   12: 
+   13: import type { SimIndexItem } from "../engine/similarity/simIndex";
+   14: import { loadSimIndexOnce } from "../engine/similarity/clientSimIndex";
+   15: 
+   16: type Props = {
+   17:     initial: AnalysisInput;
+   18:     onAnalyze: (input: AnalysisInput, result: AnalysisResult) => void;
+   19: };
+   20: 
+   21: function scoreCls(score: number): "good" | "warn" | "bad" {
+   22:     if (score >= 60) return "bad";
+   23:     if (score >= 30) return "warn";
+   24:     return "good";
+   25: }

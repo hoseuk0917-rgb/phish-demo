@@ -1,0 +1,340 @@
+{
+  "schema_version": "mutation_report.v1",
+  "created_at": "2026-01-31T11:44:42.695Z",
+  "inputs": {
+    "dataset": "datasets/ko_scam/mutated/mutated_2026-01-31_mlmv1.jsonl",
+    "fails": "datasets/ko_scam/mutated/mutated_2026-01-31_mlmv1_fails.jsonl"
+  },
+  "config": {
+    "embed": {
+      "enabled": true,
+      "model": "Xenova/bert-base-multilingual-cased",
+      "cluster_sim": 0.86,
+      "cache": ".hf_cache"
+    },
+    "digest": "sha256:1cd2baa7d96d548d8a0eb991c95886d3ccd87674c28c04ac00c2e15bd398c8fc"
+  },
+  "stats": {
+    "total_fails": 36,
+    "by_reason": [
+      {
+        "reason": "score_below_min",
+        "count": 25
+      },
+      {
+        "reason": "risk_mismatch",
+        "count": 19
+      },
+      {
+        "reason": "stage_mismatch",
+        "count": 19
+      }
+    ],
+    "risk_pairs": [
+      {
+        "pair": "high → high",
+        "count": 9
+      },
+      {
+        "pair": "low → low",
+        "count": 8
+      },
+      {
+        "pair": "high → low",
+        "count": 7
+      },
+      {
+        "pair": "medium → low",
+        "count": 7
+      },
+      {
+        "pair": "high → medium",
+        "count": 5
+      }
+    ],
+    "stage_pairs": [
+      {
+        "pair": "verify → info",
+        "count": 10
+      },
+      {
+        "pair": "verify → verify",
+        "count": 9
+      },
+      {
+        "pair": "payment → info",
+        "count": 8
+      },
+      {
+        "pair": "payment → payment",
+        "count": 8
+      },
+      {
+        "pair": "payment → verify",
+        "count": 1
+      }
+    ],
+    "score_delta": {
+      "count": 25,
+      "min": 2,
+      "p50": 14,
+      "p90": 31,
+      "max": 41,
+      "avg": 17.64
+    },
+    "top_parents": [
+      {
+        "parent_id": "KO-2094_e3v2",
+        "count": 3,
+        "examples": [
+          "MUT-KO-2094_e3v2-0001",
+          "MUT-KO-2094_e3v2-0002",
+          "MUT-KO-2094_e3v2-0003"
+        ],
+        "score_delta_avg": 37.666666666666664
+      },
+      {
+        "parent_id": "KO-2114_e3v1",
+        "count": 3,
+        "examples": [
+          "MUT-KO-2114_e3v1-0001",
+          "MUT-KO-2114_e3v1-0002",
+          "MUT-KO-2114_e3v1-0003"
+        ],
+        "score_delta_avg": 8
+      },
+      {
+        "parent_id": "KO-2114_e3v3",
+        "count": 3,
+        "examples": [
+          "MUT-KO-2114_e3v3-0001",
+          "MUT-KO-2114_e3v3-0002",
+          "MUT-KO-2114_e3v3-0003"
+        ],
+        "score_delta_avg": 11.333333333333334
+      },
+      {
+        "parent_id": "KO-2037_e3v1",
+        "count": 2,
+        "examples": [
+          "MUT-KO-2037_e3v1-0001",
+          "MUT-KO-2037_e3v1-0002"
+        ],
+        "score_delta_avg": 18
+      },
+      {
+        "parent_id": "KO-2037_e3v2",
+        "count": 2,
+        "examples": [
+          "MUT-KO-2037_e3v2-0001",
+          "MUT-KO-2037_e3v2-0002"
+        ],
+        "score_delta_avg": 18
+      },
+      {
+        "parent_id": "KO-2037_e3v3",
+        "count": 2,
+        "examples": [
+          "MUT-KO-2037_e3v3-0001",
+          "MUT-KO-2037_e3v3-0003"
+        ],
+        "score_delta_avg": 12
+      },
+      {
+        "parent_id": "KO-2094_e3v1",
+        "count": 2,
+        "examples": [
+          "MUT-KO-2094_e3v1-0001",
+          "MUT-KO-2094_e3v1-0002"
+        ],
+        "score_delta_avg": 36
+      },
+      {
+        "parent_id": "BENIGN_0002_e3v1",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0002_e3v1-0003"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0002_e3v3",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0002_e3v3-0003"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0006_e3v2",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0006_e3v2-0002"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0006_e3v3",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0006_e3v3-0002"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0010_e3v2",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0010_e3v2-0001"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0018_e3v3",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0018_e3v3-0003"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0022_e3v3",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0022_e3v3-0001"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "BENIGN_0050_e3v2",
+        "count": 1,
+        "examples": [
+          "MUT-BENIGN_0050_e3v2-0003"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "KO-2031_e3v1",
+        "count": 1,
+        "examples": [
+          "MUT-KO-2031_e3v1-0001"
+        ],
+        "score_delta_avg": 6
+      },
+      {
+        "parent_id": "KO-2031_e3v2",
+        "count": 1,
+        "examples": [
+          "MUT-KO-2031_e3v2-0001"
+        ],
+        "score_delta_avg": 6
+      },
+      {
+        "parent_id": "KO-2038_e3v1",
+        "count": 1,
+        "examples": [
+          "MUT-KO-2038_e3v1-0001"
+        ],
+        "score_delta_avg": 4
+      },
+      {
+        "parent_id": "KO-2042_e3v2",
+        "count": 1,
+        "examples": [
+          "MUT-KO-2042_e3v2-0001"
+        ],
+        "score_delta_avg": null
+      },
+      {
+        "parent_id": "KO-2049_e3v1",
+        "count": 1,
+        "examples": [
+          "MUT-KO-2049_e3v1-0002"
+        ],
+        "score_delta_avg": null
+      }
+    ],
+    "clusters": [
+      {
+        "cluster_id": "C001",
+        "size": 36,
+        "rep_id": "MUT-KO-2031_e3v1-0001",
+        "avg_sim_to_rep": 0.9745,
+        "top_reasons": [
+          {
+            "reason": "score_below_min",
+            "count": 25
+          },
+          {
+            "reason": "risk_mismatch",
+            "count": 19
+          },
+          {
+            "reason": "stage_mismatch",
+            "count": 19
+          }
+        ],
+        "top_parents": [
+          {
+            "parent_id": "KO-2094_e3v2",
+            "count": 3
+          },
+          {
+            "parent_id": "KO-2114_e3v1",
+            "count": 3
+          },
+          {
+            "parent_id": "KO-2114_e3v3",
+            "count": 3
+          },
+          {
+            "parent_id": "KO-2037_e3v1",
+            "count": 2
+          },
+          {
+            "parent_id": "KO-2037_e3v2",
+            "count": 2
+          }
+        ],
+        "member_ids": [
+          "MUT-KO-2031_e3v1-0001",
+          "MUT-KO-2031_e3v2-0001",
+          "MUT-KO-2037_e3v1-0001",
+          "MUT-KO-2037_e3v1-0002",
+          "MUT-KO-2037_e3v2-0001",
+          "MUT-KO-2037_e3v2-0002",
+          "MUT-KO-2037_e3v3-0001",
+          "MUT-KO-2037_e3v3-0003",
+          "MUT-KO-2038_e3v1-0001",
+          "MUT-KO-2042_e3v2-0001",
+          "MUT-KO-2049_e3v1-0002",
+          "MUT-KO-2049_e3v2-0001",
+          "MUT-KO-2055_e3v3-0003",
+          "MUT-KO-2068_e3v1-0002",
+          "MUT-KO-2094_e3v1-0001",
+          "MUT-KO-2094_e3v1-0002",
+          "MUT-KO-2094_e3v2-0001",
+          "MUT-KO-2094_e3v2-0002",
+          "MUT-KO-2094_e3v2-0003",
+          "MUT-KO-2094_e3v3-0001",
+          "MUT-KO-2095_e3v1-0003",
+          "MUT-KO-2114_e3v1-0001",
+          "MUT-KO-2114_e3v1-0002",
+          "MUT-KO-2114_e3v1-0003",
+          "MUT-KO-2114_e3v2-0001",
+          "MUT-KO-2114_e3v3-0001",
+          "MUT-KO-2114_e3v3-0002",
+          "MUT-KO-2114_e3v3-0003",
+          "MUT-BENIGN_0002_e3v1-0003",
+          "MUT-BENIGN_0002_e3v3-0003",
+          "MUT-BENIGN_0006_e3v2-0002",
+          "MUT-BENIGN_0006_e3v3-0002",
+          "MUT-BENIGN_0010_e3v2-0001",
+          "MUT-BENIGN_0018_e3v3-0003",
+          "MUT-BENIGN_0022_e3v3-0001",
+          "MUT-BENIGN_0050_e3v2-0003"
+        ]
+      }
+    ]
+  }
+}

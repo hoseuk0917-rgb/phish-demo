@@ -1,0 +1,200 @@
+{"id": "LLM-3001", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 카카오톡 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3002", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 카카오톡 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3003", "label": "high", "category": null, "preview": "S: [검찰청] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 159614 를 그대로 알려주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3004", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3005", "label": "high", "category": null, "preview": "S: [투자관리] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 ETH로 선납해야 합니다. S: 지갑 주소: TQ9x...kL2 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3006", "label": "high", "category": null, "preview": "S: [수사관] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 병원 로비로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3007", "label": "high", "category": null, "preview": "S: [정산팀] 인보이스/견적서 수정본 전달드립니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 문서 뷰어 설치 후 열람 가능합니다. S: 다운로드: https://t.example/viewer.exe S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 설치 없이 볼 수 없나요? S: 보안정책상 뷰어로만 확인됩니"}
+{"id": "LLM-3008", "label": "high", "category": null, "preview": "S: [회계팀] 인보이스/견적서 수정본 전달드립니다. S: 문서 뷰어 설치 후 열람 가능합니다. S: 다운로드: https://t.example/viewer.exe R: 설치 없이 볼 수 없나요? S: 보안정책상 뷰어로만 확인됩니다. 설치해 주세요."}
+{"id": "LLM-3009", "label": "high", "category": null, "preview": "S: [환불센터] 환불을 빠르게 처리해드리겠습니다. S: 구글 기프트카드 핀번호를 구매 후 사진으로 보내주세요. R: 왜 핀번호가 필요하죠? S: 시스템상 선등록이 필요합니다. 지금 진행 부탁드립니다."}
+{"id": "LLM-3010", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 카카오톡 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3011", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 텔레그램으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3012", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/xyz R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3013", "label": "high", "category": null, "preview": "S: [금융감독원] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 763948 를 그대로 알려주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3014", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 텔레그램으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3015", "label": "high", "category": null, "preview": "S: [국세청] 본인확인 절차가 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 방금 문자로 온 OTP(인증번호) 936412 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3016", "label": "high", "category": null, "preview": "S: [검찰청] 명의도용 피해 확인 중입니다. S: 자금 보호를 위해 '안전계좌/보호계좌'로 즉시 이체해야 합니다. S: 안내 계좌 등록을 위해 1,200,000원 먼저 이체하고 연락 주세요. R: 공식 절차가 맞나요? S: 지연 시 피해금이 인출됩니다. 바로 진행하세요."}
+{"id": "LLM-3017", "label": "high", "category": null, "preview": "S: [배송센터] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 701171 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3018", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 현금으로 준비해 두시면 퀵/직원이 지하철역 2번 출구로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3019", "label": "high", "category": null, "preview": "S: [보안팀] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/a1b2 R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3020", "label": "high", "category": null, "preview": "S: [경찰청] 명의도용 피해 확인 중입니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 자금 보호를 위해 '안전계좌/보호계좌'로 즉시 이체해야 합니다. S: 안내 계좌 등록을 위해 3,500,000원 먼저 이체하고 연락 주세요. R: 공식 절차가 맞나요? S: 지연 시 피해금이 인출됩니다. 바로 진행하세요."}
+{"id": "LLM-3021", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3022", "label": "high", "category": null, "preview": "S: [경찰청] 본인확인 절차가 필요합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 방금 문자로 온 OTP(인증번호) 307368 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3023", "label": "high", "category": null, "preview": "S: [국세청] 본인확인 절차가 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 방금 문자로 온 OTP(인증번호) 348182 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3024", "label": "high", "category": null, "preview": "S: [경찰청] 명의도용 피해 확인 중입니다. S: 자금 보호를 위해 '안전계좌/보호계좌'로 즉시 이체해야 합니다. S: 안내 계좌 등록을 위해 3,500,000원 먼저 이체하고 연락 주세요. R: 공식 절차가 맞나요? S: 지연 시 피해금이 인출됩니다. 바로 진행하세요."}
+{"id": "LLM-3025", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 아파트 경비실로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3026", "label": "high", "category": null, "preview": "S: [보안팀] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 779668 를 그대로 알려주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3027", "label": "high", "category": null, "preview": "S: [상담센터] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 USDT로 선납해야 합니다. S: 지갑 주소: TQ9x...kL2 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3028", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 현금으로 준비해 두시면 퀵/직원이 지하철역 2번 출구로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3029", "label": "high", "category": null, "preview": "S: [투자관리] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 USDT로 선납해야 합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 지갑 주소: 0xABCD...1234 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3030", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/xyz R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3031", "label": "high", "category": null, "preview": "S: [환불센터] 환불을 빠르게 처리해드리겠습니다. S: 문화상품권 핀번호를 구매 후 사진으로 보내주세요. R: 왜 핀번호가 필요하죠? S: 시스템상 선등록이 필요합니다. 지금 진행 부탁드립니다."}
+{"id": "LLM-3032", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/pay R: 제가 요청한 게 아닌데요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3033", "label": "high", "category": null, "preview": "S: [정산팀] 인보이스/견적서 수정본 전달드립니다. S: 문서 뷰어 설치 후 열람 가능합니다. S: 다운로드: https://t.example/doc.apk R: 설치 없이 볼 수 없나요? S: 보안정책상 뷰어로만 확인됩니다. 설치해 주세요."}
+{"id": "LLM-3034", "label": "high", "category": null, "preview": "S: [검찰청] 명의도용 피해 확인 중입니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 자금 보호를 위해 '안전계좌/보호계좌'로 즉시 이체해야 합니다. S: 안내 계좌 등록을 위해 3,500,000원 먼저 이체하고 연락 주세요. R: 공식 절차가 맞나요? S: 지연 시 피해금이 인출됩니다. 바로 진행하세요."}
+{"id": "LLM-3035", "label": "high", "category": null, "preview": "S: [정산팀] 인보이스/견적서 수정본 전달드립니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 문서 뷰어 설치 후 열람 가능합니다. S: 다운로드: https://t.example/invoice_viewer.msi R: 설치 없이 볼 수 없나요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 보안정책상 뷰"}
+{"id": "LLM-3036", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 병원 로비로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3037", "label": "high", "category": null, "preview": "S: [상담센터] 수익 출금 조건이 충족되었습니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 출금 수수료는 USDT로 선납해야 합니다. S: 지갑 주소: bc1q...9z0 로 먼저 전송해 주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 "}
+{"id": "LLM-3038", "label": "high", "category": null, "preview": "S: [ZZ증권] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. QuickSupport 설치해 주세요. S: 설치 링크: https://t.example/xyz R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3039", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 병원 로비로 수거하러 갑니다. R: 현금 수거요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3040", "label": "high", "category": null, "preview": "S: [상담센터] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 ETH로 선납해야 합니다. S: 지갑 주소: 0xABCD...1234 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3041", "label": "high", "category": null, "preview": "S: [상담센터] 수익 출금 조건이 충족되었습니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 출금 수수료는 BTC로 선납해야 합니다. S: 지갑 주소: bc1q...9z0 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3042", "label": "high", "category": null, "preview": "S: [수사관] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 지하철역 2번 출구로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3043", "label": "high", "category": null, "preview": "S: [경찰청] 명의도용 피해 확인 중입니다. S: 자금 보호를 위해 '안전계좌/보호계좌'로 즉시 이체해야 합니다. S: 안내 계좌 등록을 위해 1,200,000원 먼저 이체하고 연락 주세요. R: 공식 절차가 맞나요? S: 지연 시 피해금이 인출됩니다. 바로 진행하세요."}
+{"id": "LLM-3044", "label": "high", "category": null, "preview": "S: [경찰청] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 470909 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3045", "label": "high", "category": null, "preview": "S: [OO은행] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. AnyDesk 설치해 주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 설치 링크: https://t.example/2fa R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3046", "label": "high", "category": null, "preview": "S: [XX은행] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 원격으로 처리해드리겠습니다. 보안앱 설치해 주세요. S: 설치 링크: https://t.example/xyz R: 설치가 꼭 필요한가요? S: 지금 안 하면"}
+{"id": "LLM-3047", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3048", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3049", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 카카오톡 오픈채팅으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3050", "label": "high", "category": null, "preview": "S: [정산팀] 인보이스/견적서 수정본 전달드립니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 문서 뷰어 설치 후 열람 가능합니다. S: 다운로드: https://t.example/doc.apk R: 설치 없이 볼 수 없나요? S: 보안정책상 뷰어로만 확인됩니다. 설치해 주세요."}
+{"id": "LLM-3051", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 지하철역 2번 출구로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3052", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 현금으로 준비해 두시면 퀵/직원이 병원 로비로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3053", "label": "high", "category": null, "preview": "S: [배송센터] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 539622 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3054", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 텔레그램으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3055", "label": "high", "category": null, "preview": "S: [상담원] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 지하철역 2번 출구로 수거하러 갑니다. R: 현금 수거요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3056", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/2fa R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3057", "label": "high", "category": null, "preview": "S: [정산팀] 인보이스/견적서 수정본 전달드립니다. S: 문서 뷰어 설치 후 열람 가능합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 다운로드: https://t.example/viewer.exe R: 설치 없이 볼 수 없나요? S: 보안정책상 뷰어로만 확인됩니다. 설치해 주세요."}
+{"id": "LLM-3058", "label": "high", "category": null, "preview": "S: [보안팀] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/2fa R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3059", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/a1b2 R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3060", "label": "high", "category": null, "preview": "S: [보안팀] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/2fa R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3061", "label": "high", "category": null, "preview": "S: [고객센터] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/pay R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3062", "label": "high", "category": null, "preview": "S: [금융감독원] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 362555 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3063", "label": "high", "category": null, "preview": "S: [YY카드] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. AnyDesk 설치해 주세요. S: 설치 링크: https://t.example/a1b2 S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3064", "label": "high", "category": null, "preview": "S: [OO캐피탈] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. AnyDesk 설치해 주세요. S: 설치 링크: https://t.example/xyz R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3065", "label": "high", "category": null, "preview": "S: [고객센터] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 209152 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3066", "label": "high", "category": null, "preview": "S: [OO캐피탈] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. TeamViewer 설치해 주세요. S: 설치 링크: https://t.example/a1b2 R: 설치가 꼭 필요한가요? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3067", "label": "high", "category": null, "preview": "S: [XX은행] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. AnyDesk 설치해 주세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 설치 링크: https://t.example/pay R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3068", "label": "high", "category": null, "preview": "S: [보안팀] 계정 보호를 위해 승인번호 확인이 필요합니다. S: 아래 링크에서 승인번호를 확인한 뒤 캡처해서 보내주세요. https://t.example/a1b2 S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 제가 요청한 게 아닌데요? S: 미확인 시 로그인 제한됩니다. 즉시 처리 부탁드립니다."}
+{"id": "LLM-3069", "label": "high", "category": null, "preview": "S: [투자관리] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 ETH로 선납해야 합니다. S: 지갑 주소: bc1q...9z0 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3070", "label": "high", "category": null, "preview": "S: [보안팀] 본인확인 절차가 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 방금 문자로 온 OTP(인증번호) 897002 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3071", "label": "high", "category": null, "preview": "S: [보안팀] 본인확인 절차가 필요합니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 방금 문자로 온 OTP(인증번호) 618377 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3072", "label": "high", "category": null, "preview": "S: [고객지원] 환불을 빠르게 처리해드리겠습니다. S: 애플 기프트카드 핀번호를 구매 후 사진으로 보내주세요. R: 왜 핀번호가 필요하죠? S: 시스템상 선등록이 필요합니다. 지금 진행 부탁드립니다."}
+{"id": "LLM-3073", "label": "high", "category": null, "preview": "S: [수사관] 사건 처리 비용이 필요합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 현금으로 준비해 두시면 퀵/직원이 주차장로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3074", "label": "high", "category": null, "preview": "S: [수사관] 사건 처리 비용이 필요합니다. S: 현금으로 준비해 두시면 퀵/직원이 아파트 경비실로 수거하러 갑니다. R: 현금 수거요? S: 카드 결제는 불가합니다. 위치만 알려주세요."}
+{"id": "LLM-3075", "label": "high", "category": null, "preview": "S: [투자관리] 수익 출금 조건이 충족되었습니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 출금 수수료는 BTC로 선납해야 합니다. S: 지갑 주소: bc1q...9z0 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취"}
+{"id": "LLM-3076", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 오픈채팅으로 이동해 안내받으세요. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3077", "label": "high", "category": null, "preview": "S: [투자관리] 수익 출금 조건이 충족되었습니다. S: 출금 수수료는 ETH로 선납해야 합니다. S: 지갑 주소: bc1q...9z0 로 먼저 전송해 주세요. R: 선납이 왜 필요해요? S: 오늘 마감입니다. 지연 시 출금이 취소됩니다."}
+{"id": "LLM-3078", "label": "high", "category": null, "preview": "S: [배송센터] 본인확인 절차가 필요합니다. S: 방금 문자로 온 OTP(인증번호) 930641 를 그대로 알려주세요. R: 왜 알려드려야 하죠? S: 확인 안 되면 즉시 제한됩니다. 지금 바로 처리하세요."}
+{"id": "LLM-3079", "label": "high", "category": null, "preview": "S: [ZZ증권] 전산 오류로 환불/해지 처리가 지연되고 있습니다. S: 원격으로 처리해드리겠습니다. 인증앱 설치해 주세요. S: 설치 링크: https://t.example/a1b2 R: 설치가 꼭 필요한가요? S: 지금 안 하면 처리 불가입니다. 바로 설치하세요."}
+{"id": "LLM-3080", "label": "high", "category": null, "preview": "S: [채용담당] 재택 업무 확정입니다. S: 자세한 안내는 오픈채팅으로 이동해서 진행합니다. 지금 링크로 들어오세요. S: 텔레그램으로 이동해 안내받으세요. S: 신분증 앞면 사진 + 계좌 확인이 필요합니다. S: 이 내용은 외부에 말하면 안 됩니다. 본인 확인이 끝날 때까지 비밀로 해주세요. R: 신분증을 왜요? S: 미제출 시 즉시 탈락 처리됩니다."}
+{"id": "LLM-3081", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3082", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/track R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3083", "label": "medium", "category": null, "preview": "S: [보안팀] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/pay R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3084", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/xyz R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3085", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/pay R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3086", "label": "medium", "category": null, "preview": "S: [고객센터] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/2fa S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3087", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/a1b2 R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3088", "label": "medium", "category": null, "preview": "S: [고객센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (1588-0000) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3089", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3090", "label": "medium", "category": null, "preview": "S: [고객센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (02-0001-0000) S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3091", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/track R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3092", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3093", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/a1b2 R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3094", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/xyz R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3095", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/2fa S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3096", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/a1b2 S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3097", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3098", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/pay R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3099", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/pay R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3100", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3101", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/xyz S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3102", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/track R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3103", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/track R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3104", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3105", "label": "medium", "category": null, "preview": "S: [상담센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (02-0002-0000) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3106", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/track R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3107", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/2fa R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3108", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/track R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3109", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/track R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3110", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/xyz R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3111", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3112", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/pay S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3113", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3114", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/pay R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3115", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/a1b2 R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3116", "label": "medium", "category": null, "preview": "S: [고객센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (1566-1234) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3117", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3118", "label": "medium", "category": null, "preview": "S: [보안팀] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/a1b2 S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3119", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/2fa R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3120", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/2fa R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3121", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/pay R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3122", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/pay R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3123", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/a1b2 R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3124", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/xyz R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3125", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/track R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3126", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/pay R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3127", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/a1b2 R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3128", "label": "medium", "category": null, "preview": "S: [보안팀] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/2fa R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3129", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/2fa R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3130", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/track R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3131", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3132", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/2fa R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3133", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/xyz R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3134", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/a1b2 S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3135", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/xyz R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3136", "label": "medium", "category": null, "preview": "S: [고객센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (1588-0000) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3137", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/pay R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3138", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/a1b2 R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3139", "label": "medium", "category": null, "preview": "S: [상담센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (02-0001-0000) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3140", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/pay R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3141", "label": "medium", "category": null, "preview": "S: [상담센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (02-0001-0000) R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3142", "label": "medium", "category": null, "preview": "S: [설문] 참여 감사 포인트 지급 대상입니다. S: 수령 확인: https://t.example/pay R: 어디서 받은 거죠? S: 원치 않으면 무시하셔도 됩니다."}
+{"id": "LLM-3143", "label": "medium", "category": null, "preview": "S: [보안팀] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/2fa R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3144", "label": "medium", "category": null, "preview": "S: [보안팀] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/pay R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3145", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/2fa R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3146", "label": "medium", "category": null, "preview": "S: [결제알림] 소액 결제가 완료되었습니다. S: 상세 확인: https://t.example/xyz R: 결제한 적이 없는데요. S: 오류일 수 있으니 확인만 부탁드립니다."}
+{"id": "LLM-3147", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/2fa R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3148", "label": "medium", "category": null, "preview": "S: [상담센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (1588-0000) S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3149", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/2fa R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3150", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/xyz R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3151", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3152", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/xyz R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3153", "label": "medium", "category": null, "preview": "S: [투자안내] 단기 수익 기회가 있습니다. S: 설명 링크: https://t.example/2fa R: 어디 업체예요? S: 관심 있으면 상담 진행해드릴게요."}
+{"id": "LLM-3154", "label": "medium", "category": null, "preview": "S: [알림] 다른 기기에서 로그인 시도가 감지되었습니다. S: 확인: https://t.example/2fa R: 제가 한 적 없어요. S: 본인 아닐 경우 비밀번호를 변경해 주세요."}
+{"id": "LLM-3155", "label": "medium", "category": null, "preview": "S: 이거 봤어? 링크 공유할게. S: https://t.example/pay R: 링크가 좀 수상한데 S: 그냥 공유한 거야. 불편하면 안 눌러도 돼."}
+{"id": "LLM-3156", "label": "medium", "category": null, "preview": "S: [고객센터] 문의하신 건 확인 중입니다. S: 본인 확인을 위해 연락 가능한 번호를 남겨주세요. (010-2000-3000) S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 제가 문의한 적이 없는데요. S: 오접수일 수 있습니다. 확인 후 종료하겠습니다."}
+{"id": "LLM-3157", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/track R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3158", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/pay R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3159", "label": "medium", "category": null, "preview": "S: [택배] 주소 확인이 필요합니다. S: 확인 링크: https://t.example/xyz R: 저는 주문한 게 없는데요. S: 잘못 접수된 경우도 있어 확인만 부탁드립니다."}
+{"id": "LLM-3160", "label": "medium", "category": null, "preview": "S: [고객센터] 본인확인 코드 입력 안내입니다. S: 아래 페이지에서 인증번호를 입력하세요. https://t.example/track S: 확인이 지연되면 일정이 자동 취소될 수 있습니다. R: 공식 맞나요? S: 공식 페이지에서만 입력해 주세요. (공유 요구는 아닙니다)"}
+{"id": "LLM-3161", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 418742 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3162", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3163", "label": "low", "category": null, "preview": "S: 오늘 회의 3시에 맞죠? R: 네 3시 맞아요. S: 회의실만 바뀌었어요."}
+{"id": "LLM-3164", "label": "low", "category": null, "preview": "S: 오늘 회의 3시에 맞죠? R: 네 3시 맞아요. S: 회의실만 바뀌었어요."}
+{"id": "LLM-3165", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다."}
+{"id": "LLM-3166", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다."}
+{"id": "LLM-3167", "label": "low", "category": null, "preview": "S: [은행] 이번 달 이자 지급 안내입니다. R: 확인했습니다. S: 자세한 내용은 앱에서 확인 가능합니다."}
+{"id": "LLM-3168", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다."}
+{"id": "LLM-3169", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3170", "label": "low", "category": null, "preview": "S: [은행] 이번 달 이자 지급 안내입니다. R: 확인했습니다. S: 자세한 내용은 앱에서 확인 가능합니다. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3171", "label": "low", "category": null, "preview": "S: [택배] 배송 완료되었습니다. R: 감사합니다. S: 문의는 고객센터로 부탁드립니다. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3172", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3173", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3174", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 543594 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3175", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3176", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3177", "label": "low", "category": null, "preview": "S: [택배] 배송 완료되었습니다. R: 감사합니다. S: 문의는 고객센터로 부탁드립니다. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3178", "label": "low", "category": null, "preview": "S: [택배] 배송 완료되었습니다. R: 감사합니다. S: 문의는 고객센터로 부탁드립니다."}
+{"id": "LLM-3179", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3180", "label": "low", "category": null, "preview": "S: 오늘 회의 3시에 맞죠? R: 네 3시 맞아요. S: 회의실만 바뀌었어요."}
+{"id": "LLM-3181", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3182", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3183", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3184", "label": "low", "category": null, "preview": "S: [택배] 배송 완료되었습니다. R: 감사합니다. S: 문의는 고객센터로 부탁드립니다."}
+{"id": "LLM-3185", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 255625 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3186", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3187", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3188", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 328407 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3189", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다."}
+{"id": "LLM-3190", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 877618 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3191", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3192", "label": "low", "category": null, "preview": "S: [은행] 이번 달 이자 지급 안내입니다. R: 확인했습니다. S: 자세한 내용은 앱에서 확인 가능합니다. S: 공식 앱/홈페이지에서만 확인해 주세요. (링크가 수상하면 입력하지 마세요)"}
+{"id": "LLM-3193", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3194", "label": "low", "category": null, "preview": "S: [은행] 이번 달 이자 지급 안내입니다. R: 확인했습니다. S: 자세한 내용은 앱에서 확인 가능합니다."}
+{"id": "LLM-3195", "label": "low", "category": null, "preview": "S: 내일 오전 10시 예약 확정되었습니다. R: 확인했습니다. S: 변경 필요 시 고객센터로 연락 주세요."}
+{"id": "LLM-3196", "label": "low", "category": null, "preview": "S: 오늘 회의 3시에 맞죠? R: 네 3시 맞아요. S: 회의실만 바뀌었어요."}
+{"id": "LLM-3197", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 954324 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3198", "label": "low", "category": null, "preview": "S: [고객센터] 문의하신 건 접수되었습니다. R: 네. S: 처리 결과는 순차 안내드리겠습니다."}
+{"id": "LLM-3199", "label": "low", "category": null, "preview": "S: [2단계 인증] 로그인 OTP는 397290 입니다. S: 타인에게 절대 공유하지 마세요. R: 네."}
+{"id": "LLM-3200", "label": "low", "category": null, "preview": "S: [공지] 시스템 점검: 02/12 02:00~04:00 R: 확인했습니다. S: 이용에 불편을 드려 죄송합니다."}

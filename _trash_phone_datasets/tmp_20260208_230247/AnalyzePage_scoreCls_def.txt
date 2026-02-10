@@ -1,0 +1,71 @@
+﻿   11: import { copyText } from "../utils/clipboard";
+   12: 
+   13: import type { SimIndexItem } from "../engine/similarity/simIndex";
+   14: import { loadSimIndexOnce } from "../engine/similarity/clientSimIndex";
+   15: 
+   16: type Props = {
+   17:     initial: AnalysisInput;
+   18:     onAnalyze: (input: AnalysisInput, result: AnalysisResult) => void;
+   19: };
+   20: 
+   21: function scoreCls(score: number): "good" | "warn" | "bad" {
+   22:     if (score >= 65) return "bad";
+   23:     if (score >= 35) return "warn";
+   24:     return "good";
+   25: }
+   26: 
+   27: function stageBadge(stage: StageId): { cls: "good" | "warn" | "bad"; label: string } {
+   28:     if (stage === "payment") return { cls: "bad", label: "PAYMENT" };
+   29:     if (stage === "install") return { cls: "warn", label: "INSTALL" };
+   30:     if (stage === "verify") return { cls: "warn", label: "VERIFY" };
+   31:     return { cls: "good", label: "INFO" };
+   32: }
+   33: 
+   34: function jumpByRange(textarea: HTMLTextAreaElement, start: number, end: number) {
+   35:     const hay = (textarea.value || "").replace(/\r\n/g, "\n");
+   36:     const s = Math.max(0, Math.min(start, hay.length));
+   37:     const e = Math.max(s, Math.min(end, hay.length));
+   38: 
+   39:     textarea.focus();
+   40:     textarea.setSelectionRange(s, e);
+   41: 
+   42:     const before = hay.slice(0, s);
+   43:     const line = before.split("\n").length - 1;
+   44:     const lh = parseFloat(getComputedStyle(textarea).lineHeight || "20") || 20;
+   45:     const target = Math.max(0, line * lh - textarea.clientHeight / 3);
+   46:     textarea.scrollTop = target;
+   47: }
+   48: 
+   49: // 턴 프리픽스/자동부착은 입력 텍스트를 변경하지 않고,
+   50: // splitThreadWithRanges / analyzeThread 옵션으로만 반영한다.
+   51: 
+   52: function getPrefilterScore(pf: any): number {
+   53:     const n =
+   54:         pf?.score ??
+   55:         pf?.prefilter?.score ??
+   56:         pf?.scoreTotal ??
+   57:         pf?.total ??
+   58:         pf?.riskScore ??
+   59:         pf?.prefilterScore ??
+   60:         0;
+   61:     const x = Number(n);
+   62:     return Number.isFinite(x) ? x : 0;
+   63: }
+   64: 
+   65: function pickPrefilterReasons(pf: any): string[] {
+   66:     const p = pf?.prefilter ? pf.prefilter : pf;
+   67: 
+   68:     const sigs = Array.isArray(p?.signals) ? p.signals : [];
+   69:     const combos = Array.isArray(p?.combos) ? p.combos : [];
+   70: 
+   71:     const all = [...sigs, ...combos]
+   72:         .filter(Boolean)
+   73:         .sort((a: any, b: any) => (Number(b?.points || 0) - Number(a?.points || 0)));
+   74: 
+   75:     const out: string[] = [];
+   76: 
+   77:     const clamp = (v: any, n: number) => {
+   78:         const s = String(v ?? "").trim();
+   79:         if (!s) return "";
+   80:         return s.length <= n ? s : s.slice(0, n - 1).trimEnd() + "…";
+   81:     };

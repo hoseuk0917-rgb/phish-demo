@@ -1,0 +1,21 @@
+pf_id	pf_label	n_pf	direct_hitId	direct_hitLabel	direct_signalId	direct_signalLabel	alias_hit	alias_stageTrigger	example_case	status
+pf_visit_place	특정 장소 방문/이동 유도	356	0	0	0	0	82	0	SC00001	OK
+pf_urgency	긴급/시간압박	287	0	0	0	0	287	0	SC00001	OK
+pf_account_verify	계정/계좌 확인·보안점검 유도	213	0	0	0	0	117	0	SC00002	OK
+pf_url_present	URL 포함	121	0	121	0	121	0	0	SC00002	OK
+pf_transfer	송금/결제 유도	97	0	0	0	0	97	0	SC00001	OK
+pf_threat	위협/불이익 압박	82	0	0	0	0	41	0	HN00003	OK
+pf_link_verbs	링크 클릭/접속 유도	60	0	0	0	0	60	0	SC00006	OK
+pf_messenger_profile	메신저/프로필 확인 맥락	44	0	0	0	0	44	0	SC00021	OK
+pf_job_hook	고수익/알바/부업 훅	43	0	0	0	0	43	0	SC00011	OK
+pf_benefit_hook	지원금/환급/대상자 조회 미끼	41	0	41	0	41	41	0	SC00006	OK
+pf_remote	원격/화면공유 유도	36	0	0	0	0	36	0	SC00015	OK
+pf_account_freeze	계좌/거래 정지·압류 위협	34	0	0	0	0	34	0	SC00021	OK
+pf_cash_pickup	현금 수거/퀵 전달 유도	32	0	0	0	0	32	32	HN00010	OK
+pf_benefit_link_mention	지원금/환급 + 링크/URL 언급	31	0	0	0	0	31	0	SC00006	OK
+pf_otp_demand	인증번호 전달/입력 요구	28	0	0	0	0	28	0	SC00008	OK
+pf_otp	인증번호/OTP 언급	28	0	0	0	0	28	0	SC00008	OK
+pf_url_bank_claim_nonofficial	은행 사칭 맥락 + 비공식 링크	25	0	0	0	0	25	0	SC00026	OK
+pf_pii	개인정보/신분증 요청	22	0	0	0	0	22	0	SC00028	OK
+pf_url_bank_typosquat	은행 도메인 유사(1~2글자 차이)	22	0	0	0	0	22	0	SC00039	OK
+pf_authority	기관/금융사 사칭 톤	11	0	0	0	0	11	0	SC00006	OK

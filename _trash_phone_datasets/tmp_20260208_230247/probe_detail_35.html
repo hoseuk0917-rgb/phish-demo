@@ -1,0 +1,160 @@
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경찰청 - 전기통신금융사기 통합신고</title>
+    <link rel="icon" type="image/png" href="/resource/img/favicon.png">
+    <style>
+        @font-face {
+            font-family: "Pretendard";
+            font-weight: 400;
+            font-display: swap;
+            src: local("Pretendard Regular"), url("/resource/fonts/Pretendard-Regular.woff2") format("woff2"), url("/resource/fonts/Pretendard-Regular.woff") format("woff");
+        }
+        @font-face {
+            font-family: "Pretendard";
+            font-weight: 700;
+            font-display: swap;
+            src: local("Pretendard Bold"), url("/resource/fonts/Pretendard-Bold.woff2") format("woff2"), url("/resource/fonts/Pretendard-Bold.woff") format("woff");
+        }
+
+        html, body, div, span, p, a {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border: none;
+            font-family: inherit;
+            padding: 0;
+        }
+
+
+        html, body {
+            font-size: 10px;
+            letter-spacing: -0.03%;
+        }
+        body {
+            font-family: 'Pretendard';
+            min-height: 100vh;
+        }
+        .error_page_outer {
+            align-items: center;
+            box-sizing: border-box;
+            display: flex;
+            height: 100%;
+            justify-content: center;
+            min-height: inherit;
+            padding: 3rem 0;
+        }
+
+        .error_page_wrap {
+            background: url(./ico_error.svg) center top no-repeat;
+            box-sizing: border-box;
+            padding: 98px 0 0;
+            text-align: center;
+        }
+
+        .error_tit {
+            color: #111;
+            font-size: 4.0rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+        }
+
+        .error_mid_txt {
+            color: #111;
+            font-size: 2.8rem;
+            font-weight: 400;
+            line-height: 1.4;
+            word-break: keep-all;
+        }
+
+        .error_mid_txt.col_blue {
+            color: #0085FF;
+        }
+
+        .mgb40 {
+            margin-bottom: 4.0rem;
+        }
+
+        .error_desc_txt {
+            color: #333;
+            font-size: 1.6rem;
+            font-weight: 400;
+            line-height: 1.8;
+            word-break: keep-all;
+        }
+
+        .error_btn {
+            align-items: center;
+            background: #fff;
+            border: 1px solid #DBDBDB;
+            border-radius: 30px;
+            color: #555;
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 16px;
+            font-weight: 400;
+            height: 60px;
+            justify-content: center;
+            margin-top: 10rem;
+            text-decoration: none;
+            width: 240px;
+        }
+
+        .error_btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        @media (max-width:1480px){
+            html, body {
+                font-size: 9px;
+            }
+
+            .error_page_outer { 
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width:768px){
+            html, body {
+                font-size: 8px;
+            }
+
+            .error_page_outer { 
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error_page_outer">
+        <div class="error_page_wrap">
+            <p class="error_tit">죄송합니다</p>
+
+            <p class="error_mid_txt mgb40">요청하신 페이지를 찾을 수 없습니다.</p>
+
+            <p class="error_mid_txt col_blue mgb40">찾으시는 웹페이지의 이름이 바뀌었거나 현재 사용할 수 없습니다.</p>
+
+            <p class="error_desc_txt">입력하신 페이지 주소가 정확한지 다시 한번 확인해 보시고 <br>동일한 문제가 지속적으로 발생하는 경우에는 고객센터로 문의 부탁드리겠습니다.</p>
+
+            <a href="/" class="error_btn">홈으로 가기</a>
+        </div>
+    </div>
+</body>

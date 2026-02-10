@@ -1,0 +1,201 @@
+﻿ 1142:         const handoffUrl = urlStr || "https://example.invalid/";
+ 1143:         const pressurePool = [
+ 1144:             "긴급 건입니다. 지금 바로 처리해 주세요.",
+ 1145:             "오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.",
+ 1146:             "시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.",
+ 1147:             ...(canHandoff ? [`확인 링크 보내드립니다: ${handoffUrl}`] : []),
+ 1148:         ];
+ 1149: 
+ 1150:         turns.push({
+ 1151:             role: "S",
+ 1152:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, pressurePool), tone), noiseLevel),
+ 1153:         });
+ 1154:     }
+ 1155: 
+ 1156:     const canSpikeLate = chance(rng, 0.55) && capLen >= 8;
+ 1157:     if (canSpikeLate) {
+ 1158:         const remainingForBuild = Math.max(0, roomForOptional - turns.length);
+ 1159:         const buildN = clampInt(Math.floor(rng() * 5) + 2, 0, Math.min(6, remainingForBuild));
+ 1160:         for (let i = 0; i < buildN; i++) {
+ 1161:             turns.push({
+ 1162:                 role: i % 2 === 0 ? "S" : "R",
+ 1163:                 text:
+ 1164:                     i % 2 === 0
+ 1165:                         ? applyNoiseKo(rng, varyEnding(rng, pick(rng, ["절차 안내입니다.", "확인이 필요합니다.", "기한이 있습니다."]), tone), noiseLevel)
+ 1166:                         : pick(rng, ["지금 해야 하나요?", "어떻게 하나요?", "왜요?"]),
+ 1167:             });
+ 1168:             if (turns.length >= roomForOptional) break;
+ 1169:         }
+ 1170:     }
+ 1171: 
+ 1172:     // ✅ 압박 → 앵커 → 후속 순서로 삽입
+ 1173:     for (const line of pressureLines) turns.push({ role: "S", text: line });
+ 1174:     for (const line of anchorLines) turns.push({ role: "S", text: line });
+ 1175:     for (const line of followLines) turns.push({ role: "S", text: line });
+ 1176: 
+ 1177:     while (turns.length < capLen && chance(rng, 0.35)) {
+ 1178:         turns.push({ role: "R", text: pick(rng, ["확인했습니다.", "이상한데요.", "진행 안 하겠습니다."]) });
+ 1179:         if (turns.length >= capLen) break;
+ 1180: 
+ 1181:         const canHandoff = !!urlStr && (vector === "url" || vector === "qr");
+ 1182:         const handoffUrl = urlStr || "";
+ 1183:         const followPool = [
+ 1184:             "추가 진행을 유도하는 내용이 포함됩니다.",
+ 1185:             "급하게 진행하라고 재촉하는 내용이 포함됩니다.",
+ 1186:             "다른 방식으로 확인하라고 안내하는 내용이 포함됩니다.",
+ 1187:             ...(canHandoff ? [`다른 채널로 안내하겠다며 링크를 전달하는 내용이 포함됩니다: ${handoffUrl}`] : []),
+ 1188:         ];
+ 1189: 
+ 1190:         turns.push({
+ 1191:             role: "S",
+ 1192:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, followPool), tone), noiseLevel),
+ 1193:         });
+ 1194: 
+ 1195:         if (turns.length >= capLen) break;
+ 1196:     }
+ 1197: 
+ 1198:     return turns.slice(0, capLen);
+ 1199: }
+ 1200: 
+ 1201: // ---------- 밸리데이터 ----------
+ 1202: function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {
+ 1203:     const errs: string[] = [];
+ 1204: 
+ 1205:     const urlCount = s.url?.count ?? 0;
+ 1206:     if (urlCount > 1) errs.push("url_count>1");
+ 1207: 
+ 1208:     if (!isBenign && (!s.anchors || s.anchors.length === 0)) errs.push("malicious_missing_anchor");
+ 1209: 
+ 1210:     const sTurns = s.turns.filter((t) => t.role === "S");
+ 1211:     if (sTurns.length < 2) errs.push("missing_pretext_or_cred");
+ 1212: 
+ 1213:     // ✅ 전화/메시지 타겟: 정상/비정상 모두 thread(특히 S)에 전화번호가 반드시 있어야 함
+ 1214:     const hasPhone = (x: string) => {
+ 1215:         const pat =
+ 1216:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/;
+ 1217:         return pat.test(String(x || ""));
+ 1218:     };
+ 1219:     const sTextAll = sTurns.map((t) => String((t as any)?.text ?? "")).join("\n");
+ 1220:     const callerDisp = String((s as any)?.caller?.caller_display ?? "");
+ 1221:     if (!hasPhone(callerDisp) && !hasPhone(sTextAll)) errs.push("missing_phone");
+ 1222: 
+ 1223:     if (isBenign) {
+ 1224:         const bad = s.anchors.some((a) =>
+ 1225:             ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)
+ 1226:         );
+ 1227:         if (bad) errs.push("benign_has_danger_anchor");
+ 1228:     }
+ 1229: 
+ 1230:     if (!isBenign && s.caller.is_whitelisted) {
+ 1231:         if (s.expected.risk === "low") errs.push("whitelisted_malicious_should_not_be_low");
+ 1232:     }
+ 1233: 
+ 1234:     if (s.url && s.vector !== "url") errs.push("url_vector_mismatch");
+ 1235:     if (s.qr && s.vector !== "qr") errs.push("qr_vector_mismatch");
+ 1236: 
+ 1237:     return errs;
+ 1238: }
+ 1239: 
+ 1240: // ---------- 출력 스키마 어댑터 ----------
+ 1241: function turnsToThread(
+ 1242:     turns: { role: "S" | "R"; text: string }[],
+ 1243:     callerDisplay?: string
+ 1244: ) {
+ 1245:     const phoneLike = (s: string) => {
+ 1246:         const t = String(s || "");
+ 1247:         return (
+ 1248:             /발신번호표시제한/.test(t) ||
+ 1249:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:70|50)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/.test(t)
+ 1250:         );
+ 1251:     };
+ 1252: 
+ 1253:     const normRole = (raw: any, idx: number): "S" | "R" => {
+ 1254:         if (raw === "S" || raw === "sender") return "S";
+ 1255:         if (raw === "R" || raw === "receiver") return "R";
+ 1256:         return idx === 0 ? "S" : "R";
+ 1257:     };
+ 1258: 
+ 1259:     const lines = (turns || []).map((t: any, idx: number) => {
+ 1260:         const role = normRole(t?.role, idx);
+ 1261:         const text = String(t?.text ?? "").trim();
+ 1262:         return `${role}: ${text}`;
+ 1263:     });
+ 1264: 
+ 1265:     // ✅ callerDisplay가 있으면 "첫 S 라인"에만 (caller) 주입
+ 1266:     if (callerDisplay && String(callerDisplay).trim()) {
+ 1267:         const cd = String(callerDisplay).trim();
+ 1268:         let si = lines.findIndex((x) => /^S:\s*/.test(x));
+ 1269:         if (si < 0) {
+ 1270:             // S 라인이 아예 없으면 S 라인 하나 만들어서 앞에 둠
+ 1271:             lines.unshift(`S: (${cd})`);
+ 1272:             si = 0;
+ 1273:         }
+ 1274:         if (!phoneLike(lines[si])) {
+ 1275:             lines[si] = lines[si].replace(/^S:\s*/, `S: (${cd}) `);
+ 1276:         }
+ 1277:     }
+ 1278: 
+ 1279:     return lines.join("\n");
+ 1280: }
+ 1281: 
+ 1282: function lengthBucketFromTurns(n: number) {
+ 1283:     if (n <= 4) return "S";
+ 1284:     if (n <= 8) return "M";
+ 1285:     if (n <= 12) return "L";
+ 1286:     return "XL";
+ 1287: }
+ 1288: 
+ 1289: function toScenarioOutput(s: ScenarioInternal): AnyObj {
+ 1290:     const thread = turnsToThread(s.turns, (s as any)?.caller?.caller_display);
+ 1291: 
+ 1292:     const senderText =
+ 1293:         s.turns
+ 1294:             ?.filter((t) => t && (t as any).role === "S")
+ 1295:             ?.map((t) => String((t as any).text ?? ""))
+ 1296:             ?.join("\n")
+ 1297:             ?.trim() || "";
+ 1298: 
+ 1299:     // S 텍스트가 없으면 thread 전체로 폴백
+ 1300:     const effBasis = (senderText || "").trim() || String(thread || "");
+ 1301:     const t = String(effBasis || "");
+ 1302:     const t2 = t.replace(/\s+/g, "");
+ 1303: 
+ 1304:     const allAnchors: Anchor[] = Array.isArray((s as any).anchors) ? (s as any).anchors : [];
+ 1305:     let effAnchors = anchorsEffFromText(allAnchors, effBasis);
+ 1306: 
+ 1307:     // ---- 엔진과 최대한 비슷한 cue들(특히 payment/install 방어) ----
+ 1308:     const hasAmountKRW = (x: string) => /(\d{1,3}(?:,\d{3})+|\d+)\s*(원|만원)/.test(String(x || ""));
+ 1309: 
+ 1310:     const urlMatches = t.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [];
+ 1311:     const urlCount = urlMatches.length;
+ 1312:     const linkHits = Math.min(urlCount, 2);
+ 1313: 
+ 1314:     const qrCue = /(qr|큐알|QR\s*코드|스캔)/i.test(t);
+ 1315: 
+ 1316:     const otpCue =
+ 1317:         /(otp|인증번호|오티피|보안\s*코드|보안코드|확인\s*코드|확인코드|ars|2\s*단계\s*인증|2fa|6\s*자리|6자리)/i.test(t);
+ 1318: 
+ 1319:     const installCue =
+ 1320:         /(teamviewer|anydesk|quicksupport|원격\s*지원|원격|remote|지원앱|apk|설치|install|다운로드|뷰어|viewer|플러그인|plugin)/i.test(t);
+ 1321: 
+ 1322:     const credCue =
+ 1323:         /(아이디|id\b|비밀번호|password|로그인\s*정보|계정\s*정보)/i.test(t) || /(아이디|비밀번호|로그인정보|계정정보)/i.test(t2);
+ 1324: 
+ 1325:     const travelCue =
+ 1326:         /(해외|출국|공항|현지\s*근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t) ||
+ 1327:         /(해외|출국|공항|현지근무|고수익|채용|항공권|여권|비자|동남아)/i.test(t2);
+ 1328: 
+ 1329:     const piiStrongCue =
+ 1330:         /(주민등록|주민번호|신분증|여권|계좌\s*사본|카드번호)/i.test(t) || /(주민등록|주민번호|신분증|여권|계좌사본|카드번호)/i.test(t2);
+ 1331: 
+ 1332:     const piiCue =
+ 1333:         piiStrongCue ||
+ 1334:         /(개인정보|사진\s*업로드|업로드|제출)/i.test(t) ||
+ 1335:         /(개인정보|사진업로드|업로드|제출)/i.test(t2);
+ 1336: 
+ 1337:     const piiRequestCue =
+ 1338:         /(이름|성함|연락처|전화번호|휴대폰|생년월일|주민등록번호|주민번호|주소|우편번호|계좌번호|카드번호|비밀번호|패스워드|암호|신분증|여권)/i.test(t) &&
+ 1339:         /(알려|말해|남겨|적어|입력|작성|보내|제출|올려|전송|사진|캡처)/i.test(t);
+ 1340: 
+ 1341:     // scoreThread.ts의 paymentAlertOnly 필터와 동일 계열(결제 알림/설정 변경은 payment로 끌지 않음)
+ 1342:     const paymentAlertOnly =

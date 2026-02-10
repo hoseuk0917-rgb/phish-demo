@@ -1,0 +1,81 @@
+﻿ 1511:             // skip bad line
+ 1512:         }
+ 1513:     }
+ 1514:     return out;
+ 1515: }
+ 1516: 
+ 1517: async function writeJsonl(filePath: string, rows: AnyObj[]) {
+ 1518:     const dir = path.dirname(filePath);
+ 1519:     await fs.mkdir(dir, { recursive: true });
+ 1520:     const body = rows.map((r) => JSON.stringify(r)).join("\n") + "\n";
+ 1521:     await fs.writeFile(filePath, body, "utf8");
+ 1522: }
+ 1523: 
+ 1524: async function main() {
+ 1525:     const args = parseArgs(process.argv);
+ 1526:     ANCHOR_STYLE = args.anchor_style || "direct";
+ 1527:     const rng = mulberry32(args.seed);
+ 1528: 
+ 1529:     const stubs = await readJsonl(args.stubs);
+ 1530:     if (stubs.length === 0) throw new Error(`No stubs read from ${args.stubs}`);
+ 1531: 
+ 1532:     if (args.registry_out) {
+ 1533:         await writeJsonl(args.registry_out, buildCallerRegistry());
+ 1534:     }
+ 1535: 
+ 1536:     const outRows: AnyObj[] = [];
+ 1537:     let produced = 0;
+ 1538: 
+ 1539:     for (let i = 0; i < args.count; i++) {
+ 1540:         const stub = stubs[i % stubs.length];
+ 1541:         const baseType = inferCaseTypeFromStub(rng, stub);
+ 1542:         const stubFeat = deriveStubFeatures(stub);
+ 1543:         const stubKeywords = featuresToKeywords(stubFeat);
+ 1544: 
+ 1545:         const isBenign = chance(rng, args.benign_ratio);
+ 1546:         const isHardNeg = isBenign && chance(rng, args.hardneg_ratio);
+ 1547: 
+ 1548:         // ✅ benign은 "대화 기본문장"에서 위험 cue(원격/출국/ATM 등)가 나오지 않도록
+ 1549:         //    안전 케이스 타입으로 강제 (validator: benign_has_danger_anchor 방지)
+ 1550:         const benignCasePool = ["delivery_link", "fine_refund_link", "loan_fee"] as const;
+ 1551:         const caseType: CaseType = isBenign ? pick(rng, benignCasePool) : baseType;
+ 1552: 
+ 1553:         // ✅ benign에서는 키워드 주입으로 위험 cue가 섞이지 않게(대화 생성용만)
+ 1554:         const stubKeywordsConv = isBenign ? ([] as string[]) : stubKeywords;
+ 1555: 
+ 1556:         // 길이 다양화: “핵심 유도 방식”이 있으면 더 길게(맥락형) 생성
+ 1557:         let lenProfile = pick(rng, ["short", "mid", "long"] as const);
+ 1558:         if (stubFeat.hasRemote || stubFeat.hasTransfer || stubFeat.hasBlackmail) lenProfile = "long";
+ 1559:         else if (stubFeat.hasOtp || stubFeat.hasPII || stubFeat.hasCred) lenProfile = chance(rng, 0.65) ? "mid" : lenProfile;
+ 1560: 
+ 1561:         const minLen = isBenign ? 1 : (lenProfile === "short" ? 4 : lenProfile === "mid" ? 7 : 13);
+ 1562:         const maxLenCap = lenProfile === "short" ? 6 : lenProfile === "mid" ? 12 : 20;
+ 1563:         const maxLen = clampInt(Math.floor(rng() * (maxLenCap - minLen + 1)) + minLen, minLen, maxLenCap);
+ 1564: 
+ 1565:         // 오타/어미/줄임말 데모를 위해 noise를 약간 더 적극적으로
+ 1566:         const noiseLevel: "none" | "low" | "mid" | "high" =
+ 1567:             ANCHOR_STYLE === "direct"
+ 1568:                 ? "none"
+ 1569:                 : chance(rng, 0.18) ? "none" : chance(rng, 0.45) ? "low" : chance(rng, 0.75) ? "mid" : "high";
+ 1570: 
+ 1571:         let attempt = 0;
+ 1572:         let bestErrs: string[] = [];
+ 1573: 
+ 1574:         while (attempt < args.max_retries) {
+ 1575:             attempt++;
+ 1576: 
+ 1577:             // ✅ benign은 should_trigger를 비워서 트리거 정합 깨짐 방지
+ 1578:             const impersonation = isBenign ? undefined : impersonationFor(caseType);
+ 1579:             const pressures = isBenign ? [] : pressuresFor(rng, caseType);
+ 1580: 
+ 1581:             // 계획(생성 힌트) 앵커: 대화 생성에만 사용
+ 1582:             let anchorsPlanned = isBenign ? ([] as Anchor[]) : requiredAnchors(caseType).slice();
+ 1583: 
+ 1584:             // 스텁 기반 “추가 유도” 보강(핵심수법/유도방식 반영): 과도하게 늘리지 않고 0~1개만 가끔 추가
+ 1585:             if (!isBenign) {
+ 1586:                 const extra: Anchor[] = [];
+ 1587:                 if (stubFeat.hasPII) extra.push("A_PII");
+ 1588:                 if (stubFeat.hasCred) extra.push("A_CRED");
+ 1589:                 if (stubFeat.hasGoBank) extra.push("A_GO_BANK");
+ 1590: 
+ 1591:                 const filtered = extra.filter((x) => ["A_PII", "A_CRED", "A_GO_BANK"].includes(x));

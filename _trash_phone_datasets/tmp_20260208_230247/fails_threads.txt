@@ -1,0 +1,205 @@
+﻿==== SC00002 ====
+category=bank_install
+expected={"riskLevel":"high","score_min":45,"stagePeak":"install","triggered":true}
+should_trigger=["act_install","act_remote","imp_bank","press_urgent"]
+thread:
+S: [발신 070-9094-9110] OO카드 보안 점검 안내입니다.
+R: 네.
+S: 원격 지원 절차가 필요해 주세요.
+S: 긴급 안내입니다. 지금 바로 처리해야 합니다.
+S: 원격지원 앱(TeamViewer/AnyDesk) 설치해 주세요 (remote).
+
+==== SC00004 ====
+category=delivery_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","imp_delivery","req_credentials","url_homoglyph","vector_url"]
+thread:
+S: [발신 070-2230-2959] OO택배 안내입니다.
+R: 네.
+S: 배송지/보관 관련 확인이 필요부탁드립니다.
+S: 아래 링크 확인해 주세요: https://track-parceli.nvalid/addr/confirm (유사치환 homoglyph)
+
+==== SC00006 ====
+category=fine_refund_link
+expected={"riskLevel":"medium","score_min":25,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","act_transfer","imp_gov","req_credentials","vector_url"]
+thread:
+S: [발신 070-2359-4887] 국세청 안내이에요.
+R: 네.
+S: 미납/환급 관련 확인이 필요해요.
+R: 대표번호로 확인하고 다시 연락드리겠습니다.
+S: 확인 링크 보내드립니다: https://tax-refund.invalid/pay/check.
+S: 확인이 필요부탁드립니다.
+R: 왜요?
+S: 절차 안내입니다.
+R: 지금 해야 하나요?
+S: 절차 안내입니다.
+R: 왜요?
+S: 아래 링크 확인해 주세요: https://tax-refund.invalid/pay/check
+
+==== SC00007 ====
+category=job_travel
+expected={"riskLevel":"high","score_min":45,"stagePeak":"info","triggered":true}
+should_trigger=["job_lure","press_urgent"]
+thread:
+S: [발신 010-1024-5777] 해외 고수익 채용 안내입니다.
+R: 무슨 내용인가요?
+S: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요해요.
+R: 대표번호로 확인하고 다시 연락드리겠습니다.
+S: 오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.
+S: 절차 안내입니다.
+R: 왜요?
+S: 출국 가능하시면 공항 쪽으로 이동해 주세요.
+R: 진행 안 하겠습니다.
+S: 급하게 진행하라고 재촉하는 내용이 포함됩니다.
+R: 진행 안 하겠습니다.
+S: 추가 진행을 유도하는 내용이 포함됩니다.
+R: 진행 안 하겠습니다.
+S: 급하게 진행하라고 재촉하는 내용이 포함됩니다.
+
+==== SC00019 ====
+category=job_travel
+expected={"riskLevel":"high","score_min":45,"stagePeak":"info","triggered":true}
+should_trigger="job_lure"
+thread:
+S: [발신 070-9150-6745] 해외 고수익 채용 안내임.
+R: 확인해볼게요.
+S: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요합니다.
+S: 출국 가능하시면 공항 쪽으로 이동해 주세요.
+R: 확인했습니다.
+
+==== HN00020 ====
+category=fine_refund_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":false}
+should_trigger=
+thread:
+S: [발신 02-0000-1000] 기관 안내이에요.
+R: 확인해볼게요.
+S: 미납/환급 관련 확인이 필요부탁드립니다.
+S: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전부탁드립니다.
+S: 필요하면 대표번호로 직접 확인하는 방식이 안전합니다.
+
+==== SC00023 ====
+category=job_travel
+expected={"riskLevel":"high","score_min":45,"stagePeak":"info","triggered":true}
+should_trigger=["job_lure","press_urgent"]
+thread:
+S: [발신 070-4566-4107] 해외 고수익 채용 안내입니다.
+R: 무슨 내용인가요?
+S: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요해요.
+R: 왜 그걸 확인해야 하나요?.
+S: 오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.
+S: 확인이 필요합니다.
+R: 지금 해야 하나요?
+S: 절차 안내입니다.
+R: 왜요?
+S: 기한이 있습니다.
+S: 출국 가능하시면 공항 쪽으로 이동해 주세요.
+
+==== SC00027 ====
+category=delivery_link
+expected={"riskLevel":"medium","score_min":25,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","imp_delivery","press_urgent","req_credentials","url_homoglyph","vector_url"]
+thread:
+S: [발신 010-7582-0899] OO택배 안내입니다.
+R: 네.
+S: 배송지/보관 관련 확인이 필요해 주세요.
+S: 절차 안내이에요.
+R: 왜요?
+S: 긴급 안내입니다. 지금 바로 처리해야 해 주세요.
+S: 아래 링크 확인해 주세요: https://track-parcel.invaalid/pickup/check (유사치환 homoglyph)
+
+==== SC00028 ====
+category=delivery_link
+expected={"riskLevel":"medium","score_min":25,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","act_shortlink","imp_delivery","press_urgent","req_credentials","vector_url"]
+thread:
+S: [발신 070-2065-6650] 배송업체 안내입니다.
+R: 확인해볼게요.
+S: 배송지/보관 관련 확인이 필요합니다.
+S: 긴급 안내임. 지금 바로 처리해야 합니다.
+S: 아래 링크 확인해 주세요: https://t.invalid/hy7 (단축주소 short)
+
+==== HN00032 ====
+category=loan_fee
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":false}
+should_trigger=
+thread:
+S: [발신 044-000-0000] 기관 심사 안내입니다.
+R: 확인해볼게요.
+S: 절차 진행을 위해 확인이 필요합니다.
+R: 지금은 진행하지 않겠습니다.
+S: 시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.
+S: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.
+S: 필요하면 대표번호로 직접 확인하는 방식이 안전합니다.
+
+==== SC00036 ====
+category=delivery_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","imp_delivery","req_credentials","url_homoglyph","vector_url"]
+thread:
+S: [발신 010-5697-7898] 배송업체 안내입니다.
+R: 네.
+S: 배송지/보관 관련 확인이 필요해요.
+S: 절차 안내입니다.
+R: 왜요?
+S: 아래 링크 확인해 주세요: https://traack-parcel.invalid/pickup/check (유사치환 homoglyph)
+
+==== SC00037 ====
+category=bank_install
+expected={"riskLevel":"high","score_min":45,"stagePeak":"install","triggered":true}
+should_trigger=["act_install","act_remote","imp_bank","press_urgent"]
+thread:
+S: [발신 010-5878-8672] OO카드 보안 점검 안내입니다.
+R: 무슨 내용인가요?
+S: 원격 지원 절차가 필요해 주세요.
+S: 긴급 안내입니다. 지금 바로 처리해야 해 주세요.
+S: 원격지원 앱(TeamViewer/AnyDesk) 설치해 주세요 (remote).
+
+==== BN00038 ====
+category=fine_refund_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":false}
+should_trigger=
+thread:
+S: [발신 044-000-0000] 기관 안내입니다.
+R: 무슨 내용인가요?
+S: 미납/환급 관련 확인이 필요부탁드립니다.
+S: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전해 주세요.
+S: 필요하면 대표번호로 직접 확인하는 방식이 안전해 주세요.
+
+==== HN00041 ====
+category=fine_refund_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":false}
+should_trigger=
+thread:
+S: [발신 02-0000-0000] 기관 안내입니다.
+R: 확인해볼게요.
+S: 미납/환급 관련 확인이 필요해 주세요.
+S: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전부탁드립니다.
+S: 필요하면 대표번호로 직접 확인하는 방식이 안전부탁드립니다.
+
+==== BN00048 ====
+category=fine_refund_link
+expected={"riskLevel":"low","score_min":0,"stagePeak":"info","triggered":false}
+should_trigger=
+thread:
+S: [발신 02-0000-1000] 기관 안내이에요.
+R: 무슨 내용인가요?
+S: 미납/환급 관련 확인이 필요부탁드립니다.
+S: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전해 주세요.
+S: 필요하면 대표번호로 직접 확인하는 방식이 안전해 주세요.
+
+==== SC00049 ====
+category=fine_refund_link
+expected={"riskLevel":"medium","score_min":25,"stagePeak":"info","triggered":true}
+should_trigger=["act_link","imp_gov","press_urgent","req_credentials","url_typo","vector_url"]
+thread:
+S: [발신 070-7559-1071] 행정기관 안내입니다.
+R: 무슨 내용인가요?
+S: 미납/환급 관련 확인이 필요합니다.
+R: 내용이 이상한데요. 제가 직접 확인할게요.
+S: 긴급 건입니다. 지금 바로 처리해 주세요.
+S: 아래 링크 확인해 주세요: https://tax-refund.invlaid/pay/check (오타/유사문자 typo)
+R: 진행 안 하겠습니다.
+S: 급하게 진행하라고 재촉하는 내용이 포함됩니다.
+

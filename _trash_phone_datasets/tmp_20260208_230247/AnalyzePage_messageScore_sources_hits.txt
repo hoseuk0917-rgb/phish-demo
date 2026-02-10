@@ -1,0 +1,16 @@
+﻿@{LineNumber=4; Line=import { splitThreadWithRanges } from "../engine/extract/splitThread";}
+@{LineNumber=50; Line=// splitThreadWithRanges / analyzeThread 옵션으로만 반영한다.}
+@{LineNumber=381; Line=    const ranges = useMemo(() => splitThreadWithRanges(displayText, splitOpts), [displayText, splitOpts]);}
+@{LineNumber=642; Line=        return [...preview.messageSummaries].sort((a, b) => b.score - a.score).slice(0, 6);}
+@{LineNumber=647; Line=        return preview.messageSummaries.find((m) => m.index === selectedBlock) || null;}
+@{LineNumber=705; Line=                const arr = Array.isArray(res?.messageSummaries) ? res.messageSummaries : [];}
+@{LineNumber=728; Line=                    lines.push(`BLK ${m.index} · ${m.score}/100 · ${String(m.stage).toUpperCase()}`);}
+@{LineNumber=1041; Line=        // per-block (preview messageSummaries is already based on analyzed input; keep it S-only stable)}
+@{LineNumber=1045; Line=        const ms = Array.isArray((preview as any)?.messageSummaries) ? (preview as any).messageSummaries : [];}
+@{LineNumber=2988; Line=                                if (preview && Array.isArray(preview.messageSummaries)) {}
+@{LineNumber=2993; Line=                                        const mm = preview.messageSummaries.find((x) => x.index === idx);}
+@{LineNumber=3025; Line=                                            className={`click-row preview-block ${scoreCls(m.score)}`}}
+@{LineNumber=3032; Line=                                                    <span className={`badge ${scoreCls(m.score)}`}>}
+@{LineNumber=3033; Line=                                                        BLK {m.index} · {m.score}/100}
+@{LineNumber=3074; Line=                                <span className={`badge ${scoreCls(selected.score)}`}>}
+@{LineNumber=3075; Line=                                    BLK {selected.index} · {selected.score}/100}

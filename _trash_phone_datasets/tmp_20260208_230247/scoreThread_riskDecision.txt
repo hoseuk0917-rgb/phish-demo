@@ -1,0 +1,256 @@
+﻿    1: // src/engine/scoring/scoreThread.ts
+    2: import type { CallChecks, SignalSummary, StageId } from "../../types/analysis";
+    3: import { KEYWORD_RULES } from "../rules/keywords";
+    4: import { PATTERN_RULES } from "../rules/patterns";
+    5: import { WEIGHTS } from "../rules/weights";
+    6: import { scoreMessage, type Hit } from "./scoreMessage";
+    7: import { toRiskLevel } from "./escalation";
+    8: 
+    9: type ActorHint = "demand" | "comply" | "neutral";
+   10: type RiskLevel = ReturnType<typeof toRiskLevel>;
+   11: 
+   12: export type ScoreThreadContextMode = "auto" | "rolling" | "sticky";
+   13: 
+   14: /**
+   15:  * - auto:
+   16:  *   - 강한 행동요구가 있으면: 해당 지점 이전 backtrack + 이후 유지 (단, maxStickyMessages 캡)
+   17:  *   - 강한 행동요구가 없으면: 최근 maxMessages + (타임스탬프 있으면 maxDays 내만)
+   18:  * - rolling: 최근 maxMessages만
+   19:  * - sticky: 입력 messages 그대로 쓰되 maxStickyMessages 캡(안전장치)
+   20:  */
+   21: export type ScoreThreadContextOptions = {
+   22:   mode?: ScoreThreadContextMode;
+   23:   maxMessages?: number; // auto/rolling 기본 20
+   24:   maxStickyMessages?: number; // sticky/auto-강행동 기본 160
+   25:   backtrack?: number; // 강행동 발견 시 이전 문맥 포함 수 (기본 4)
+   26:   maxDays?: number; // 타임스탬프 있는 경우 auto에서만 적용 (기본 3)
+   27: };
+   28: 
+   29: export type ScoreThreadOptions = {
+   30:   weights?: Partial<typeof WEIGHTS>;
+   31:   context?: ScoreThreadContextOptions;
+   32: };
+   33: 
+   34: export type ScoreThreadResult = {
+   35:   scoreTotal: number;
+   36:   riskLevel: RiskLevel;
+   37:   stagePeak: StageId;
+   38:   stageTriggers: string[];
+   39: 
+   40:   hits: Hit[];
+   41:   signals: SignalSummary[];
+   42: 
+   43:   messageSummaries: Array<{
+   44:     index: number; // 원본 index(1-based)
+   45:     text: string;
+   46:     header?: string;
+   47:     speakerLabel?: string;
+   48:     content?: string;
+   49:     actorHint?: ActorHint;
+   50:     role?: "S" | "R" | "U";
+   51: 
+   52:     preview: string;
+   53:     score: number;
+   54:     urls: string[];
+   55:     stage: StageId;
+   56:     stageTriggers: string[];
+   57:     topRules: { label: string; stage: StageId; weight: number }[];
+   58:     includeInThreat: boolean;
+   59:   }>;
+   60: 
+   61:   context: {
+   62:     mode: ScoreThreadContextMode;
+   63:     kept: number;
+   64:     dropped: number;
+   65:     reason: string;
+   66:   };
+   67: };
+   68: 
+   69: const STAGE_RANK: Record<StageId, number> = {
+   70:   info: 0,
+   71:   verify: 1,
+   72:   install: 2,
+   73:   payment: 3,
+   74: };
+   75: 
+   76: function maxStage(a: StageId, b: StageId): StageId {
+   77:   return STAGE_RANK[a] >= STAGE_RANK[b] ? a : b;
+   78: }
+   79: 
+   80: /** URL 추출: 뒤쪽 구두점/괄호/따옴표/… 제거 */
+   81: function extractUrls(text: string): string[] {
+   82:   const t = String(text || "");
+   83:   const m = t.match(/https?:\/\/[^\s]+/gi) || [];
+   84:   const cleaned = m
+   85:     .map((x) => String(x).trim())
+   86:     .map((x) => x.replace(/[)\]}>"'`]+$/g, ""))
+   87:     .map((x) => x.replace(/[.,!?;:]+$/g, ""))
+   88:     .map((x) => x.replace(/…+$/g, ""))
+   89:     .map((x) => x.trim())
+   90:     .filter(Boolean);
+   91: 
+   92:   const uniq = Array.from(new Set(cleaned));
+   93:   return uniq.slice(0, 20);
+   94: }
+   95: 
+   96: function safeParseUrl(u: string): URL | null {
+   97:   try {
+   98:     return new URL(u);
+   99:   } catch {
+  100:     return null;
+  101:   }
+  102: }
+  103: 
+  104: function getHostsFromText(text: string): string[] {
+  105:   const urls = extractUrls(text);
+  106:   const hosts: string[] = [];
+  107:   for (const u of urls) {
+  108:     const p = safeParseUrl(u);
+  109:     if (!p) continue;
+  110:     const h = (p.hostname || "").toLowerCase();
+  111:     if (h) hosts.push(h);
+  112:   }
+  113:   return Array.from(new Set(hosts)).slice(0, 20);
+  114: }
+  115: 
+  116: const SUSPICIOUS_TLDS = new Set([
+  117:   "xyz",
+  118:   "top",
+  119:   "shop",
+  120:   "click",
+  121:   "icu",
+  122:   "info",
+  123:   "work",
+  124:   "live",
+  125:   "loan",
+  126:   "support",
+  127:   "monster",
+  128:   "buzz",
+  129:   "cyou",
+  130:   "cfd",
+  131:   "sbs",
+  132: ]);
+  133: 
+  134: const DOWNLOAD_EXTS = [".apk", ".exe", ".msi", ".dmg", ".pkg", ".scr", ".bat", ".cmd", ".ps1", ".zip", ".rar", ".7z"];
+  135: 
+  136: const BRAND_DOMAIN_ALLOW: Array<{ label: string; tokens: string[]; domains: string[] }> = [
+  137:   { label: "은행/결제사칭-도메인불일치", tokens: ["국민은행", "KB국민", "kbstar"], domains: ["kbstar.com", "kbfg.com", "kbcard.com"] },
+  138:   { label: "은행/결제사칭-도메인불일치", tokens: ["신한", "신한은행"], domains: ["shinhan.com", "shinhanbank.com"] },
+  139:   { label: "은행/결제사칭-도메인불일치", tokens: ["우리은행", "woori"], domains: ["wooribank.com"] },
+  140:   { label: "은행/결제사칭-도메인불일치", tokens: ["하나은행", "hana"], domains: ["hanafn.com", "hanabank.com"] },
+  141:   { label: "은행/결제사칭-도메인불일치", tokens: ["농협", "NH농협"], domains: ["nonghyup.com", "nhbank.com"] },
+  142:   { label: "은행/결제사칭-도메인불일치", tokens: ["기업은행", "IBK"], domains: ["ibk.co.kr"] },
+  143:   { label: "은행/결제사칭-도메인불일치", tokens: ["카카오뱅크"], domains: ["kakaobank.com"] },
+  144:   { label: "은행/결제사칭-도메인불일치", tokens: ["토스", "토스뱅크"], domains: ["toss.im", "tossbank.com"] },
+  145:   { label: "은행/결제사칭-도메인불일치", tokens: ["케이뱅크", "K뱅크"], domains: ["kbanknow.com"] },
+  146: ];
+  147: 
+  148: function hostMatchesAllowed(host: string, allowed: string) {
+  149:   const h = (host || "").toLowerCase();
+  150:   const d = (allowed || "").toLowerCase();
+  151:   return h === d || h.endsWith("." + d);
+  152: }
+  153: 
+  154: function scoreUrls(messageText: string, urls: string[], weights: typeof WEIGHTS): Hit[] {
+  155:   const msg = messageText || "";
+  156:   const msgLower = msg.toLowerCase();
+  157:   const sample = msg.length > 140 ? msg.slice(0, 140) + "..." : msg;
+  158: 
+  159:   const agg = new Map<string, { ruleId: string; label: string; stage: StageId; baseWeight: number; matched: string[] }>();
+  160: 
+  161:   const add = (ruleId: string, label: string, stage: StageId, baseWeight: number, match: string) => {
+  162:     const m = String(match || "").trim();
+  163:     if (!m) return;
+  164:     const prev = agg.get(ruleId);
+  165:     if (!prev) agg.set(ruleId, { ruleId, label, stage, baseWeight, matched: [m] });
+  166:     else if (prev.matched.length < 6) prev.matched.push(m);
+  167:   };
+  168: 
+  169:   const list = Array.isArray(urls) ? urls.slice(0, 10) : [];
+  170:   for (const raw0 of list) {
+  171:     const raw = String(raw0 || "").trim();
+  172:     const u = safeParseUrl(raw);
+  173:     if (!u) continue;
+  174: 
+  175:     const proto = (u.protocol || "").toLowerCase();
+  176:     const host = (u.hostname || "").toLowerCase();
+  177:     const path = ((u.pathname || "") + (u.search || "")).toLowerCase();
+  178: 
+  179:     if (proto === "http:") add("url_http", "URL: HTTP(비TLS)", "verify", weights.urlHttp, raw);
+  180:     if (raw.includes("@")) add("url_at_sign", "URL: '@' 포함(우회/위장 가능)", "verify", weights.urlAtSign, raw);
+  181: 
+  182:     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) add("url_ip_host", "URL: IP 호스트(의심)", "verify", weights.urlIpHost, host);
+  183:     if (host.includes("xn--")) add("url_punycode", "URL: Punycode(xn--) 의심", "verify", weights.urlPunycode, host);
+  184: 
+  185:     const hostParts = host.split(".").filter(Boolean);
+  186:     if (hostParts.length >= 5) add("url_deep_subdomain", "URL: 서브도메인 과다(위장 가능)", "verify", weights.urlDeepSubdomain, host);
+  187: 
+  188:     const tld = hostParts.length ? hostParts[hostParts.length - 1] : "";
+  189:     if (tld && SUSPICIOUS_TLDS.has(tld)) add("url_suspicious_tld", "URL: 의심 TLD", "verify", weights.urlSuspiciousTld, host);
+  190: 
+  191:     for (const ext of DOWNLOAD_EXTS) {
+  192:       if (path.endsWith(ext) || path.includes(ext + "?") || path.includes(ext + "&")) {
+  193:         add("url_download_ext", "URL: 설치/압축 파일 확장자", "install", weights.urlDownloadExt, raw);
+  194:         break;
+  195:       }
+  196:     }
+  197: 
+  198:     for (const b of BRAND_DOMAIN_ALLOW) {
+  199:       const tokenHit = b.tokens.some((t) => t && msgLower.includes(String(t).toLowerCase()));
+  200:       if (!tokenHit) continue;
+  201:       const ok = b.domains.some((d) => hostMatchesAllowed(host, d));
+  202:       if (!ok) add("url_brand_mismatch", b.label, "verify", weights.urlBrandMismatch, `${b.tokens[0]} → ${host}`);
+  203:     }
+  204:   }
+  205: 
+  206:   const out: Hit[] = [];
+  207:   for (const v of agg.values()) {
+  208:     const uniq = Array.from(new Set(v.matched.map((x) => String(x).trim()).filter(Boolean))).slice(0, 6);
+  209:     const mult = Math.min(2, uniq.length || 1);
+  210:     out.push({ ruleId: v.ruleId, label: v.label, stage: v.stage, weight: v.baseWeight * mult, matched: uniq, sample });
+  211:   }
+  212:   return out;
+  213: }
+  214: 
+  215: function parseHeaderAndContent(blockText: string): { header: string | null; speakerLabel: string | null; content: string } {
+  216:   const raw = String(blockText || "").replace(/\r\n/g, "\n").trim();
+  217:   if (!raw) return { header: null, speakerLabel: null, content: "" };
+  218: 
+  219:   const lines = raw.split("\n");
+  220:   const first = (lines[0] || "").trim();
+  221:   const rest = lines.slice(1);
+  222: 
+  223:   const sp1 = first.match(/^(S|R)\s*:\s*(.*)$/i);
+  224:   if (sp1) {
+  225:     const who = String(sp1[1] || "").toUpperCase() === "R" ? "R" : "S";
+  226:     const after = String(sp1[2] || "").trim();
+  227:     const body = [after, ...rest].filter(Boolean).join("\n").trim();
+  228:     return { header: null, speakerLabel: who, content: body || after || "" };
+  229:   }
+  230: 
+  231:   const sp2 = first.match(/^(sender|receiver|발신|수신)\s*:\s*(.*)$/i);
+  232:   if (sp2) {
+  233:     const head = String(sp2[1] || "").toLowerCase();
+  234:     const who = head === "receiver" || head === "수신" ? "R" : "S";
+  235:     const after = String(sp2[2] || "").trim();
+  236:     const body = [after, ...rest].filter(Boolean).join("\n").trim();
+  237:     return { header: null, speakerLabel: who, content: body || after || "" };
+  238:   }
+  239: 
+  240:   const tryKakao = /^\[\s*(오전|오후)?\s*\d{1,2}:\d{2}\s*\]\s*(.{1,40}?)(?::\s*)?(.*)$/;
+  241:   const tryDateTimeName1 =
+  242:     /^\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}\s+(오전|오후)?\s*\d{1,2}:\d{2}\s+(.{1,40}?)(?::\s*)?(.*)$/;
+  243:   const tryDateTimeName2 = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}\s+(.{1,40}?)(?::\s*)?(.*)$/;
+  244:   const tryTimeName1 = /^(오전|오후)?\s*\d{1,2}:\d{2}\s+(.{1,40}?)(?::\s*)?(.*)$/;
+  245:   const tryTimeName2 = /^\d{1,2}:\d{2}\s+(.{1,40}?)(?::\s*)?(.*)$/;
+  246: 
+  247:   const m1 = first.match(tryKakao);
+  248:   if (m1) {
+  249:     const speaker = String(m1[2] || "").trim();
+  250:     const after = String(m1[3] || "").trim();
+  251:     const body = [after, ...rest].filter(Boolean).join("\n").trim();
+  252:     return { header: first, speakerLabel: speaker || null, content: body || after || "" };
+  253:   }
+  254: 
+  255:   const m2 = first.match(tryDateTimeName1);
+  256:   if (m2) {

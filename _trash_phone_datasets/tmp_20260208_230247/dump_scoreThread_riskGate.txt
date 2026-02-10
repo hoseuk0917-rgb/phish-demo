@@ -1,0 +1,155 @@
+﻿ 1560: 
+ 1561:   // 구조적 High 후보들(여기서 authority/threat/urgent는 “증폭기”)
+ 1562:   const installHigh = hasLinkAny && (hasRemote || hasApk || hasInstallMention) && !benignSupport;
+ 1563: 
+ 1564:   const investHigh =
+ 1565:     hasInvest &&
+ 1566:     (hasLinkAny || hasContactMove) &&
+ 1567:     (hasInstallMention || hasApk || hasPayRequest || hasTransferDemand || hasUrgentHit || hasThreat || hasAuthority) &&
+ 1568:     !benignSupport;
+ 1569: 
+ 1570:   const otpAuthorityHigh = hasOtp && hasDemand && (hasThreat || hasAuthority || hasTxnAlert || hasOtpFinance) && !benignSupport;
+ 1571:   const otpLinkDemandHigh = hasOtp && hasLinkAny && hasDemand && !benignSupport;
+ 1572: 
+ 1573:   const familyHigh = hasFamily && (hasPayRequest || hasUrgentHit || hasTransferDemand) && !benignSupport;
+ 1574: 
+ 1575:   const jobPiiHigh = hasLinkAny && hasJobScam && hasPiiRequest && !benignSupport;
+ 1576: 
+ 1577:   // 장소 방문/이동은 단독/느슨한 결합으로 High 승격 금지
+ 1578:   // - 취업/투자 훅 + 연락처 이동/링크 + 금전 액션(현금/이체/선입금 등)까지 붙을 때만 High 구조로 취급
+ 1579:   const visitHigh =
+ 1580:     hasVisitPlace &&
+ 1581:     (hasJobHook || hasJobScam || hasInvest) &&
+ 1582:     (hasContactMove || hasLinkAny) &&
+ 1583:     (hasCashPickup || hasTransferDemand || hasPayRequest || hasTransfer) &&
+ 1584:     !benignSupport;
+ 1585: 
+ 1586:   // (신규) 이체/송금 지시는 transfer 단독보다 강하게 High 구조로 취급
+ 1587:   const transferDemandHigh =
+ 1588:     (hasTransferDemand || hasTransfer) &&
+ 1589:     (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasFirst || hasOtp) &&
+ 1590:     !benignSupport;
+ 1591: 
+ 1592:   // (신규) 현금 수거/퀵 전달은 매우 강함
+ 1593:   const cashPickupHigh =
+ 1594:     hasCashPickup && (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasContactMove) && !benignSupport;
+ 1595: 
+ 1596:   // 결제/이체는 “단독”이면 High 아님: 보조 구조가 있어야 High
+ 1597:   const payHigh =
+ 1598:     hasPayRequest &&
+ 1599:     (hasAuthority || hasThreat || hasUrgentHit || hasLinkAny || hasFirst || hasOtp || hasRemote || hasApk || hasInstallMention || hasContactMove) &&
+ 1600:     !benignSupport;
+ 1601: 
+ 1602:   // (신규) 취업사기: 고수익/알바 + (연락처 이동) + (방문/이동 or 이체/선입금/현금) 조합
+ 1603:   const jobHigh =
+ 1604:     (hasJobHook || hasJobScam) &&
+ 1605:     (hasContactMove || hasLinkAny) &&
+ 1606:     (hasVisitPlace || hasPayRequest || hasTransferDemand || hasTransfer || hasCashPickup) &&
+ 1607:     !benignSupport;
+ 1608: 
+ 1609:   // ✅ hardHigh = 코어 액션 전제 + 구조 매칭
+ 1610:   const hardHigh =
+ 1611:     hasCoreAction &&
+ 1612:     ((hasRemote && hasOtp) ||
+ 1613:       (hasFirst && (hasRemote || hasOtp)) ||
+ 1614:       installHigh ||
+ 1615:       otpAuthorityHigh ||
+ 1616:       otpLinkDemandHigh ||
+ 1617:       familyHigh ||
+ 1618:       jobPiiHigh ||
+ 1619:       payHigh ||
+ 1620:       investHigh ||
+ 1621:       visitHigh ||
+ 1622:       transferDemandHigh ||
+ 1623:       cashPickupHigh ||
+ 1624:       jobHigh ||
+ 1625:       (hasJobScam && !benignSupport));
+ 1626: 
+ 1627:   let riskLevel: RiskLevel = toRiskLevel(scoreTotal, hardHigh);
+ 1628: 
+ 1629:   // ✅ High는 hardHigh 구조로만 허용(점수 누적/약한 단어 반복만으로 High 금지)
+ 1630:   // (기존 가드 유지: 코어 액션도 없으면 우선 Medium)
+ 1631:   if (riskLevel === ("high" as RiskLevel) && !hardHigh && !hasCoreAction) {
+ 1632:     riskLevel = "medium" as RiskLevel;
+ 1633:   }
+ 1634: 
+ 1635:   // hardHigh가 아니면 High 금지(코어 액션이 있어도 Medium으로 내림)
+ 1636:   if (riskLevel === ("high" as RiskLevel) && !hardHigh) {
+ 1637:     riskLevel = "medium" as RiskLevel;
+ 1638:   }
+ 1639: 
+ 1640:   // 조언 대화는 low
+ 1641:   if (isAdviceOnlyThread(rawThread)) riskLevel = "low" as RiskLevel;
+ 1642: 
+ 1643:   // 알림/설정/확인 링크 + “내가 했다/아니다”류는 high 금지 (실제 납부/이체 텍스트가 있으면 제외)
+ 1644:   const alertSettingThread =
+ 1645:     /(알림\s*설정|설정\s*변경|설정이\s*변경|설정\s*확인|결제\s*알림\s*설정|계좌\s*알림\s*설정|자동이체\s*등록|자동\s*이체\s*등록|다른\s*기기\s*로그인\s*시도\s*감지|로그인\s*시도\s*감지|접속\s*시도\s*감지)/i.test(
+ 1646:       rawThread
+ 1647:     );
+ 1648:   const selfAckThread = isSelfAckText(rawThread);
+ 1649:   const ackOrBenign =
+ 1650:     selfAckThread ||
+ 1651:     /(확인\s*만|확인만|문제\s*없|정상|제가\s*아닌데|제가\s*한\s*적\s*없|한\s*적\s*없|접수\s*안\s*했|모르겠|아닌데요)/i.test(
+ 1652:       rawThread
+ 1653:     );
+ 1654:   const hasExplicitPayWord =
+ 1655:     /(납부|송금|이체|입금|지불|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌|상품권|문화\s*상품권|문상|핀\s*번호|pin|기프트\s*카드|gift\s*card|usdt|btc|eth|wallet|지갑\s*주소|trc20|erc20|바이낸스|업비트|빗썸)/i.test(
+ 1656:       rawThread
+ 1657:     );
+ 1658: 
+ 1659:   const alertSettingOnly =
+ 1660:     riskLevel === ("high" as RiskLevel) &&
+ 1661:     hasLink &&
+ 1662:     (alertSettingThread || hasTxnAlert) &&
+ 1663:     ackOrBenign &&
+ 1664:     !hasExplicitPayWord &&
+ 1665:     !hasOtp &&
+ 1666:     !hasThreat &&
+ 1667:     !hasUrgentHit &&
+ 1668:     !hasRemote &&
+ 1669:     !hasApk &&
+ 1670:     !hasInstallMention &&
+ 1671:     !hasJobScam &&
+ 1672:     !hasInvest &&
+ 1673:     !hasFamily &&
+ 1674:     !benignSupport;
+ 1675: 
+ 1676:   if (alertSettingOnly) riskLevel = "medium" as RiskLevel;
+ 1677: 
+ 1678:   // 원격/설치만(금융/OTP/협박 없이) high 금지 (문서/세금계산서/인보이스 뷰어 유도는 예외)
+ 1679:   const bizDocLure =
+ 1680:     /(세금계산서|거래처|회계팀|인보이스|invoice|견적서|발주서|계약서|정산|반려|수정본|문서\s*(뷰어|viewer)|열람)/i.test(rawThread);
+ 1681: 
+ 1682:   const remoteOnly =
+ 1683:     riskLevel === ("high" as RiskLevel) &&
+ 1684:     (hasRemote || hasInstallMention) &&
+ 1685:     !bizDocLure &&
+ 1686:     !hasExplicitPayWord &&
+ 1687:     !hasOtp &&
+ 1688:     !hasThreat &&
+ 1689:     !hasAuthority &&
+ 1690:     !hasUrgentHit &&
+ 1691:     !hasApk &&
+ 1692:     !hasJobScam &&
+ 1693:     !hasInvest &&
+ 1694:     !hasFamily &&
+ 1695:     !benignSupport;
+ 1696: 
+ 1697:   if (remoteOnly) riskLevel = "medium" as RiskLevel;
+ 1698: 
+ 1699:   // signals/hits 제공(엔진 index.ts에서 바로 사용)
+ 1700:   const signals = buildSignalsFromHits(sortedHits, 12);
+ 1701: 
+ 1702:   return {
+ 1703:     scoreTotal,
+ 1704:     riskLevel,
+ 1705:     stagePeak,
+ 1706:     stageTriggers,
+ 1707: 
+ 1708:     hits: sortedHits,
+ 1709:     signals,
+ 1710: 
+ 1711:     messageSummaries,
+ 1712:     context: windowed.meta,
+ 1713:   };
+ 1714: }

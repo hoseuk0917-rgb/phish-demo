@@ -1,0 +1,61 @@
+﻿ 1819:                                             <div className="card-title">Risk</div>
+ 1820:                                             <div className="card-desc">prefilter → full analysis → warning</div>
+ 1821:                                         </div>
+ 1822:                                         <span className="pill">THREAT {String(riskLevel).toUpperCase()} · UI {String(uiRiskLevel).toUpperCase()} · {stagePeak}</span>
+ 1823:                                     </div>
+ 1824: 
+ 1825:                                     <div style={{ height: 12 }} />
+ 1826: 
+ 1827:                                     <div className="row-between" style={{ gap: 10, alignItems: "flex-end" }}>
+ 1828:                                         <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1 }}>
+ 1829:                                             {scoreTotal}
+ 1830:                                         </div>
+ 1831:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+ 1832:                                             <span className="pill">Gate: {gateMode}</span>
+ 1833:                                             <span className="pill">Prefilter: {triggerGateEnabled ? prefilterScore : 0} / {triggerThreshold}</span>
+ 1834:                                             <span className="pill">SIM gate: {simMinSim} · topK: {simTopK}</span>
+ 1835:                                         </div>
+ 1836:                                     </div>
+ 1837: 
+ 1838:                                     <div style={{ height: 10 }} />
+ 1839: 
+ 1840:                                     <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+ 1841:                                         <div
+ 1842:                                             style={{
+ 1843:                                                 height: 8,
+ 1844:                                                 width: `${scoreTotal}%`,
+ 1845:                                                 background:
+ 1846:                                                     String(uiRiskLevel) === "high" ? "rgba(255,60,60,0.75)" :
+ 1847:                                                         String(uiRiskLevel) === "medium" ? "rgba(255,200,60,0.70)" :
+ 1848:                                                             "rgba(90,220,120,0.65)",
+ 1849:                                             }}
+ 1850:                                         />
+ 1851:                                     </div>
+ 1852: 
+ 1853:                                     <div style={{ height: 12 }} />
+ 1854: 
+ 1855:                                     <div className="pill">Top signals</div>
+ 1856:                                     <div style={{ height: 8 }} />
+ 1857: 
+ 1858:                                     {topSignals.length === 0 ? (
+ 1859:                                         <div className="muted" style={{ fontSize: 12 }}>no signals</div>
+ 1860:                                     ) : (
+ 1861:                                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+ 1862:                                             {topSignals.slice(0, 6).map((s: any, i: number) => {
+ 1863:                                                 const lab = String(s?.label || s?.id || `sig_${i + 1}`);
+ 1864:                                                 const w = Math.round(Number(s?.weightSum || s?.weight || 0));
+ 1865:                                                 const c = Number(s?.count || 0);
+ 1866:                                                 return (
+ 1867:                                                     <div key={`${lab}-${i}`} className="row-between" style={{ gap: 8 }}>
+ 1868:                                                         <span
+ 1869:                                                             className="muted"
+ 1870:                                                             style={{
+ 1871:                                                                 fontSize: 12,
+ 1872:                                                                 overflow: "hidden",
+ 1873:                                                                 textOverflow: "ellipsis",
+ 1874:                                                                 whiteSpace: "nowrap",
+ 1875:                                                                 maxWidth: 220,
+ 1876:                                                             }}
+ 1877:                                                             title={lab}
+ 1878:                                                         >
+ 1879:                                                             {lab}

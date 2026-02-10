@@ -1,0 +1,14 @@
+﻿@{LineNumber=46; Line=    expected: ScenarioExpected;}
+@{LineNumber=57; Line=    expected: ScenarioExpected;}
+@{LineNumber=58; Line=    got: { riskLevel: RiskLevel; scoreTotal: number; stagePeak: StageId; triggered: boolean };}
+@{LineNumber=375; Line=                expected: row.expected,}
+@{LineNumber=376; Line=                got: { riskLevel: "low", scoreTotal: 0, stagePeak: "info", triggered: false },}
+@{LineNumber=539; Line=                expected: row.expected,}
+@{LineNumber=540; Line=                got: { riskLevel: gotRisk, scoreTotal: gotScore, stagePeak: gotStage, triggered: gotTrig },}
+@{LineNumber=560; Line=    console.log(`Risk match: ${riskOk}/${total} (${percent(riskOk, total)})`);}
+@{LineNumber=562; Line=    console.log(`Stage peak ok: ${stageOk}/${total} (${percent(stageOk, total)})`);}
+@{LineNumber=563; Line=    console.log(`Triggers ok: ${trigOk}/${total} (${percent(trigOk, total)})`);}
+@{LineNumber=566; Line=    console.log(`Expected: low=${expDist.low || 0}, medium=${expDist.medium || 0}, high=${expDist.high || 0}`);}
+@{LineNumber=567; Line=    console.log(`Got:      low=${gotDist.low || 0}, medium=${gotDist.medium || 0}, high=${gotDist.high || 0}`);}
+@{LineNumber=636; Line=                `  expected: risk=${f.expected.riskLevel}` +}
+@{LineNumber=642; Line=                `  got:      risk=${f.got.riskLevel} score=${f.got.scoreTotal} stagePeak=${f.got.stagePeak} triggered=${f.got.triggered}`,}

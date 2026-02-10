@@ -1,0 +1,2600 @@
+{
+  "dataset": "datasets\\ko_scam\\scenarios_ko_v3_smoke.jsonl",
+  "total": 50,
+  "fails": [
+    {
+      "id": "SC00002",
+      "category": "pii_collection",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 63,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=medium"
+      ],
+      "senderText": "S: [발신 010-0000-101] 기관 확인 안내입니다.\nS: 신분 확인을 위해 기초 정보 확인이 필요해 주세요.\nS: 개인정보(신분증/계좌) 보내 주세요: https://card-center.invalid/auth/confirm",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://card-center.invalid/auth/confirm"
+        },
+        {
+          "ruleId": "personalinfo",
+          "stage": "verify",
+          "weight": 20,
+          "label": "개인정보/자격정보 요구",
+          "matched0": "신분증"
+        },
+        {
+          "ruleId": "pii_request",
+          "stage": "verify",
+          "weight": 18,
+          "label": "개인정보 요청",
+          "matched0": "pii-request"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://card-center.invalid/auth/confirm"
+        },
+        {
+          "id": "personalinfo",
+          "stage": "verify",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "신분증"
+        },
+        {
+          "id": "pii_request",
+          "stage": "verify",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "pii-request"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_2.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_PII"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_TRANSFER",
+          "A_CRED",
+          "A_PII"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_01",
+          "caller_display": "010-0000-101",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "official",
+          "value": "https://card-center.invalid/auth/confirm",
+          "count": 1,
+          "match": true,
+          "official_id": "OFFICIAL_CARD_AUTH"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED",
+          "A_PII"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00004",
+      "category": "go_bank_atm",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "payment"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 72,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=payment got=verify"
+      ],
+      "senderText": "S: [발신 02-0000-0000] 법원 사건 처리 안내입니다.\nS: 현장 확인 절차가 필요합니다.\nS: 긴급 안내입니다. 지금 바로 처리해야 합니다.\nS: 보안상 외부 공유 금지입니다. 가족/지인에게도 말하지 마세요.\nS: 지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM).",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "transfer",
+          "stage": "payment",
+          "weight": 18,
+          "label": "송금/이체/입금/선입금/수수료 요구",
+          "matched0": "현금"
+        },
+        {
+          "ruleId": "threat",
+          "stage": "info",
+          "weight": 14,
+          "label": "불이익/위협/정지/범죄 프레이밍",
+          "matched0": "사건"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "긴급"
+        },
+        {
+          "id": "transfer",
+          "stage": "payment",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "현금"
+        },
+        {
+          "id": "threat",
+          "stage": "info",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "사건"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_18.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent",
+          "press_secrecy"
+        ],
+        "pressures_eff": [
+          "press_secrecy",
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_GO_BANK"
+        ],
+        "anchors_eff": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "spoofed",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00006",
+      "category": "fine_refund_link",
+      "label": "medium",
+      "expected": {
+        "riskLevel": "medium",
+        "score_min": 25,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 25,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=medium got=low",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-202] 국세청 안내입니다.\nS: 미납/환급 관련 확인이 필요해요.\nS: 아래 링크 확인해 주세요: https://taxrefund.invalid/pay/check (유사치환 homoglyph)",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://taxrefund.invalid/pay/check"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://taxrefund.invalid/pay/check"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_11.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_02",
+          "caller_display": "070-0000-202",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "homoglyph",
+          "value": "https://taxrefund.invalid/pay/check",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_GOV_PAY"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "HN00010",
+      "category": "cash_pickup",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 0,
+        "stagePeak": "info",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=low",
+        "score below min: expected>=45 got=0",
+        "stagePeak mismatch: expected=verify got=info"
+      ],
+      "senderText": "S: [발신 02-0000-0000] 기관 처리 안내입니다.\nS: 대면 전달 절차가 필요합니다.\nS: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.\nS: 필요하면 대표번호로 직접 확인하는 방식이 안전합니다.",
+      "topHits": [],
+      "topSignals": [],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_32.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [],
+        "anchors_eff": [],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "official_landline",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00011",
+      "category": "job_travel",
+      "label": "low",
+      "expected": {
+        "riskLevel": "low",
+        "score_min": 0,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 70,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=low got=high",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-202] 해외 고수익 채용 안내이에요.\nS: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요부탁드립니다.\nS: 절차 안내입니다.\nS: 확인이 필요해요.\nS: 출국 가능하시면 공항 쪽으로 이동해 주세요.",
+      "topHits": [
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "채용"
+        },
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "출국 가능"
+        },
+        {
+          "ruleId": "invest_lure",
+          "stage": "verify",
+          "weight": 10,
+          "label": "투자/리딩방/정보방 유도",
+          "matched0": "고수익"
+        },
+        {
+          "ruleId": "account_verify",
+          "stage": "verify",
+          "weight": 10,
+          "label": "계좌/본인 인증 유도",
+          "matched0": "본인 확인"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "job_lure",
+          "stage": "verify",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "채용"
+        },
+        {
+          "id": "invest_lure",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "고수익"
+        },
+        {
+          "id": "account_verify",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "본인 확인"
+        },
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "지금"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_24.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_TRAVEL"
+        ],
+        "anchors_eff": [
+          "A_TRAVEL"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_02",
+          "caller_display": "070-0000-202",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_TRAVEL"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "BN00012",
+      "category": "cash_pickup",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 0,
+        "stagePeak": "info",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=low",
+        "score below min: expected>=45 got=0",
+        "stagePeak mismatch: expected=verify got=info"
+      ],
+      "senderText": "S: [발신 02-0000-0000] 기관 처리 안내입니다.\nS: 대면 전달 절차가 필요합니다.\nS: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.\nS: 필요하면 대표번호로 직접 확인하는 방식이 안전합니다.",
+      "topHits": [],
+      "topSignals": [],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_15.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [],
+        "anchors_eff": [],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "official_landline",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00014",
+      "category": "go_bank_atm",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "payment"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 72,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=payment got=verify"
+      ],
+      "senderText": "S: [발신 02-0000-0000] OO지방법원 사건 처리 안내이에요.\nS: 현장 확인 절차가 필요해요.\nS: 기한이 있습니다.\nS: 확인이 필요해요.\nS: 긴급 안내입니다. 지금 바로 처리해야 부탁드립니다.\nS: 보안상 외부 공유 금지이에요. 가족/지인에게도 말하지 마세요.\nS: 지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM).",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "transfer",
+          "stage": "payment",
+          "weight": 18,
+          "label": "송금/이체/입금/선입금/수수료 요구",
+          "matched0": "현금"
+        },
+        {
+          "ruleId": "threat",
+          "stage": "info",
+          "weight": 14,
+          "label": "불이익/위협/정지/범죄 프레이밍",
+          "matched0": "사건"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "긴급"
+        },
+        {
+          "id": "transfer",
+          "stage": "payment",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "현금"
+        },
+        {
+          "id": "threat",
+          "stage": "info",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "사건"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_31.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent",
+          "press_secrecy"
+        ],
+        "pressures_eff": [
+          "press_secrecy",
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_GO_BANK"
+        ],
+        "anchors_eff": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "spoofed",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00016",
+      "category": "pii_collection",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 63,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=medium"
+      ],
+      "senderText": "S: [발신 010-0000-101] 기관 확인 안내입니다.\nS: 신분 확인을 위해 기초 정보 확인이 필요해요.\nS: 시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.\nS: 개인정보(신분증/계좌) 보내 주세요: https://police-hellp.invalid/verify\nS: 다른 방식으로 확인하라고 안내하는 내용이 포함됩니다.",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://police-hellp.invalid/verify"
+        },
+        {
+          "ruleId": "personalinfo",
+          "stage": "verify",
+          "weight": 20,
+          "label": "개인정보/자격정보 요구",
+          "matched0": "신분증"
+        },
+        {
+          "ruleId": "pii_request",
+          "stage": "verify",
+          "weight": 18,
+          "label": "개인정보 요청",
+          "matched0": "pii-request"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://police-hellp.invalid/verify"
+        },
+        {
+          "id": "personalinfo",
+          "stage": "verify",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "신분증"
+        },
+        {
+          "id": "pii_request",
+          "stage": "verify",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "pii-request"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_60.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_PII"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_TRANSFER",
+          "A_CRED",
+          "A_PII"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_01",
+          "caller_display": "010-0000-101",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "typo",
+          "value": "https://police-hellp.invalid/verify",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_POLICE_HELP"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED",
+          "A_PII"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00018",
+      "category": "job_travel",
+      "label": "low",
+      "expected": {
+        "riskLevel": "low",
+        "score_min": 0,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 80,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=low got=high",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-202] 해외 고수익 채용 안내입니다.\nS: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요합니다.\nS: 오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.\nS: 출국 가능하시면 공항 쪽으로 이동해 주세요.",
+      "topHits": [
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "채용"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 20,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "오늘"
+        },
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "출국 가능"
+        },
+        {
+          "ruleId": "invest_lure",
+          "stage": "verify",
+          "weight": 10,
+          "label": "투자/리딩방/정보방 유도",
+          "matched0": "고수익"
+        },
+        {
+          "ruleId": "account_verify",
+          "stage": "verify",
+          "weight": 10,
+          "label": "계좌/본인 인증 유도",
+          "matched0": "본인 확인"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "job_lure",
+          "stage": "verify",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "채용"
+        },
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "오늘"
+        },
+        {
+          "id": "invest_lure",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "고수익"
+        },
+        {
+          "id": "account_verify",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "본인 확인"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_86.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_TRAVEL"
+        ],
+        "anchors_eff": [
+          "A_TRAVEL"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_02",
+          "caller_display": "070-0000-202",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_TRAVEL"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00019",
+      "category": "job_travel",
+      "label": "low",
+      "expected": {
+        "riskLevel": "low",
+        "score_min": 0,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 80,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=low got=high",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-101] 해외 고수익 채용 안내입니다.\nS: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요해 주세요.\nS: 절차 안내이에요.\nS: 절차 안내입니다.\nS: 기한이 있습니다.\nS: 출국 가능하시면 공항 쪽으로 이동해 주세요.\nS: 급하게 진행하라고 재촉하는 내용이 포함됩니다.",
+      "topHits": [
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "채용"
+        },
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "출국 가능"
+        },
+        {
+          "ruleId": "invest_lure",
+          "stage": "verify",
+          "weight": 10,
+          "label": "투자/리딩방/정보방 유도",
+          "matched0": "고수익"
+        },
+        {
+          "ruleId": "account_verify",
+          "stage": "verify",
+          "weight": 10,
+          "label": "계좌/본인 인증 유도",
+          "matched0": "본인 확인"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "급하게"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "job_lure",
+          "stage": "verify",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "채용"
+        },
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 20,
+          "count": 2,
+          "ex0": "지금"
+        },
+        {
+          "id": "invest_lure",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "고수익"
+        },
+        {
+          "id": "account_verify",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "본인 확인"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_alert/pstSn_36.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_TRAVEL"
+        ],
+        "anchors_eff": [
+          "A_TRAVEL"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_01",
+          "caller_display": "010-0000-101",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_TRAVEL"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00023",
+      "category": "delivery_link",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 55,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=medium",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-201] 배송업체 안내임.\nS: 배송지/보관 관련 확인이 필요합니다.\nS: 긴급 안내입니다. 지금 바로 처리해야 합니다.\nS: 아래 링크 확인해 주세요: https://track-parcel.invalid/pickup/check",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://track-parcel.invalid/pickup/check"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 30,
+          "count": 1,
+          "ex0": "긴급"
+        },
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://track-parcel.invalid/pickup/check"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_13.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent"
+        ],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_01",
+          "caller_display": "070-0000-201",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "official",
+          "value": "https://track-parcel.invalid/pickup/check",
+          "count": 1,
+          "match": true,
+          "official_id": "OFFICIAL_DELIVERY_PICKUP"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00025",
+      "category": "cash_pickup",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "payment"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 48,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=payment got=verify"
+      ],
+      "senderText": "S: [발신 발신번호표시제한] 기관 처리 안내이에요.\nS: 대면 전달 절차가 필요해요.\nS: 긴급 안내입니다. 지금 바로 처리해야 합니다.\nS: 보안상 외부 공유 금지이에요. 가족/지인에게도 말하지 마세요.\nS: 현금 봉투 준비해서 퀵/대면(cash pickup)으로 전달해 주세요.",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "transfer",
+          "stage": "payment",
+          "weight": 18,
+          "label": "송금/이체/입금/선입금/수수료 요구",
+          "matched0": "현금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 30,
+          "count": 1,
+          "ex0": "긴급"
+        },
+        {
+          "id": "transfer",
+          "stage": "payment",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "현금"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_16.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent",
+          "press_secrecy"
+        ],
+        "pressures_eff": [
+          "press_secrecy",
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_CASH_PICKUP"
+        ],
+        "anchors_eff": [
+          "A_CASH_PICKUP"
+        ],
+        "caller": {
+          "caller_id": "SCAM_UNKNOWN_01",
+          "caller_display": "발신번호표시제한",
+          "caller_class": "unknown",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_CASH_PICKUP"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00026",
+      "category": "pii_collection",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 63,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=medium"
+      ],
+      "senderText": "S: [발신 070-0000-202] 기관 확인 안내입니다.\nS: 신분 확인을 위해 기초 정보 확인이 필요합니다.\nS: 개인정보(신분증/계좌) 보내 주세요: https://portal-banki.nvalid/secure/verify",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://portal-banki.nvalid/secure/verify"
+        },
+        {
+          "ruleId": "personalinfo",
+          "stage": "verify",
+          "weight": 20,
+          "label": "개인정보/자격정보 요구",
+          "matched0": "신분증"
+        },
+        {
+          "ruleId": "pii_request",
+          "stage": "verify",
+          "weight": 18,
+          "label": "개인정보 요청",
+          "matched0": "pii-request"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://portal-banki.nvalid/secure/verify"
+        },
+        {
+          "id": "personalinfo",
+          "stage": "verify",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "신분증"
+        },
+        {
+          "id": "pii_request",
+          "stage": "verify",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "pii-request"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_28.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_PII"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_TRANSFER",
+          "A_CRED",
+          "A_PII"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_02",
+          "caller_display": "070-0000-202",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "homoglyph",
+          "value": "https://portal-banki.nvalid/secure/verify",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_BANK_VERIFY"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED",
+          "A_PII"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00029",
+      "category": "go_bank_atm",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "payment"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 72,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=payment got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-102] OO지방법원 사건 처리 안내입니다.\nS: 현장 확인 절차가 필요부탁드립니다.\nS: 절차 안내이에요.\nS: 절차 안내입니다.\nS: 긴급 안내이에요. 지금 바로 처리해야 합니다.\nS: 보안상 외부 공유 금지입니다. 가족/지인에게도 말하지 마세요.\nS: 지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM).",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "transfer",
+          "stage": "payment",
+          "weight": 18,
+          "label": "송금/이체/입금/선입금/수수료 요구",
+          "matched0": "현금"
+        },
+        {
+          "ruleId": "threat",
+          "stage": "info",
+          "weight": 14,
+          "label": "불이익/위협/정지/범죄 프레이밍",
+          "matched0": "사건"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "긴급"
+        },
+        {
+          "id": "transfer",
+          "stage": "payment",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "현금"
+        },
+        {
+          "id": "threat",
+          "stage": "info",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "사건"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_34.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent",
+          "press_secrecy"
+        ],
+        "pressures_eff": [
+          "press_secrecy",
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_GO_BANK"
+        ],
+        "anchors_eff": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_02",
+          "caller_display": "010-0000-102",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00031",
+      "category": "delivery_link",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 64,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=medium",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-202] 배송업체 안내입니다.\nS: 배송지/보관 관련 확인이 필요합니다.\nS: 확인 링크 보내드립니다: https://track-arcel.invalid/pickup/check.\nS: 아래 링크 확인해 주세요: https://track-arcel.invalid/pickup/check (오타/유사문자 typo)",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://track-arcel.invalid/pickup/check."
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://track-arcel.invalid/pickup/check"
+        },
+        {
+          "ruleId": "ctx_pay_with_link",
+          "stage": "verify",
+          "weight": 14,
+          "label": "결제/승인/알림 + 확인 링크(검증 단계)",
+          "matched0": "확인 링크 보내드립니다: https://"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 50,
+          "count": 2,
+          "ex0": "https://track-arcel.invalid/pickup/check."
+        },
+        {
+          "id": "ctx_pay_with_link",
+          "stage": "verify",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "확인 링크 보내드립니다: https://"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_2.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_TRANSFER",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_02",
+          "caller_display": "070-0000-202",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "typo",
+          "value": "https://track-arcel.invalid/pickup/check",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_DELIVERY_PICKUP"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00035",
+      "category": "delivery_link",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 94,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-102] 배송업체 안내입니다.\nS: 배송지/보관 관련 확인이 필요합니다.\nS: 확인 링크 보내드립니다: https://track-parcel.invaalid/pickup/check.\nS: 긴급 안내입니다. 지금 바로 처리해야 합니다.\nS: 아래 링크 확인해 주세요: https://track-parcel.invaalid/pickup/check (유사치환 homoglyph)",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://track-parcel.invaalid/pickup/check."
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://track-parcel.invaalid/pickup/check"
+        },
+        {
+          "ruleId": "ctx_pay_with_link",
+          "stage": "verify",
+          "weight": 14,
+          "label": "결제/승인/알림 + 확인 링크(검증 단계)",
+          "matched0": "확인 링크 보내드립니다: https://"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 50,
+          "count": 2,
+          "ex0": "https://track-parcel.invaalid/pickup/check."
+        },
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 30,
+          "count": 1,
+          "ex0": "긴급"
+        },
+        {
+          "id": "ctx_pay_with_link",
+          "stage": "verify",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "확인 링크 보내드립니다: https://"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_11.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent"
+        ],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_TRANSFER",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_02",
+          "caller_display": "010-0000-102",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "homoglyph",
+          "value": "https://track-parcel.invaalid/pickup/check",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_DELIVERY_PICKUP"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "BN00037",
+      "category": "bank_otp",
+      "label": "low",
+      "expected": {
+        "riskLevel": "low",
+        "score_min": 0,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 20,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 02-0000-0000] 금융감독원 보안 안내임.\nS: 본인 확인 절차가 필요합니다.\nS: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.\nS: 필요하면 대표번호로 직접 확인하는 방식이 안전해요.",
+      "topHits": [
+        {
+          "ruleId": "authority",
+          "stage": "info",
+          "weight": 10,
+          "label": "기관/담당자 사칭(권위)",
+          "matched0": "금융감독원"
+        },
+        {
+          "ruleId": "account_verify",
+          "stage": "verify",
+          "weight": 10,
+          "label": "계좌/본인 인증 유도",
+          "matched0": "본인 확인"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "authority",
+          "stage": "info",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "금융감독원"
+        },
+        {
+          "id": "account_verify",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "본인 확인"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_97.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [],
+        "anchors_eff": [],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "official_landline",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00039",
+      "category": "fine_refund_link",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 85,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 발신번호표시제한] 정부24 안내입니다.\nS: 미납/환급 관련 확인이 필요해요.\nS: 확인이 필요부탁드립니다.\nS: 절차 안내입니다.\nS: 긴급 안내이에요. 지금 바로 처리해야 합니다.\nS: 아래 링크 확인해 주세요: https://t.invalid/1zvn (단축주소 short)",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://t.invalid/1zvn"
+        },
+        {
+          "ruleId": "personalinfo",
+          "stage": "verify",
+          "weight": 20,
+          "label": "개인정보/자격정보 요구",
+          "matched0": "주소"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "긴급"
+        },
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://t.invalid/1zvn"
+        },
+        {
+          "id": "personalinfo",
+          "stage": "verify",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "주소"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_32.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent"
+        ],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_UNKNOWN_01",
+          "caller_display": "발신번호표시제한",
+          "caller_class": "unknown",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "short",
+          "value": "https://t.invalid/1zvn",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_GOV_PAY"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "BN00040",
+      "category": "cash_pickup",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 0,
+        "stagePeak": "info",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=low",
+        "score below min: expected>=45 got=0",
+        "stagePeak mismatch: expected=verify got=info"
+      ],
+      "senderText": "S: [발신 02-0000-0000] 기관 처리 안내입니다.\nS: 대면 전달 절차가 필요합니다.\nS: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.\nS: 필요하면 대표번호로 직접 확인하는 방식이 안전합니다.",
+      "topHits": [],
+      "topSignals": [],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_24.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [],
+        "anchors_eff": [],
+        "caller": {
+          "caller_id": "OFFICIAL_COURT_MAIN",
+          "caller_display": "02-0000-0000",
+          "caller_class": "official_landline",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00042",
+      "category": "go_bank_atm",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "payment"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 72,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=payment got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-102] OO지방법원 사건 처리 안내이에요.\nS: 현장 확인 절차가 필요해요.\nS: 긴급 안내입니다. 지금 바로 처리해야 합니다.\nS: 보안상 외부 공유 금지이에요. 가족/지인에게도 말하지 마세요.\nS: 지금 ATM으로 가서 현금 인출(withdraw/cash) 후 연락해 주세요 (ATM).",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "transfer",
+          "stage": "payment",
+          "weight": 18,
+          "label": "송금/이체/입금/선입금/수수료 요구",
+          "matched0": "현금"
+        },
+        {
+          "ruleId": "threat",
+          "stage": "info",
+          "weight": 14,
+          "label": "불이익/위협/정지/범죄 프레이밍",
+          "matched0": "사건"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "긴급"
+        },
+        {
+          "id": "transfer",
+          "stage": "payment",
+          "weightSum": 18,
+          "count": 1,
+          "ex0": "현금"
+        },
+        {
+          "id": "threat",
+          "stage": "info",
+          "weightSum": 14,
+          "count": 1,
+          "ex0": "사건"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_19.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent",
+          "press_secrecy"
+        ],
+        "pressures_eff": [
+          "press_secrecy",
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_GO_BANK"
+        ],
+        "anchors_eff": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_02",
+          "caller_display": "010-0000-102",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_CASH_PICKUP",
+          "A_GO_BANK"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "BN00043",
+      "category": "cash_pickup",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "verify"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 10,
+        "stagePeak": "info",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=low",
+        "score below min: expected>=45 got=10",
+        "stagePeak mismatch: expected=verify got=info"
+      ],
+      "senderText": "S: [발신 1577-0000] 기관 처리 안내이에요.\nS: 대면 전달 절차가 필요해요.\nS: 기한이 있습니다.\nS: 민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다.\nS: 필요하면 대표번호로 직접 확인하는 방식이 안전부탁드립니다.",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 10,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "지금"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "지금"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_faq/pstSn_31.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [],
+        "anchors_eff": [],
+        "caller": {
+          "caller_id": "OFFICIAL_CARD_MAIN",
+          "caller_display": "1577-0000",
+          "caller_class": "official_landline",
+          "is_whitelisted": true,
+          "is_first_seen": false
+        },
+        "vector": "none",
+        "eff_anchors": [],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00046",
+      "category": "delivery_link",
+      "label": "high",
+      "expected": {
+        "riskLevel": "high",
+        "score_min": 45,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "low",
+        "scoreTotal": 25,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=high got=low",
+        "score below min: expected>=45 got=25",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-101] 배송업체 안내입니다.\nS: 배송지/보관 관련 확인이 필요합니다.\nS: 아래 링크 확인해 주세요: https://tracck-parcel.invalid/pickup/check (오타/유사문자 typo)",
+      "topHits": [
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://tracck-parcel.invalid/pickup/check"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://tracck-parcel.invalid/pickup/check"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_63.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_01",
+          "caller_display": "010-0000-101",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "typo",
+          "value": "https://tracck-parcel.invalid/pickup/check",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_DELIVERY_PICKUP"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00047",
+      "category": "job_travel",
+      "label": "low",
+      "expected": {
+        "riskLevel": "low",
+        "score_min": 0,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "high",
+        "scoreTotal": 80,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "risk mismatch: expected=low got=high",
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 010-0000-101] 해외 고수익 채용 안내입니다.\nS: 출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요해 주세요.\nS: 오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.\nS: 출국 가능하시면 공항 쪽으로 이동해 주세요.",
+      "topHits": [
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "채용"
+        },
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 20,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "오늘"
+        },
+        {
+          "ruleId": "job_lure",
+          "stage": "verify",
+          "weight": 20,
+          "label": "고액알바/해외 단기 고수익 제안",
+          "matched0": "출국 가능"
+        },
+        {
+          "ruleId": "invest_lure",
+          "stage": "verify",
+          "weight": 10,
+          "label": "투자/리딩방/정보방 유도",
+          "matched0": "고수익"
+        },
+        {
+          "ruleId": "account_verify",
+          "stage": "verify",
+          "weight": 10,
+          "label": "계좌/본인 인증 유도",
+          "matched0": "본인 확인"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "job_lure",
+          "stage": "verify",
+          "weightSum": 40,
+          "count": 2,
+          "ex0": "채용"
+        },
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 20,
+          "count": 1,
+          "ex0": "오늘"
+        },
+        {
+          "id": "invest_lure",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "고수익"
+        },
+        {
+          "id": "account_verify",
+          "stage": "verify",
+          "weightSum": 10,
+          "count": 1,
+          "ex0": "본인 확인"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_press/pstSn_86.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": false,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_TRAVEL"
+        ],
+        "anchors_eff": [
+          "A_TRAVEL"
+        ],
+        "caller": {
+          "caller_id": "SCAM_MOBILE_01",
+          "caller_display": "010-0000-101",
+          "caller_class": "mobile",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "none",
+        "eff_anchors": [
+          "A_TRAVEL"
+        ],
+        "eff_basis": "S"
+      }
+    },
+    {
+      "id": "SC00050",
+      "category": "fine_refund_link",
+      "label": "medium",
+      "expected": {
+        "riskLevel": "medium",
+        "score_min": 25,
+        "stagePeak": "info"
+      },
+      "got": {
+        "riskLevel": "medium",
+        "scoreTotal": 55,
+        "stagePeak": "verify",
+        "triggered": false
+      },
+      "why": [
+        "stagePeak mismatch: expected=info got=verify"
+      ],
+      "senderText": "S: [발신 070-0000-201] 정부24 안내이에요.\nS: 미납/환급 관련 확인이 필요해요.\nS: 시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.\nS: 절차 안내입니다.\nS: 확인이 필요해요.\nS: 긴급 안내입니다. 지금 바로 처리해야 해 주세요.\nS: 아래 링크 확인해 주세요: https://tax-reffund.invalid/pay/check (오타/유사문자 typo)",
+      "topHits": [
+        {
+          "ruleId": "urgent",
+          "stage": "info",
+          "weight": 30,
+          "label": "긴급/즉시/압박(통화 유지 포함)",
+          "matched0": "긴급"
+        },
+        {
+          "ruleId": "link",
+          "stage": "verify",
+          "weight": 25,
+          "label": "URL 포함",
+          "matched0": "https://tax-reffund.invalid/pay/check"
+        }
+      ],
+      "topSignals": [
+        {
+          "id": "urgent",
+          "stage": "info",
+          "weightSum": 30,
+          "count": 1,
+          "ex0": "긴급"
+        },
+        {
+          "id": "link",
+          "stage": "verify",
+          "weightSum": 25,
+          "count": 1,
+          "ex0": "https://tax-reffund.invalid/pay/check"
+        }
+      ],
+      "meta": {
+        "stub_hint": "corpus/derived/normalized/counterscam_alert/pstSn_94.json",
+        "stub_features": {
+          "hasOtp": false,
+          "hasRemote": false,
+          "hasTransfer": false,
+          "hasCash": false,
+          "hasTravel": false,
+          "hasBlackmail": false,
+          "hasPII": false,
+          "hasCred": false,
+          "hasUrl": false,
+          "hasQr": false,
+          "hasGoBank": false,
+          "mentionsTypo": false,
+          "mentionsShort": false
+        },
+        "stub_keywords": [],
+        "augmented_vector": true,
+        "noiseLevel": "none",
+        "attempt": 1,
+        "pressures_raw": [
+          "press_urgent"
+        ],
+        "pressures_eff": [
+          "press_urgent"
+        ],
+        "anchors_planned": [
+          "A_LINK"
+        ],
+        "anchors_eff": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "caller": {
+          "caller_id": "SCAM_070_01",
+          "caller_display": "070-0000-201",
+          "caller_class": "voip070",
+          "is_whitelisted": false,
+          "is_first_seen": true
+        },
+        "vector": "url",
+        "url": {
+          "kind": "typo",
+          "value": "https://tax-reffund.invalid/pay/check",
+          "count": 1,
+          "match": false,
+          "official_id": "OFFICIAL_GOV_PAY"
+        },
+        "eff_anchors": [
+          "A_LINK",
+          "A_CRED"
+        ],
+        "eff_basis": "S"
+      }
+    }
+  ]
+}

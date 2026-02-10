@@ -1,0 +1,81 @@
+{
+  "source": "police_press",
+  "errorsPath": "C:\\projects\\phish-demo\\corpus\\meta\\errors.jsonl",
+  "dir": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press",
+  "outDir": "C:\\projects\\phish-demo\\corpus\\raw\\attachments\\police_press",
+  "top": 1,
+  "rows": [
+    {
+      "pstSn": "87",
+      "bbsId": "bbs002",
+      "refererRaw": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+      "refererWithPstSn": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21?pstSn=87",
+      "refererCleanWithPstSn": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do?pstSn=87",
+      "builtDetail": "https://www.counterscam112.go.kr/bbs002/board/boardDetail.do;jsessionid=VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21?pstSn=87",
+      "jsid": "VgS0asCnAu8l77XTTiZLWSO7rAqbEB2QF9kAIkB-.AP_homepage21",
+      "cookie_keys": [
+        "JSESSIONID"
+      ],
+      "detailPath": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\detail_pstSn_87.html",
+      "detailFrom": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\pstSn_87.html",
+      "fnHits": [
+        {
+          "atchFileId": "FILE_000000000000099",
+          "fileSn": "1"
+        }
+      ],
+      "candidates": [
+        "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+        "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+        "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+        "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+        "https://www.counterscam112.go.kr/board/file/bbs002/1/FILE_000000000000099/download.do",
+        "https://www.counterscam112.go.kr/board/file/bbs002/0/FILE_000000000000099/download.do",
+        "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=0",
+        "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=0"
+      ],
+      "attempts": [
+        {
+          "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+          "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+          "status": 404,
+          "ct": "text/html;charset=utf-8",
+          "ok": false,
+          "saved_html": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\download_errhtml_pstSn_87_1.html"
+        },
+        {
+          "url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+          "final_url": "https://www.counterscam112.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+          "status": 404,
+          "ct": "text/html;charset=utf-8",
+          "ok": false,
+          "saved_html": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\download_errhtml_pstSn_87_2.html"
+        },
+        {
+          "url": "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+          "final_url": "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099&fileSn=1",
+          "status": 404,
+          "ct": "text/html;charset=utf-8",
+          "ok": false,
+          "saved_html": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\download_errhtml_pstSn_87_3.html"
+        },
+        {
+          "url": "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+          "final_url": "https://www.counterscam112.go.kr/bbs002/cmm/fms/FileDown.do?atchFileId=FILE_000000000000099",
+          "status": 404,
+          "ct": "text/html;charset=utf-8",
+          "ok": false,
+          "saved_html": "C:\\projects\\phish-demo\\corpus\\raw\\pages\\police_press\\download_errhtml_pstSn_87_4.html"
+        },
+        {
+          "url": "https://www.counterscam112.go.kr/board/file/bbs002/1/FILE_000000000000099/download.do",
+          "final_url": "https://www.counterscam112.go.kr/board/file/bbs002/1/FILE_000000000000099/download.do",
+          "status": 200,
+          "ct": "application/octet-stream",
+          "ok": true,
+          "saved_as": "C:\\projects\\phish-demo\\corpus\\raw\\attachments\\police_press\\pstSn_87_att_5.hwp"
+        }
+      ]
+    }
+  ]
+}

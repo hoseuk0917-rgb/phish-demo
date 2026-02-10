@@ -1,0 +1,6 @@
+id	src_id	label	pick	mut	sim
+DEMO-EMB-0001	LLM-3137	medium	payment_link	none	0.8054515719413757
+DEMO-EMB-0002	LLM-3102	medium	delivery_link	url_hxxp	0.9005210399627686
+DEMO-EMB-0003	LLM-3065	high	otp_high	otp_changed	0.8474359512329102
+DEMO-EMB-0004	LLM-3060	high	bank_verify	none	0.8056996464729309
+DEMO-EMB-0005	LLM-3056	high	misc_medium	typo	0.7460422515869141

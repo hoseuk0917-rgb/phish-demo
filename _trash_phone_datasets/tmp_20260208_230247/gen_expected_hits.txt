@@ -1,0 +1,4 @@
+﻿@{LineNumber=749; Line=function stageFromAnchors(}
+@{LineNumber=789; Line=function riskFromSignals(}
+@{LineNumber=957; Line=function triggersFrom(}
+@{LineNumber=1289; Line=function toScenarioOutput(s: ScenarioInternal): AnyObj {}

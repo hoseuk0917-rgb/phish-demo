@@ -1,0 +1,67 @@
+id	expected_stagePeak	got_stagePeak	got_triggers_top3
+SC00006	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00010	info	payment	맥락: 현금 수거/퀵 전달 유도
+BN00012	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00025	verify	payment	맥락: 현금 수거/퀵 전달 유도
+BN00036	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+BN00040	info	payment	맥락: 현금 수거/퀵 전달 유도
+BN00043	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00050	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00053	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00054	verify	payment	맥락: 현금 수거/퀵 전달 유도
+BN00059	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00086	verify	payment	맥락: 현금 수거/퀵 전달 유도
+HN00090	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00093	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00095	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00098	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00117	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00123	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+BN00137	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00143	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00149	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00152	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00159	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00160	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00169	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00171	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+BN00190	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00209	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00212	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00224	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00228	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00230	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00246	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00259	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00262	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00289	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00299	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00330	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00334	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00352	verify	payment	맥락: 현금 수거/퀵 전달 유도
+HN00358	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00363	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00366	verify	payment	맥락: 현금 수거/퀵 전달 유도
+HN00375	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00380	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00381	verify	payment	맥락: 현금 수거/퀵 전달 유도
+HN00388	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+BN00394	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00401	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00411	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00414	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+BN00417	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00419	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00421	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00433	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00440	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00445	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00447	verify	payment	맥락: 현금 수거/퀵 전달 유도
+BN00457	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00459	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+HN00465	info	payment	맥락: 현금 수거/퀵 전달 유도
+SC00466	verify	payment	맥락: 현금 수거/퀵 전달 유도
+SC00486	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00492	verify	payment	맥락: 현금 수거/퀵 전달 유도
+HN00494	info	verify	맥락: 지원/환급/대상자 조회 + 링크 언급
+SC00495	verify	payment	맥락: 현금 수거/퀵 전달 유도

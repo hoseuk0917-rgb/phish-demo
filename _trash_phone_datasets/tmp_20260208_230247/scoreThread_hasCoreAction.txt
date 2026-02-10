@@ -1,0 +1,121 @@
+﻿ 1486:   const hasFamily = riskHits.some((h) => h.ruleId === "ctx_family_scam");
+ 1487: 
+ 1488:   const hasDemand = riskHits.some(
+ 1489:     (h) => h.ruleId === "ctx_demand" || h.ruleId === "ctx_comply_after_demand" || h.ruleId === "ctx_otp_relay"
+ 1490:   );
+ 1491: 
+ 1492:   const hasOtpFinance = riskHits.some(
+ 1493:     (h) => h.ruleId === "ctx_otp_finance" || h.ruleId === "ctx_otp_proxy" || h.ruleId === "ctx_denial_after_otp"
+ 1494:   );
+ 1495: 
+ 1496:   const hasPiiRequest = riskHits.some((h) => h.ruleId === "pii_request" || h.ruleId === "personalinfo");
+ 1497: 
+ 1498:   const hasGoBankAtm = riskHits.some((h) => h.ruleId === "go_bank_atm");
+ 1499:   const hasTransfer =
+ 1500:     hasGoBankAtm || riskHits.some((h) => h.ruleId === "transfer" || h.ruleId === "safe_account" || h.ruleId === "ctx_transfer_phrase");
+ 1501:   const hasPayRequest = hasTransfer || riskHits.some((h) => h.ruleId === "ctx_payment_request" || h.ruleId === "ctx_pay_with_link");
+ 1502: 
+ 1503:   const hasContactMove = riskHits.some((h) => h.ruleId === "ctx_contact_move");
+ 1504:   const hasVisitPlace = riskHits.some((h) => h.ruleId === "ctx_visit_place");
+ 1505:   const hasTransferDemand = riskHits.some((h) => h.ruleId === "ctx_transfer_demand");
+ 1506:   const hasCashPickup = riskHits.some((h) => h.ruleId === "ctx_cash_pickup");
+ 1507:   const hasJobHook = riskHits.some((h) => h.ruleId === "ctx_job_hook");
+ 1508: 
+ 1509:   const hosts = getHostsFromText(rawThread);
+ 1510:   const hasUrl = hosts.length > 0;
+ 1511:   const hasLinkAny = hasLink || hasUrl;
+ 1512: 
+ 1513:   const itSupportCue = /회사\s*it|it\s*지원|공식\s*원격|helpdesk|헬프데스크|사내\s*공지|공지/i.test(rawThread);
+ 1514: 
+ 1515:   // 내부 포털/인프라로 '명확히' 보이는 호스트만 benign 후보로 취급
+ 1516:   const internalHost =
+ 1517:     hosts.some((h) => /(^|\.)intranet(\.|$)/i.test(h)) ||
+ 1518:     hosts.some((h) => /(^|\.)internal(\.|$)/i.test(h)) ||
+ 1519:     hosts.some((h) => /(^|\.)corp(\.|$)/i.test(h)) ||
+ 1520:     hosts.some((h) => /(^|\.)portal(\.|$)/i.test(h)) ||
+ 1521:     hosts.some((h) => /(^|\.)servicenow(\.|$)/i.test(h)) ||
+ 1522:     hosts.some((h) => /(^|\.)jira(\.|$)/i.test(h)) ||
+ 1523:     hosts.some((h) => /(^|\.)confluence(\.|$)/i.test(h));
+ 1524: 
+ 1525:   // itSupportCue + internalHost가 동시에 성립하고, "강한 액션"이 없을 때만 benignSupport로 완화
+ 1526:   const benignSupport =
+ 1527:     itSupportCue &&
+ 1528:     internalHost &&
+ 1529:     !(
+ 1530:       hasRemote ||
+ 1531:       hasOtp ||
+ 1532:       hasOtpFinance ||
+ 1533:       hasApk ||
+ 1534:       hasInstallMention ||
+ 1535:       hasPayRequest ||
+ 1536:       hasTransfer ||
+ 1537:       hasTransferDemand ||
+ 1538:       hasCashPickup ||
+ 1539:       hasVisitPlace ||
+ 1540:       hasPiiRequest ||
+ 1541:       hasJobHook ||
+ 1542:       !!(call?.otpAsked || call?.remoteAsked)
+ 1543:     );
+ 1544: 
+ 1545:   // ✅ 코어 액션(진행 단계의 핵): 이 중 하나라도 있어야 High 후보가 됨
+ 1546:   const hasCoreAction =
+ 1547:     hasOtp ||
+ 1548:     hasOtpFinance ||
+ 1549:     hasRemote ||
+ 1550:     hasApk ||
+ 1551:     hasInstallMention ||
+ 1552:     hasPayRequest ||
+ 1553:     hasTransfer ||
+ 1554:     hasTransferDemand ||
+ 1555:     hasCashPickup ||
+ 1556:     hasVisitPlace ||
+ 1557:     hasPiiRequest ||
+ 1558:     hasJobHook ||
+ 1559:     !!(call?.otpAsked || call?.remoteAsked);
+ 1560: 
+ 1561:   // 구조적 High 후보들(여기서 authority/threat/urgent는 “증폭기”)
+ 1562:   const installHigh = hasLinkAny && (hasRemote || hasApk || hasInstallMention) && !benignSupport;
+ 1563: 
+ 1564:   const investHigh =
+ 1565:     hasInvest &&
+ 1566:     (hasLinkAny || hasContactMove) &&
+ 1567:     (hasInstallMention || hasApk || hasPayRequest || hasTransferDemand || hasUrgentHit || hasThreat || hasAuthority) &&
+ 1568:     !benignSupport;
+ 1569: 
+ 1570:   const otpAuthorityHigh = hasOtp && hasDemand && (hasThreat || hasAuthority || hasTxnAlert || hasOtpFinance) && !benignSupport;
+ 1571:   const otpLinkDemandHigh = hasOtp && hasLinkAny && hasDemand && !benignSupport;
+ 1572: 
+ 1573:   const familyHigh = hasFamily && (hasPayRequest || hasUrgentHit || hasTransferDemand) && !benignSupport;
+ 1574: 
+ 1575:   const jobPiiHigh = hasLinkAny && hasJobScam && hasPiiRequest && !benignSupport;
+ 1576: 
+ 1577:   // 장소 방문/이동은 단독/느슨한 결합으로 High 승격 금지
+ 1578:   // - 취업/투자 훅 + 연락처 이동/링크 + 금전 액션(현금/이체/선입금 등)까지 붙을 때만 High 구조로 취급
+ 1579:   const visitHigh =
+ 1580:     hasVisitPlace &&
+ 1581:     (hasJobHook || hasJobScam || hasInvest) &&
+ 1582:     (hasContactMove || hasLinkAny) &&
+ 1583:     (hasCashPickup || hasTransferDemand || hasPayRequest || hasTransfer) &&
+ 1584:     !benignSupport;
+ 1585: 
+ 1586:   // (신규) 이체/송금 지시는 transfer 단독보다 강하게 High 구조로 취급
+ 1587:   const transferDemandHigh =
+ 1588:     (hasTransferDemand || hasTransfer) &&
+ 1589:     (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasFirst || hasOtp) &&
+ 1590:     !benignSupport;
+ 1591: 
+ 1592:   // (신규) 현금 수거/퀵 전달은 매우 강함
+ 1593:   const cashPickupHigh =
+ 1594:     hasCashPickup && (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasContactMove) && !benignSupport;
+ 1595: 
+ 1596:   // 결제/이체는 “단독”이면 High 아님: 보조 구조가 있어야 High
+ 1597:   const payHigh =
+ 1598:     hasPayRequest &&
+ 1599:     (hasAuthority || hasThreat || hasUrgentHit || hasLinkAny || hasFirst || hasOtp || hasRemote || hasApk || hasInstallMention || hasContactMove) &&
+ 1600:     !benignSupport;
+ 1601: 
+ 1602:   // (신규) 취업사기: 고수익/알바 + (연락처 이동) + (방문/이동 or 이체/선입금/현금) 조합
+ 1603:   const jobHigh =
+ 1604:     (hasJobHook || hasJobScam) &&
+ 1605:     (hasContactMove || hasLinkAny) &&
+ 1606:     (hasVisitPlace || hasPayRequest || hasTransferDemand || hasTransfer || hasCashPickup) &&

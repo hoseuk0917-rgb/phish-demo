@@ -1,0 +1,301 @@
+﻿  960:     pressures: string[],
+  961:     impersonation?: string,
+  962:     vector?: Vector,
+  963:     urlKind?: UrlKind
+  964: ) {
+  965:     const t: string[] = [];
+  966:     if (impersonation) t.push(impersonation);
+  967: 
+  968:     for (const a of anchors) {
+  969:         if (a === "A_LINK") t.push("act_link");
+  970:         if (a === "A_QR") t.push("act_qr_scan");
+  971:         if (a === "A_INSTALL") t.push("act_install", "act_remote");
+  972:         if (a === "A_OTP") t.push("act_otp_relay");
+  973:         if (a === "A_TRANSFER") t.push("act_transfer");
+  974:         if (a === "A_GO_BANK") t.push("act_go_bank");
+  975:         if (a === "A_CASH_PICKUP") t.push("act_cash_pickup");
+  976: 
+  977:         // ✅ 엔진에 맞추기: travel은 job_lure로
+  978:         if (a === "A_TRAVEL") t.push("job_lure");
+  979: 
+  980:         if (a === "A_CRED") t.push("req_credentials");
+  981:         if (a === "A_PII") t.push("req_personal");
+  982:     }
+  983: 
+  984:     for (const p of pressures) t.push(p);
+  985: 
+  986:     if (vector === "url") t.push("vector_url");
+  987:     if (vector === "qr") t.push("vector_qr");
+  988:     if (urlKind === "short") t.push("act_shortlink");
+  989:     if (urlKind === "typo") t.push("url_typo");
+  990:     if (urlKind === "homoglyph") t.push("url_homoglyph");
+  991: 
+  992:     // 케이스 라벨도 엔진쪽으로 최소 정렬(필요하면 추가 확장)
+  993:     if (caseType === "job_travel") t.push("job_lure");
+  994:     if (caseType === "blackmail_sexvisit") t.push("cat_blackmail");
+  995: 
+  996:     return uniqSorted(t);
+  997: }
+  998: 
+  999: // ---------- 대화 생성(방어/데모 톤, 어미/동의어/오타 다양화 포함) ----------
+ 1000: function buildConversation(
+ 1001:     rng: () => number,
+ 1002:     caseType: CaseType,
+ 1003:     anchors: Anchor[],
+ 1004:     vector: Vector,
+ 1005:     urlStr: string | undefined,
+ 1006:     urlKind: UrlKind | undefined,
+ 1007:     noiseLevel: "none" | "low" | "mid" | "high",
+ 1008:     maxLen: number,
+ 1009:     callerDisplay: string,
+ 1010:     stubKeywords: string[],
+ 1011:     pressures: string[],
+ 1012:     impersonation?: string,
+ 1013: ): ScenarioTurn[] {
+ 1014:     const tone = pickTone(rng);
+ 1015: 
+ 1016:     const ORG = (() => {
+ 1017:         // ✅ 엔진이 실제로 잡기 쉬운 한국어 키워드 포함
+ 1018:         if (impersonation === "imp_bank") return pick(rng, ["OO은행", "OO카드", "금융감독원"] as const);
+ 1019:         if (impersonation === "imp_court") return pick(rng, ["OO지방법원", "법원"] as const);
+ 1020:         if (impersonation === "imp_police") return pick(rng, ["OO경찰서", "경찰"] as const);
+ 1021:         if (impersonation === "imp_gov") return pick(rng, ["국세청", "정부24", "행정기관"] as const);
+ 1022:         if (impersonation === "imp_delivery") return pick(rng, ["OO택배", "배송업체"] as const);
+ 1023: 
+ 1024:         // fallback
+ 1025:         if (caseType === "delivery_link") return pick(rng, ["OO택배", "배송업체"] as const);
+ 1026:         if (caseType.startsWith("bank_") || caseType === "account_takeover_cred") return pick(rng, ["OO은행", "금융감독원"] as const);
+ 1027:         if (caseType === "go_bank_atm") return pick(rng, ["OO지방법원", "검찰"] as const);
+ 1028:         return "기관";
+ 1029:     })();
+ 1030: 
+ 1031:     const pretextLines: string[] = [];
+ 1032:     const credLines: string[] = [];
+ 1033:     const pressureLines: string[] = [];
+ 1034:     const anchorLines: string[] = [];
+ 1035:     const followLines: string[] = [];
+ 1036: 
+ 1037:     const callerTag = callerDisplay ? `[발신 ${callerDisplay}] ` : "";
+ 1038: 
+ 1039:     // ✅ press_*가 실제 텍스트로 들어가야 prefilter/룰이 강하게 잡힘
+ 1040:     if (pressures.includes("press_urgent")) {
+ 1041:         pressureLines.push(applyNoiseKo(rng, varyEnding(rng, `긴급 안내입니다. 지금 바로 처리해야 합니다`, tone), noiseLevel));
+ 1042:     }
+ 1043:     if (pressures.includes("press_secrecy")) {
+ 1044:         pressureLines.push(applyNoiseKo(rng, varyEnding(rng, `보안상 외부 공유 금지입니다. 가족/지인에게도 말하지 마세요`, tone), noiseLevel));
+ 1045:     }
+ 1046:     if (pressures.includes("press_threat")) {
+ 1047:         pressureLines.push(applyNoiseKo(rng, varyEnding(rng, `미이행 시 계좌 정지/법적 조치가 진행될 수 있습니다`, tone), noiseLevel));
+ 1048:     }
+ 1049: 
+ 1050:     switch (caseType) {
+ 1051:         case "delivery_link":
+ 1052:             pretextLines.push(`${callerTag}${ORG} 안내입니다`);
+ 1053:             credLines.push(`배송지/보관 관련 확인이 필요합니다`);
+ 1054:             break;
+ 1055:         case "fine_refund_link":
+ 1056:             pretextLines.push(`${callerTag}${ORG} 안내입니다`);
+ 1057:             credLines.push(`미납/환급 관련 확인이 필요합니다`);
+ 1058:             break;
+ 1059:         case "bank_otp":
+ 1060:             pretextLines.push(`${callerTag}${ORG} 보안 안내입니다`);
+ 1061:             credLines.push(`본인 확인 절차가 필요합니다`);
+ 1062:             break;
+ 1063:         case "bank_install":
+ 1064:             pretextLines.push(`${callerTag}${ORG} 보안 점검 안내입니다`);
+ 1065:             credLines.push(`원격 지원 절차가 필요합니다`);
+ 1066:             break;
+ 1067:         case "account_takeover_cred":
+ 1068:             pretextLines.push(`${callerTag}${ORG} 계정 보안 안내입니다`);
+ 1069:             credLines.push(`로그인 차단 해제를 위해 확인이 필요합니다`);
+ 1070:             break;
+ 1071:         case "pii_collection":
+ 1072:             pretextLines.push(`${callerTag}${ORG} 확인 안내입니다`);
+ 1073:             credLines.push(`신분 확인을 위해 기초 정보 확인이 필요합니다`);
+ 1074:             break;
+ 1075:         case "family_urgent_transfer":
+ 1076:             pretextLines.push(`${callerTag}[가족] 긴급 상황입니다`);
+ 1077:             credLines.push(`지금 바로 확인이 필요합니다`);
+ 1078:             break;
+ 1079:         case "loan_fee":
+ 1080:             pretextLines.push(`${callerTag}${ORG} 심사 안내입니다`);
+ 1081:             credLines.push(`절차 진행을 위해 확인이 필요합니다`);
+ 1082:             break;
+ 1083:         case "go_bank_atm":
+ 1084:             pretextLines.push(`${callerTag}${ORG} 사건 처리 안내입니다`);
+ 1085:             credLines.push(`현장 확인 절차가 필요합니다`);
+ 1086:             break;
+ 1087:         case "cash_pickup":
+ 1088:             pretextLines.push(`${callerTag}${ORG} 처리 안내입니다`);
+ 1089:             credLines.push(`대면 전달 절차가 필요합니다`);
+ 1090:             break;
+ 1091:         case "job_travel":
+ 1092:             pretextLines.push(`${callerTag}해외 고수익 채용 안내입니다`);
+ 1093:             credLines.push(`출국/현지 근무 조건이며, 진행을 위해 본인 확인이 필요합니다`);
+ 1094:             break;
+ 1095:         case "blackmail_sexvisit":
+ 1096:             pretextLines.push(`${callerTag}협박 메시지입니다`);
+ 1097:             credLines.push(`시간 압박/비밀 강요 등이 포함됩니다`);
+ 1098:             break;
+ 1099:     }
+ 1100: 
+ 1101:     for (const a of anchors) {
+ 1102:         const line = renderAnchorLineSafe(rng, a, tone, urlStr, vector, urlKind);
+ 1103:         anchorLines.push(applyNoiseKo(rng, line, noiseLevel));
+ 1104:     }
+ 1105: 
+ 1106:     if (anchors.length === 0) {
+ 1107:         followLines.push(applyNoiseKo(rng, varyEnding(rng, `민감한 정보는 다른 채널로 전달하지 않는 방식이 안전합니다`, tone), noiseLevel));
+ 1108:         followLines.push(applyNoiseKo(rng, varyEnding(rng, `필요하면 대표번호로 직접 확인하는 방식이 안전합니다`, tone), noiseLevel));
+ 1109:     }
+ 1110: 
+ 1111:     const resistance = [
+ 1112:         `그런 건 왜 물어보시죠?`,
+ 1113:         `왜 그걸 확인해야 하나요?`,
+ 1114:         `내용이 이상한데요. 제가 직접 확인할게요.`,
+ 1115:         `대표번호로 확인하고 다시 연락드리겠습니다.`,
+ 1116:         `링크는 직접 검색해서 들어가겠습니다.`,
+ 1117:         `민감한 정보는 안내하기 어렵습니다.`,
+ 1118:         `지금은 진행하지 않겠습니다.`,
+ 1119:     ].map((s) => applyNoiseKo(rng, varyEnding(rng, s.endsWith(".") ? s : s + ".", tone), noiseLevel));
+ 1120: 
+ 1121:     const turns: ScenarioTurn[] = [];
+ 1122: 
+ 1123:     turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, (pretextLines[0] || `${callerTag}${ORG} 안내입니다`) + ".", tone), noiseLevel) });
+ 1124:     turns.push({ role: "R", text: pick(rng, ["무슨 내용인가요?", "확인해볼게요.", "네."]) });
+ 1125:     turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, (credLines[0] || `확인 절차가 필요합니다`) + ".", tone), noiseLevel) });
+ 1126: 
+ 1127:     // ✅ 예약: pressureLines + anchorLines + followLines는 절대 잘리지 않게
+ 1128:     const reserved = pressureLines.length + anchorLines.length + followLines.length;
+ 1129:     const hardMin = Math.min(20, 3 + Math.max(0, reserved));
+ 1130:     const capLen = Math.min(20, Math.max(maxLen, hardMin));
+ 1131: 
+ 1132:     const roomForOptional = Math.max(0, capLen - reserved);
+ 1133: 
+ 1134:     if (stubKeywords.length && turns.length + 1 <= roomForOptional) {
+ 1135:         turns.push({ role: "S", text: applyNoiseKo(rng, varyEnding(rng, `참고 키워드: ${stubKeywords.join(", ")}`, tone), noiseLevel) });
+ 1136:     }
+ 1137: 
+ 1138:     if (chance(rng, 0.4) && capLen >= 6 && turns.length + 2 <= roomForOptional) {
+ 1139:         turns.push({ role: "R", text: pick(rng, resistance) });
+ 1140: 
+ 1141:         const canHandoff = !!urlStr && (vector === "url" || vector === "qr");
+ 1142:         const handoffUrl = urlStr || "https://example.invalid/";
+ 1143:         const pressurePool = [
+ 1144:             "긴급 건입니다. 지금 바로 처리해 주세요.",
+ 1145:             "오늘 안으로 미처리 시 이용 제한될 수 있습니다. 즉시 확인 바랍니다.",
+ 1146:             "시간이 없습니다. 10분 내로 답변/확인 부탁드립니다.",
+ 1147:             ...(canHandoff ? [`확인 링크 보내드립니다: ${handoffUrl}`] : []),
+ 1148:         ];
+ 1149: 
+ 1150:         turns.push({
+ 1151:             role: "S",
+ 1152:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, pressurePool), tone), noiseLevel),
+ 1153:         });
+ 1154:     }
+ 1155: 
+ 1156:     const canSpikeLate = chance(rng, 0.55) && capLen >= 8;
+ 1157:     if (canSpikeLate) {
+ 1158:         const remainingForBuild = Math.max(0, roomForOptional - turns.length);
+ 1159:         const buildN = clampInt(Math.floor(rng() * 5) + 2, 0, Math.min(6, remainingForBuild));
+ 1160:         for (let i = 0; i < buildN; i++) {
+ 1161:             turns.push({
+ 1162:                 role: i % 2 === 0 ? "S" : "R",
+ 1163:                 text:
+ 1164:                     i % 2 === 0
+ 1165:                         ? applyNoiseKo(rng, varyEnding(rng, pick(rng, ["절차 안내입니다.", "확인이 필요합니다.", "기한이 있습니다."]), tone), noiseLevel)
+ 1166:                         : pick(rng, ["지금 해야 하나요?", "어떻게 하나요?", "왜요?"]),
+ 1167:             });
+ 1168:             if (turns.length >= roomForOptional) break;
+ 1169:         }
+ 1170:     }
+ 1171: 
+ 1172:     // ✅ 압박 → 앵커 → 후속 순서로 삽입
+ 1173:     for (const line of pressureLines) turns.push({ role: "S", text: line });
+ 1174:     for (const line of anchorLines) turns.push({ role: "S", text: line });
+ 1175:     for (const line of followLines) turns.push({ role: "S", text: line });
+ 1176: 
+ 1177:     while (turns.length < capLen && chance(rng, 0.35)) {
+ 1178:         turns.push({ role: "R", text: pick(rng, ["확인했습니다.", "이상한데요.", "진행 안 하겠습니다."]) });
+ 1179:         if (turns.length >= capLen) break;
+ 1180: 
+ 1181:         const canHandoff = !!urlStr && (vector === "url" || vector === "qr");
+ 1182:         const handoffUrl = urlStr || "";
+ 1183:         const followPool = [
+ 1184:             "추가 진행을 유도하는 내용이 포함됩니다.",
+ 1185:             "급하게 진행하라고 재촉하는 내용이 포함됩니다.",
+ 1186:             "다른 방식으로 확인하라고 안내하는 내용이 포함됩니다.",
+ 1187:             ...(canHandoff ? [`다른 채널로 안내하겠다며 링크를 전달하는 내용이 포함됩니다: ${handoffUrl}`] : []),
+ 1188:         ];
+ 1189: 
+ 1190:         turns.push({
+ 1191:             role: "S",
+ 1192:             text: applyNoiseKo(rng, varyEnding(rng, pick(rng, followPool), tone), noiseLevel),
+ 1193:         });
+ 1194: 
+ 1195:         if (turns.length >= capLen) break;
+ 1196:     }
+ 1197: 
+ 1198:     return turns.slice(0, capLen);
+ 1199: }
+ 1200: 
+ 1201: // ---------- 밸리데이터 ----------
+ 1202: function validateScenario(s: ScenarioInternal, isBenign: boolean): string[] {
+ 1203:     const errs: string[] = [];
+ 1204: 
+ 1205:     const urlCount = s.url?.count ?? 0;
+ 1206:     if (urlCount > 1) errs.push("url_count>1");
+ 1207: 
+ 1208:     if (!isBenign && (!s.anchors || s.anchors.length === 0)) errs.push("malicious_missing_anchor");
+ 1209: 
+ 1210:     const sTurns = s.turns.filter((t) => t.role === "S");
+ 1211:     if (sTurns.length < 2) errs.push("missing_pretext_or_cred");
+ 1212: 
+ 1213:     // ✅ 전화/메시지 타겟: 정상/비정상 모두 thread(특히 S)에 전화번호가 반드시 있어야 함
+ 1214:     const hasPhone = (x: string) => {
+ 1215:         const pat =
+ 1216:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/;
+ 1217:         return pat.test(String(x || ""));
+ 1218:     };
+ 1219:     const sTextAll = sTurns.map((t) => String((t as any)?.text ?? "")).join("\n");
+ 1220:     const callerDisp = String((s as any)?.caller?.caller_display ?? "");
+ 1221:     if (!hasPhone(callerDisp) && !hasPhone(sTextAll)) errs.push("missing_phone");
+ 1222: 
+ 1223:     if (isBenign) {
+ 1224:         const bad = s.anchors.some((a) =>
+ 1225:             ["A_OTP", "A_INSTALL", "A_TRANSFER", "A_CRED", "A_PII", "A_CASH_PICKUP", "A_GO_BANK", "A_TRAVEL"].includes(a)
+ 1226:         );
+ 1227:         if (bad) errs.push("benign_has_danger_anchor");
+ 1228:     }
+ 1229: 
+ 1230:     if (!isBenign && s.caller.is_whitelisted) {
+ 1231:         if (s.expected.risk === "low") errs.push("whitelisted_malicious_should_not_be_low");
+ 1232:     }
+ 1233: 
+ 1234:     if (s.url && s.vector !== "url") errs.push("url_vector_mismatch");
+ 1235:     if (s.qr && s.vector !== "qr") errs.push("qr_vector_mismatch");
+ 1236: 
+ 1237:     return errs;
+ 1238: }
+ 1239: 
+ 1240: // ---------- 출력 스키마 어댑터 ----------
+ 1241: function turnsToThread(
+ 1242:     turns: { role: "S" | "R"; text: string }[],
+ 1243:     callerDisplay?: string
+ 1244: ) {
+ 1245:     const phoneLike = (s: string) => {
+ 1246:         const t = String(s || "");
+ 1247:         return (
+ 1248:             /발신번호표시제한/.test(t) ||
+ 1249:             /(?<!\d)(0(?:10|11|16|17|18|19)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:2|3\d|4\d|5\d|6\d)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|0(?:70|50)\s*[-]?\s*\d{3,4}\s*[-]?\s*\d{4}|1(?:5|6|8)\d{2}\s*[-]?\s*\d{4})(?!\d)/.test(t)
+ 1250:         );
+ 1251:     };
+ 1252: 
+ 1253:     const normRole = (raw: any, idx: number): "S" | "R" => {
+ 1254:         if (raw === "S" || raw === "sender") return "S";
+ 1255:         if (raw === "R" || raw === "receiver") return "R";
+ 1256:         return idx === 0 ? "S" : "R";
+ 1257:     };
+ 1258: 
+ 1259:     const lines = (turns || []).map((t: any, idx: number) => {
+ 1260:         const role = normRole(t?.role, idx);

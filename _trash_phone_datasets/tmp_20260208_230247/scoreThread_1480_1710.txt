@@ -1,0 +1,231 @@
+ 1480: 
+ 1481:   const hasJobScam = riskHits.some((h) => h.ruleId === "ctx_job_scam");
+ 1482:   const hasInvest = riskHits.some((h) => h.ruleId === "ctx_investment_link");
+ 1483:   const hasInstallMention = riskHits.some((h) => h.ruleId === "ctx_install_mention");
+ 1484:   const hasFamily = riskHits.some((h) => h.ruleId === "ctx_family_scam");
+ 1485: 
+ 1486:   const hasDemand = riskHits.some(
+ 1487:     (h) => h.ruleId === "ctx_demand" || h.ruleId === "ctx_comply_after_demand" || h.ruleId === "ctx_otp_relay"
+ 1488:   );
+ 1489: 
+ 1490:   const hasOtpFinance = riskHits.some(
+ 1491:     (h) => h.ruleId === "ctx_otp_finance" || h.ruleId === "ctx_otp_proxy" || h.ruleId === "ctx_denial_after_otp"
+ 1492:   );
+ 1493: 
+ 1494:   const hasPiiRequest = riskHits.some((h) => h.ruleId === "pii_request" || h.ruleId === "personalinfo");
+ 1495: 
+ 1496:   const hasTransfer = riskHits.some((h) => h.ruleId === "transfer" || h.ruleId === "safe_account" || h.ruleId === "ctx_transfer_phrase");
+ 1497:   const hasPayRequest = hasTransfer || riskHits.some((h) => h.ruleId === "ctx_payment_request" || h.ruleId === "ctx_pay_with_link");
+ 1498: 
+ 1499:   const hasContactMove = riskHits.some((h) => h.ruleId === "ctx_contact_move");
+ 1500:   const hasVisitPlace = riskHits.some((h) => h.ruleId === "ctx_visit_place" || h.ruleId === "go_bank_atm");
+ 1501:   const hasTransferDemand = riskHits.some((h) => h.ruleId === "ctx_transfer_demand");
+ 1502:   const hasCashPickup = riskHits.some((h) => h.ruleId === "ctx_cash_pickup");
+ 1503:   const hasJobHook = riskHits.some((h) => h.ruleId === "ctx_job_hook");
+ 1504: 
+ 1505:   const hosts = getHostsFromText(rawThread);
+ 1506:   const hasUrl = hosts.length > 0;
+ 1507:   const hasLinkAny = hasLink || hasUrl;
+ 1508: 
+ 1509:   const itSupportCue = /회사\s*it|it\s*지원|공식\s*원격|helpdesk|헬프데스크|사내\s*공지|공지/i.test(rawThread);
+ 1510: 
+ 1511:   // 내부 포털/인프라로 '명확히' 보이는 호스트만 benign 후보로 취급
+ 1512:   const internalHost =
+ 1513:     hosts.some((h) => /(^|\.)intranet(\.|$)/i.test(h)) ||
+ 1514:     hosts.some((h) => /(^|\.)internal(\.|$)/i.test(h)) ||
+ 1515:     hosts.some((h) => /(^|\.)corp(\.|$)/i.test(h)) ||
+ 1516:     hosts.some((h) => /(^|\.)portal(\.|$)/i.test(h)) ||
+ 1517:     hosts.some((h) => /(^|\.)servicenow(\.|$)/i.test(h)) ||
+ 1518:     hosts.some((h) => /(^|\.)jira(\.|$)/i.test(h)) ||
+ 1519:     hosts.some((h) => /(^|\.)confluence(\.|$)/i.test(h));
+ 1520: 
+ 1521:   // itSupportCue + internalHost가 동시에 성립하고, "강한 액션"이 없을 때만 benignSupport로 완화
+ 1522:   const benignSupport =
+ 1523:     itSupportCue &&
+ 1524:     internalHost &&
+ 1525:     !(
+ 1526:       hasRemote ||
+ 1527:       hasOtp ||
+ 1528:       hasOtpFinance ||
+ 1529:       hasApk ||
+ 1530:       hasInstallMention ||
+ 1531:       hasPayRequest ||
+ 1532:       hasTransfer ||
+ 1533:       hasTransferDemand ||
+ 1534:       hasCashPickup ||
+ 1535:       hasVisitPlace ||
+ 1536:       hasPiiRequest ||
+ 1537:       hasJobHook ||
+ 1538:       !!(call?.otpAsked || call?.remoteAsked)
+ 1539:     );
+ 1540: 
+ 1541:   // ? 코어 액션(진행 단계의 핵): 이 중 하나라도 있어야 High 후보가 됨
+ 1542:   const hasCoreAction =
+ 1543:     hasOtp ||
+ 1544:     hasOtpFinance ||
+ 1545:     hasRemote ||
+ 1546:     hasApk ||
+ 1547:     hasInstallMention ||
+ 1548:     hasPayRequest ||
+ 1549:     hasTransfer ||
+ 1550:     hasTransferDemand ||
+ 1551:     hasCashPickup ||
+ 1552:     hasVisitPlace ||
+ 1553:     hasPiiRequest ||
+ 1554:     hasJobHook ||
+ 1555:     !!(call?.otpAsked || call?.remoteAsked);
+ 1556: 
+ 1557:   // 구조적 High 후보들(여기서 authority/threat/urgent는 “증폭기”)
+ 1558:   const installHigh = hasLinkAny && (hasRemote || hasApk || hasInstallMention) && !benignSupport;
+ 1559: 
+ 1560:   const investHigh =
+ 1561:     hasInvest &&
+ 1562:     (hasLinkAny || hasContactMove) &&
+ 1563:     (hasInstallMention || hasApk || hasPayRequest || hasTransferDemand || hasUrgentHit || hasThreat || hasAuthority) &&
+ 1564:     !benignSupport;
+ 1565: 
+ 1566:   const otpAuthorityHigh = hasOtp && hasDemand && (hasThreat || hasAuthority || hasTxnAlert || hasOtpFinance) && !benignSupport;
+ 1567:   const otpLinkDemandHigh = hasOtp && hasLinkAny && hasDemand && !benignSupport;
+ 1568: 
+ 1569:   const familyHigh = hasFamily && (hasPayRequest || hasUrgentHit || hasTransferDemand) && !benignSupport;
+ 1570: 
+ 1571:   const jobPiiHigh = hasLinkAny && hasJobScam && hasPiiRequest && !benignSupport;
+ 1572: 
+ 1573:   // 장소 방문/이동은 단독/느슨한 결합으로 High 승격 금지
+ 1574:   // - 취업/투자 훅 + 연락처 이동/링크 + 금전 액션(현금/이체/선입금 등)까지 붙을 때만 High 구조로 취급
+ 1575:   const visitHigh =
+ 1576:     hasVisitPlace &&
+ 1577:     (hasJobHook || hasJobScam || hasInvest) &&
+ 1578:     (hasContactMove || hasLinkAny) &&
+ 1579:     (hasCashPickup || hasTransferDemand || hasPayRequest || hasTransfer) &&
+ 1580:     !benignSupport;
+ 1581: 
+ 1582:   // (신규) 이체/송금 지시는 transfer 단독보다 강하게 High 구조로 취급
+ 1583:   const transferDemandHigh =
+ 1584:     (hasTransferDemand || hasTransfer) &&
+ 1585:     (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasFirst || hasOtp) &&
+ 1586:     !benignSupport;
+ 1587: 
+ 1588:   // (신규) 현금 수거/퀵 전달은 매우 강함
+ 1589:   const cashPickupHigh =
+ 1590:     hasCashPickup && (hasAuthority || hasThreat || hasUrgentHit || hasDemand || hasLinkAny || hasContactMove) && !benignSupport;
+ 1591: 
+ 1592:   // 결제/이체는 “단독”이면 High 아님: 보조 구조가 있어야 High
+ 1593:   const payHigh =
+ 1594:     hasPayRequest &&
+ 1595:     (hasAuthority || hasThreat || hasUrgentHit || hasLinkAny || hasFirst || hasOtp || hasRemote || hasApk || hasInstallMention || hasContactMove) &&
+ 1596:     !benignSupport;
+ 1597: 
+ 1598:   // (신규) 취업사기: 고수익/알바 + (연락처 이동) + (방문/이동 or 이체/선입금/현금) 조합
+ 1599:   const jobHigh =
+ 1600:     (hasJobHook || hasJobScam) &&
+ 1601:     (hasContactMove || hasLinkAny) &&
+ 1602:     (hasVisitPlace || hasPayRequest || hasTransferDemand || hasTransfer || hasCashPickup) &&
+ 1603:     !benignSupport;
+ 1604: 
+ 1605:   // ? hardHigh = 코어 액션 전제 + 구조 매칭
+ 1606:   const hardHigh =
+ 1607:     hasCoreAction &&
+ 1608:     ((hasRemote && hasOtp) ||
+ 1609:       (hasFirst && (hasRemote || hasOtp)) ||
+ 1610:       installHigh ||
+ 1611:       otpAuthorityHigh ||
+ 1612:       otpLinkDemandHigh ||
+ 1613:       familyHigh ||
+ 1614:       jobPiiHigh ||
+ 1615:       payHigh ||
+ 1616:       investHigh ||
+ 1617:       visitHigh ||
+ 1618:       transferDemandHigh ||
+ 1619:       cashPickupHigh ||
+ 1620:       jobHigh ||
+ 1621:       (hasJobScam && !benignSupport));
+ 1622: 
+ 1623:   let riskLevel: RiskLevel = toRiskLevel(scoreTotal, hardHigh);
+ 1624: 
+ 1625:   // ? High는 hardHigh 구조로만 허용(점수 누적/약한 단어 반복만으로 High 금지)
+ 1626:   // (기존 가드 유지: 코어 액션도 없으면 우선 Medium)
+ 1627:   if (riskLevel === ("high" as RiskLevel) && !hardHigh && !hasCoreAction) {
+ 1628:     riskLevel = "medium" as RiskLevel;
+ 1629:   }
+ 1630: 
+ 1631:   // hardHigh가 아니면 High 금지(코어 액션이 있어도 Medium으로 내림)
+ 1632:   if (riskLevel === ("high" as RiskLevel) && !hardHigh) {
+ 1633:     riskLevel = "medium" as RiskLevel;
+ 1634:   }
+ 1635: 
+ 1636:   // 조언 대화는 low
+ 1637:   if (isAdviceOnlyThread(rawThread)) riskLevel = "low" as RiskLevel;
+ 1638: 
+ 1639:   // 알림/설정/확인 링크 + “내가 했다/아니다”류는 high 금지 (실제 납부/이체 텍스트가 있으면 제외)
+ 1640:   const alertSettingThread =
+ 1641:     /(알림\s*설정|설정\s*변경|설정이\s*변경|설정\s*확인|결제\s*알림\s*설정|계좌\s*알림\s*설정|자동이체\s*등록|자동\s*이체\s*등록|다른\s*기기\s*로그인\s*시도\s*감지|로그인\s*시도\s*감지|접속\s*시도\s*감지)/i.test(
+ 1642:       rawThread
+ 1643:     );
+ 1644:   const selfAckThread = isSelfAckText(rawThread);
+ 1645:   const ackOrBenign =
+ 1646:     selfAckThread ||
+ 1647:     /(확인\s*만|확인만|문제\s*없|정상|제가\s*아닌데|제가\s*한\s*적\s*없|한\s*적\s*없|접수\s*안\s*했|모르겠|아닌데요)/i.test(
+ 1648:       rawThread
+ 1649:     );
+ 1650:   const hasExplicitPayWord =
+ 1651:     /(납부|송금|이체|입금|지불|충전|선납|보험료|안내\s*계좌|보호\s*계좌|안전\s*계좌|지정\s*계좌|상품권|문화\s*상품권|문상|핀\s*번호|pin|기프트\s*카드|gift\s*card|usdt|btc|eth|wallet|지갑\s*주소|trc20|erc20|바이낸스|업비트|빗썸)/i.test(
+ 1652:       rawThread
+ 1653:     );
+ 1654: 
+ 1655:   const alertSettingOnly =
+ 1656:     riskLevel === ("high" as RiskLevel) &&
+ 1657:     hasLink &&
+ 1658:     (alertSettingThread || hasTxnAlert) &&
+ 1659:     ackOrBenign &&
+ 1660:     !hasExplicitPayWord &&
+ 1661:     !hasOtp &&
+ 1662:     !hasThreat &&
+ 1663:     !hasUrgentHit &&
+ 1664:     !hasRemote &&
+ 1665:     !hasApk &&
+ 1666:     !hasInstallMention &&
+ 1667:     !hasJobScam &&
+ 1668:     !hasInvest &&
+ 1669:     !hasFamily &&
+ 1670:     !benignSupport;
+ 1671: 
+ 1672:   if (alertSettingOnly) riskLevel = "medium" as RiskLevel;
+ 1673: 
+ 1674:   // 원격/설치만(금융/OTP/협박 없이) high 금지 (문서/세금계산서/인보이스 뷰어 유도는 예외)
+ 1675:   const bizDocLure =
+ 1676:     /(세금계산서|거래처|회계팀|인보이스|invoice|견적서|발주서|계약서|정산|반려|수정본|문서\s*(뷰어|viewer)|열람)/i.test(rawThread);
+ 1677: 
+ 1678:   const remoteOnly =
+ 1679:     riskLevel === ("high" as RiskLevel) &&
+ 1680:     (hasRemote || hasInstallMention) &&
+ 1681:     !bizDocLure &&
+ 1682:     !hasExplicitPayWord &&
+ 1683:     !hasOtp &&
+ 1684:     !hasThreat &&
+ 1685:     !hasAuthority &&
+ 1686:     !hasUrgentHit &&
+ 1687:     !hasApk &&
+ 1688:     !hasJobScam &&
+ 1689:     !hasInvest &&
+ 1690:     !hasFamily &&
+ 1691:     !benignSupport;
+ 1692: 
+ 1693:   if (remoteOnly) riskLevel = "medium" as RiskLevel;
+ 1694: 
+ 1695:   // signals/hits 제공(엔진 index.ts에서 바로 사용)
+ 1696:   const signals = buildSignalsFromHits(sortedHits, 12);
+ 1697: 
+ 1698:   return {
+ 1699:     scoreTotal,
+ 1700:     riskLevel,
+ 1701:     stagePeak,
+ 1702:     stageTriggers,
+ 1703: 
+ 1704:     hits: sortedHits,
+ 1705:     signals,
+ 1706: 
+ 1707:     messageSummaries,
+ 1708:     context: windowed.meta,
+ 1709:   };
+ 1710: }

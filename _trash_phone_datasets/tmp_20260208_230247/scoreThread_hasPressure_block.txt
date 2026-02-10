@@ -1,0 +1,71 @@
+﻿  540:   const normalized = normalizedAll.filter((h) => {
+  541:     const id = idOf(h);
+  542:     if (id.startsWith("ctx_") || id.startsWith("url_")) return true;
+  543: 
+  544:     const ms = (h as any)?.matched as string[] | undefined;
+  545:     if (!ms || ms.length === 0) return true;
+  546:     return ms.some((m) => m && text.includes(m));
+  547:   });
+  548: 
+  549:   const pick = (pred: (h: Hit) => boolean) =>
+  550:     normalized
+  551:       .filter(pred)
+  552:       .sort((a, b) => b.weight - a.weight)
+  553:       .slice(0, 2)
+  554:       .map((h) => h.label);
+  555: 
+  556:   const t = text;
+  557:   const escrowLike = /(안전\s*결제|안전\s*거래|에스크로|escrow|거래)/i.test(t);
+  558: 
+  559:   const strongPayCue = hasStrongPayCueText(t);
+  560:   const hasAmt = hasAmountKRW(t);
+  561: 
+  562:   const payNoun = /(납부|송금|이체|입금|결제|지불|충전|선납|보험료|수수료|보증금|예치금|가입비|등록비|예약금|계약금|핀\s*번호|상품권|기프트|코인|지갑|qr)/i.test(t);
+  563:   const payImperative =
+  564:     /(해\s*줘|해줘|해\s*주|해주|해주세요|하세요|하셔야|바랍니다|요청|부탁|필수|반드시|진행|처리|완료)/i.test(t) ||
+  565:     /(지금\s*(바로|즉시)|긴급|오늘\s*안에|기한\s*내)/i.test(t);
+  566: 
+  567:   // “지시/요구” 문맥으로 payment 승격(강한 키워드/금액/명령어)
+  568:   const payDemandText = strongPayCue || hasAmt || (payNoun && payImperative);
+  569: 
+  570:   const hasPressure =
+  571:     normalized.some((h) => ["urgent", "threat", "authority", "ctx_demand"].includes(idOf(h))) ||
+  572:     /(긴급|즉시|바로|오늘\s*안에|기한\s*내|반드시|필수)/i.test(t);
+  573: 
+  574:   // install
+  575:   const INSTALL_HARD = new Set(["apk", "remote", "call_remote", "url_download_ext"]);
+  576:   const INSTALL_SOFT = new Set(["install_app", "ctx_install_mention"]);
+  577: 
+  578:   const installBeforePay =
+  579:     /(설치).{0,10}(후|해야|필요).{0,24}(결제|납부|송금|이체|입금|진행)/i.test(t) ||
+  580:     /(결제|납부|송금|이체|입금).{0,18}(하려면|위해).{0,18}(설치)/i.test(t);
+  581: 
+  582:   const hasHardInstall = normalized.some((h) => h.stage === "install" && INSTALL_HARD.has(idOf(h)));
+  583:   const hasAnyInstall = hasHardInstall || normalized.some((h) => h.stage === "install" && INSTALL_SOFT.has(idOf(h)));
+  584: 
+  585:   if (hasHardInstall) {
+  586:     return { stage: "install", triggers: pick((h) => h.stage === "install" && INSTALL_HARD.has(idOf(h))), normalized };
+  587:   }
+  588:   if (hasAnyInstall && escrowLike && !strongPayCue) {
+  589:     return {
+  590:       stage: "install",
+  591:       triggers: pick((h) => h.stage === "install" && (INSTALL_HARD.has(idOf(h)) || INSTALL_SOFT.has(idOf(h)))),
+  592:       normalized,
+  593:     };
+  594:   }
+  595:   if (hasAnyInstall && installBeforePay) {
+  596:     return {
+  597:       stage: "install",
+  598:       triggers: pick((h) => h.stage === "install" && (INSTALL_HARD.has(idOf(h)) || INSTALL_SOFT.has(idOf(h)))),
+  599:       normalized,
+  600:     };
+  601:   }
+  602: 
+  603:   // payment (기존보다 “무조건 payment”를 줄임)
+  604:   // - ALWAYS: 이 자체로 payment로 봐도 되는 것
+  605:   const PAYMENT_ALWAYS = new Set(["ctx_cash_pickup", "ctx_giftcard", "ctx_crypto_wallet", "ctx_account_rental", "ctx_qr_pay"]);
+  606: 
+  607:   // - CONDITIONAL: 문맥(요구/금액/압박)이 있어야 payment
+  608:   const PAYMENT_COND = new Set(["safe_account", "go_bank_atm", "ctx_transfer_demand", "ctx_payment_request"]);
+  609: 
+  610:   // - SOFT: 기본 verify(단, 요구/금액이면 payment)
