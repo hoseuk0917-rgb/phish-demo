@@ -17,3 +17,8 @@ __*.csv
 _dump_*.txt
 _snippet_*.txt
 ~$*.pptx
+
+# slides (do not commit)
+*.ppt
+*.pptx
+~$*.pptx
